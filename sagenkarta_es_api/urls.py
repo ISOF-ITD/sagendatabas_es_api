@@ -20,11 +20,17 @@ urlpatterns = [
 	#	documents: list
 	url(r'^documents/', views.getDocuments, name='getDocuments'),
 
+	# aggregate topics för autocomplete
+	url(r'^topics_autocomplete/', views.getTopicsAutocomplete, name='getTopicsAutocomplete'),
+
 	# aggregate topics
 	url(r'^topics/', views.getTopics, name='getTopics'),
 
 	# aggregate title topics
 	url(r'^title_topics/', views.getTitleTopics, name='getTitleTopics'),
+
+	# aggregate title topics
+	url(r'^title_topics_autocomplete/', views.getTitleTopicsAutocomplete, name='getTitleTopicsAutocomplete'),
 
 	# aggregate topics
 	url(r'^topics/', views.getTopics, name='getTopics'),

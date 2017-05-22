@@ -1,5 +1,6 @@
 from django.http import JsonResponse
 import requests, json, sys
+from requests.auth import HTTPBasicAuth
 
 def createQuery(request):
 	# Parameters:
@@ -88,7 +89,7 @@ def createQuery(request):
 		for category in categoryStrings:
 			categoryShouldBool['bool']['should'].append({
 				'match': {
-					'taxonomy.category': category
+					'taxonomy.category': category.upper()
 				}
 			})
 		query['bool']['must'].append(categoryShouldBool)
@@ -353,7 +354,7 @@ def createQuery(request):
 	return query
 
 def esQuery(request, query, formatFunc = None):
-	esResponse = requests.get('http://localhost:9200/sagenkarta_v3/legend/_search', data=json.dumps(query))
+	esResponse = requests.get('http://localhost:9200/sagenkarta_v3/legend/_search', data=json.dumps(query), auth=HTTPBasicAuth('elastic', 'changeme'))
 	
 	responseData = esResponse.json()
 
@@ -378,7 +379,7 @@ def esQuery(request, query, formatFunc = None):
 	return jsonResponse
 
 def getDocument(request, documentId):
-	esResponse = requests.get('http://localhost:9200/sagenkarta_v3/legend/'+documentId)
+	esResponse = requests.get('http://localhost:9200/sagenkarta_v3/legend/'+documentId, auth=HTTPBasicAuth('elastic', 'changeme'))
 
 	jsonResponse = JsonResponse(esResponse.json())
 	jsonResponse['Access-Control-Allow-Origin'] = '*'
@@ -401,8 +402,8 @@ def getTopics(request):
 	else:
 		count = 100
 
-	if ('order' in request.GET):
-		order = request.GET['order']
+	if ('sort' in request.GET):
+		order = request.GET['sort']
 	else:
 		order = '_count'
 
@@ -431,6 +432,74 @@ def getTopics(request):
 								'aggs': {
 									'parent_doc_count': {
 										'reverse_nested': {}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	print(query)
+
+	esQueryResponse = esQuery(request, query, jsonFormat)
+	return esQueryResponse
+
+def getTopicsAutocomplete(request):
+	def itemFormat(item):
+		return {
+			'topic': item['key'],
+			'doc_count': item['parent_doc_count']['doc_count'],
+			'terms': item['doc_count']
+		};
+
+	def jsonFormat(json):
+		return list(map(itemFormat, json['aggregations']['data']['data']['data']['data']['buckets']))
+
+	if ('count' in request.GET):
+		count = request.GET['count']
+	else:
+		count = 100
+
+	query = {
+		'size': 0,
+		'aggs': {
+			'data': {
+				'nested': {
+					'path': 'topics'
+				},
+				'aggs': {
+					'data': {
+						'nested': {
+							'path': 'topics.terms'
+						},
+						'aggs': {
+							'data': {
+								'filter': {
+									'bool': {
+										'must': {
+											'regexp': {
+												'topics.terms.term': request.GET['search']+'.+'
+											}
+										}
+									}
+								},
+								'aggs': {
+									'data': {
+										'terms': {
+											'order': {
+												'_count': 'desc'
+											},
+											'size': count,
+											'field': 'topics.terms.term'
+										},
+										'aggs': {
+											'parent_doc_count': {
+												'reverse_nested': {}
+											}
+										}
 									}
 								}
 							}
@@ -512,6 +581,72 @@ def getTitleTopics(request):
 											'percents': [
 												50
 											]
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	esQueryResponse = esQuery(request, query, jsonFormat)
+	return esQueryResponse
+
+def getTitleTopicsAutocomplete(request):
+	def itemFormat(item):
+		return {
+			'topic': item['key'],
+			'doc_count': item['parent_doc_count']['doc_count'],
+			'terms': item['doc_count']
+		};
+
+	def jsonFormat(json):
+		return list(map(itemFormat, json['aggregations']['data']['data']['data']['data']['buckets']))
+
+	if ('count' in request.GET):
+		count = request.GET['count']
+	else:
+		count = 100
+
+	query = {
+		'size': 0,
+		'aggs': {
+			'data': {
+				'nested': {
+					'path': 'title_topics'
+				},
+				'aggs': {
+					'data': {
+						'nested': {
+							'path': 'title_topics.terms'
+						},
+						'aggs': {
+							'data': {
+								'filter': {
+									'bool': {
+										'must': {
+											'regexp': {
+												'title_topics.terms.term': request.GET['search']+'.+'
+											}
+										}
+									}
+								},
+								'aggs': {
+									'data': {
+										'terms': {
+											'order': {
+												'_count': 'desc'
+											},
+											'size': count,
+											'field': 'title_topics.terms.term'
+										},
+										'aggs': {
+											'parent_doc_count': {
+												'reverse_nested': {}
+											}
 										}
 									}
 								}
@@ -964,13 +1099,13 @@ def getPersons(request):
 					'data': {
 						'terms': {
 							'field': 'persons.id',
-							'size': 10000
+							'size': request.GET['count'] if 'count' in request.GET else 10000
 						},
 						'aggs': {
 							'data': {
 								'terms': {
 									'field': 'persons.name',
-									'size': 10000,
+									'size': request.GET['count'] if 'count' in request.GET else 10000,
 									'order': {
 										'_term': 'asc'
 									}
@@ -979,7 +1114,7 @@ def getPersons(request):
 							'relation': {
 								'terms': {
 									'field': 'persons.relation',
-									'size': 10000,
+									'size': request.GET['count'] if 'count' in request.GET else 10000,
 									'order': {
 										'_term': 'asc'
 									}
@@ -988,7 +1123,7 @@ def getPersons(request):
 							'home': {
 								'terms': {
 									'field': 'persons.home.id',
-									'size': 10000,
+									'size': request.GET['count'] if 'count' in request.GET else 10000,
 									'order': {
 										'_term': 'asc'
 									}
@@ -997,7 +1132,7 @@ def getPersons(request):
 									'data': {
 										'terms': {
 											'field': 'persons.home.name',
-											'size': 10000,
+											'size': request.GET['count'] if 'count' in request.GET else 10000,
 											'order': {
 												'_term': 'asc'
 											}
@@ -1118,6 +1253,19 @@ def getCollectors(request):
 
 
 def getGender(request):
+	def itemFormat(item):
+		return {
+			'gender': item['key'],
+			'doc_count': item['doc_count']
+		};
+
+	def jsonFormat(json):
+		return {
+			'all': list(map(itemFormat, json['aggregations']['data']['data']['buckets'])),
+			'collectors': list(map(itemFormat, json['aggregations']['collectors']['data']['data']['buckets'])),
+			'informants': list(map(itemFormat, json['aggregations']['informants']['data']['data']['buckets']))
+		}
+
 	query = {
 		'query': createQuery(request),
 		'size': 0,
@@ -1191,7 +1339,7 @@ def getGender(request):
 		}
 	}
 
-	esQueryResponse = esQuery(request, query)
+	esQueryResponse = esQuery(request, query, jsonFormat)
 	return esQueryResponse
 
 
@@ -1251,6 +1399,17 @@ def getDocuments(request):
 			}
 		}
 	}
+
+	if ('sort' in request.GET):
+		sort = []
+		sortObj = {}
+		sortObj[request.GET['sort']] = request.GET['order'] if 'order' in request.GET else 'asc'
+
+		sort.append(sortObj)
+
+		query['sort'] = sort
+
+	print(query)
 
 	esQueryResponse = esQuery(request, query, jsonFormat)
 	return esQueryResponse
