@@ -1,4 +1,4 @@
-# Django-Sagenkarta-Elasticsearch-demo
+# Sagendatabas-ES-Django
 
 Enkelt Django application som visar hur man kan göra enkel API som hämtar data från Elasticserach utan att definera models.
 Django samt requests modulen måste vara installerad för att köra applicationen.
