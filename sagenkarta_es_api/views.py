@@ -705,7 +705,8 @@ def getBirthYears(request):
 		return {
 			'year': item['key_as_string'],
 			'timestamp': item['key'],
-			'doc_count': item['doc_count']
+			'doc_count': item['doc_count'],
+			'person_count': item['person_count']['value']
 		};
 
 	def jsonFormat(json):
@@ -736,6 +737,13 @@ def getBirthYears(request):
 									'field' : 'persons.birth_year',
 									'interval' : 'year',
 									'format': 'yyyy'
+								},
+								'aggs': {
+									'person_count': {
+										'cardinality': {
+											'field': 'persons.id'
+										}
+									}
 								}
 							}
 						}
@@ -759,6 +767,13 @@ def getBirthYears(request):
 									'field' : 'persons.birth_year',
 									'interval' : 'year',
 									'format': 'yyyy'
+								},
+								'aggs': {
+									'person_count': {
+										'cardinality': {
+											'field': 'persons.id'
+										}
+									}
 								}
 							}
 						}
@@ -775,6 +790,13 @@ def getBirthYears(request):
 							'field' : 'persons.birth_year',
 							'interval' : 'year',
 							'format': 'yyyy'
+						},
+						'aggs': {
+							'person_count': {
+								'cardinality': {
+									'field': 'persons.id'
+								}
+							}
 						}
 					}
 				}
@@ -1256,7 +1278,8 @@ def getGender(request):
 	def itemFormat(item):
 		return {
 			'gender': item['key'],
-			'doc_count': item['doc_count']
+			'doc_count': item['doc_count'],
+			'person_count': item['person_count']['value']
 		};
 
 	def jsonFormat(json):
@@ -1289,6 +1312,13 @@ def getGender(request):
 									'order': {
 										'_term': 'asc'
 									}
+								},
+								'aggs': {
+									'person_count': {
+										'cardinality': {
+											'field': 'persons.id'
+										}
+									}
 								}
 							}
 						}
@@ -1314,6 +1344,13 @@ def getGender(request):
 									'order': {
 										'_term': 'asc'
 									}
+								},
+								'aggs': {
+									'person_count': {
+										'cardinality': {
+											'field': 'persons.id'
+										}
+									}
 								}
 							}
 						}
@@ -1331,6 +1368,13 @@ def getGender(request):
 							'size': 10000,
 							'order': {
 								'_term': 'asc'
+							}
+						},
+						'aggs': {
+							'person_count': {
+								'cardinality': {
+									'field': 'persons.id'
+								}
 							}
 						}
 					}
