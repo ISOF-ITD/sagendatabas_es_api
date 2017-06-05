@@ -23,9 +23,6 @@ def createQuery(request):
 	#	kon X
 	#	fodelseort
 
-	# mogulegt að leita eftir 'svart' en ekki 'svarta'
-	# exact leit 'den svarta hunden' : phrase leit
-
 	if (len(request.GET) > 0):
 		query = {
 			'bool': {
