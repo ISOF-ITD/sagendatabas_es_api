@@ -12,15 +12,15 @@ urlpatterns = [
 	#	kategorier: agg
 	#	socken: agg
 	#	topics: agg
-	#	kön: agg
-	#	insamlingsår: agg
-	#	födelseår: agg
+	#	kon: agg
+	#	insamlingsar: agg
+	#	fodelsear: agg
 	#	personer: agg
 
 	#	documents: list
 	url(r'^documents/', views.getDocuments, name='getDocuments'),
 
-	# aggregate topics för autocomplete
+	# aggregate topics for autocomplete
 	url(r'^topics_autocomplete/', views.getTopicsAutocomplete, name='getTopicsAutocomplete'),
 
 	# aggregate topics
@@ -35,10 +35,10 @@ urlpatterns = [
 	# aggregate topics
 	url(r'^topics/', views.getTopics, name='getTopics'),
 
-	# aggregate upptäckningsår
+	# aggregate upptackningsar
 	url(r'^collection_years/', views.getCollectionYears, name='getCollectionYears'),
 
-	# aggregate födelseår
+	# aggregate fodelsear
 	url(r'^birth_years/', views.getBirthYears, name='getBirthYears'),
 
 	# aggregate kategorier
@@ -53,7 +53,7 @@ urlpatterns = [
 	# aggregate harad
 	url(r'^harad/', views.getHarad, name='getHarad'),
 
-	# aggregate län
+	# aggregate lan
 	url(r'^county/', views.getCounty, name='getCounty'),
 
 	# aggregate landskap
@@ -65,16 +65,16 @@ urlpatterns = [
 	# aggregate informants
 	url(r'^informants/', views.getInformants, name='getInformants'),
 
-	# aggregate upptäcknare
+	# aggregate upptacknare
 	url(r'^collectors/', views.getCollectors, name='getCollectors'),
 
-	# aggregate kön
+	# aggregate kon
 	url(r'^gender/', views.getGender, name='getGender'),
 
-	# aggregate kön
+	# aggregate kon
 	url(r'^gender/', views.getGender, name='getGender'),
 
-	# hämta similar document
+	# hamta similar document
 	url(r'^similar/(?P<documentId>[^/]+)/$', views.getSimilar, name='getSimilar'),
 
 	# aggregate titlar

@@ -5,25 +5,25 @@ from requests.auth import HTTPBasicAuth
 def createQuery(request):
 	# Parameters:
 
-	#	söksträng (title, text, acc. number) X
+	#	sokstrang (title, text, acc. number) X
 	#	kategori X
 	#	typ X
 	#	institut ?
 	#	topic X
 	#	title_topic X
 
-	#	insamlingsår (från och till) X
+	#	insamlingsar (fran och till) X
 	#	insamlingsort (sockennamn, socken-id, harad, landskap, bounding box, ...)
 
 	#	liknande dokumenter X
 
 	#	person relation X
 	#	namn X
-	#	födelseår
-	#	kön X
-	#	födelseort
+	#	fodelsear
+	#	kon X
+	#	fodelseort
 
-	# mögulegt að leita eftir 'svart' en ekki 'svarta'
+	# mogulegt að leita eftir 'svart' en ekki 'svarta'
 	# exact leit 'den svarta hunden' : phrase leit
 
 	if (len(request.GET) > 0):
@@ -228,6 +228,39 @@ def createQuery(request):
 							{
 								'match': {
 									'persons.gender': request.GET['gender']
+								}
+							}
+						]
+					}
+				}
+			}
+		}
+
+		if ('person_relation' in request.GET):
+			personShouldBool['nested']['query']['bool']['must'].append({
+				'match': {
+					'persons.relation': request.GET['person_relation']
+				}
+			})
+
+		query['bool']['must'].append(personShouldBool)
+
+
+	if ('birth_years' in request.GET):
+		birthYears = request.GET['birth_years'].split(',')
+
+		personShouldBool = {
+			'nested': {
+				'path': 'persons',
+				'query': {
+					'bool': {
+						'must': [
+							{
+								'range': {
+									'persons.birth_year': {
+										'gte': birthYears[0],
+										'lt': birthYears[1]
+									}
 								}
 							}
 						]
