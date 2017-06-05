@@ -1,13 +1,13 @@
 from django.conf.urls import url
-from rest_framework.schemas import get_schema_view
-from rest_framework_swagger.views import get_swagger_view
-from rest_framework_swagger.renderers import SwaggerUIRenderer, OpenAPIRenderer
+# from rest_framework.schemas import get_schema_view
+# from rest_framework_swagger.views import get_swagger_view
+# from rest_framework_swagger.renderers import SwaggerUIRenderer, OpenAPIRenderer
 from . import views
 
-schema_view = get_schema_view(title='Users API', renderer_classes=[OpenAPIRenderer, SwaggerUIRenderer])
+# schema_view = get_schema_view(title='Users API', renderer_classes=[OpenAPIRenderer, SwaggerUIRenderer])
 
 urlpatterns = [
-	url(r'^$', schema_view),
+	#	url(r'^$', schema_view),
 
 	#	kategorier: agg
 	#	socken: agg
