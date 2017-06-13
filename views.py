@@ -2,6 +2,8 @@ from django.http import JsonResponse
 import requests, json, sys
 from requests.auth import HTTPBasicAuth
 
+import es_config
+
 def createQuery(request):
 	# Parameters:
 
@@ -384,7 +386,7 @@ def createQuery(request):
 	return query
 
 def esQuery(request, query, formatFunc = None):
-	esResponse = requests.get('http://localhost:9200/sagenkarta_v3/legend/_search', data=json.dumps(query), auth=HTTPBasicAuth('elastic', 'changeme'))
+	esResponse = requests.get('https://'+es_config.user+':'+es_config.password+'@'+es_config.host+'/'+es_config.index_name+'/legend/_search', data=json.dumps(query), verify=es_config.cert_file)
 	
 	responseData = esResponse.json()
 
@@ -409,7 +411,7 @@ def esQuery(request, query, formatFunc = None):
 	return jsonResponse
 
 def getDocument(request, documentId):
-	esResponse = requests.get('http://localhost:9200/sagenkarta_v3/legend/'+documentId, auth=HTTPBasicAuth('elastic', 'changeme'))
+	esResponse = requests.get('https://'+es_config.user+':'+es_config.password+'@'+es_config.host+'/'+es_config.index_name+'/legend/'+documentId, verify=es_config.cert_file)
 
 	jsonResponse = JsonResponse(esResponse.json())
 	jsonResponse['Access-Control-Allow-Origin'] = '*'
