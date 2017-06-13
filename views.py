@@ -374,7 +374,7 @@ def createQuery(request):
 				'fields' : ['text', 'title'],
 				'like' : [
 					{
-						'_index' : 'sagenkarta_v3',
+						'_index' : es_config.index_name,
 						'_type' : 'legend',
 						'_id' : request.GET['similar']
 					}
