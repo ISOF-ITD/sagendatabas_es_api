@@ -217,6 +217,110 @@ def createQuery(request):
 		query['bool']['must'].append(personShouldBool)
 
 
+	if ('collector' in request.GET):
+		personShouldBool = {
+			'nested': {
+				'path': 'persons',
+				'query': {
+					'bool': {
+						'must': [
+							{
+								'match': {
+									'persons.name': request.GET['collector']
+								}
+							},
+							{
+								'match': {
+									'persons.relation': 'collector'
+								}
+							}
+						]
+					}
+				}
+			}
+		}
+
+		query['bool']['must'].append(personShouldBool)
+
+
+	if ('informant' in request.GET):
+		personShouldBool = {
+			'nested': {
+				'path': 'persons',
+				'query': {
+					'bool': {
+						'must': [
+							{
+								'match': {
+									'persons.name': request.GET['informant']
+								}
+							},
+							{
+								'match': {
+									'persons.relation': 'informant'
+								}
+							}
+						]
+					}
+				}
+			}
+		}
+
+		query['bool']['must'].append(personShouldBool)
+
+
+	if ('collectors_gender' in request.GET):
+		personShouldBool = {
+			'nested': {
+				'path': 'persons',
+				'query': {
+					'bool': {
+						'must': [
+							{
+								'match': {
+									'persons.gender': request.GET['collectors_gender']
+								}
+							},
+							{
+								'match': {
+									'persons.relation': 'collector'
+								}
+							}
+						]
+					}
+				}
+			}
+		}
+
+		query['bool']['must'].append(personShouldBool)
+
+
+	if ('informants_gender' in request.GET):
+		personShouldBool = {
+			'nested': {
+				'path': 'persons',
+				'query': {
+					'bool': {
+						'must': [
+							{
+								'match': {
+									'persons.gender': request.GET['informants_gender']
+								}
+							},
+							{
+								'match': {
+									'persons.relation': 'informant'
+								}
+							}
+						]
+					}
+				}
+			}
+		}
+
+		query['bool']['must'].append(personShouldBool)
+
+
 	if ('gender' in request.GET):
 		personShouldBool = {
 			'nested': {
@@ -274,6 +378,68 @@ def createQuery(request):
 					'persons.relation': request.GET['person_relation']
 				}
 			})
+
+		query['bool']['must'].append(personShouldBool)
+
+
+	if ('collectors_birth_years' in request.GET):
+		birthYears = request.GET['collectors_birth_years'].split(',')
+
+		personShouldBool = {
+			'nested': {
+				'path': 'persons',
+				'query': {
+					'bool': {
+						'must': [
+							{
+								'range': {
+									'persons.birth_year': {
+										'gte': birthYears[0],
+										'lt': birthYears[1]
+									}
+								}
+							},
+							{
+								'match': {
+									'persons.relation': 'collector'
+								}
+							}
+						]
+					}
+				}
+			}
+		}
+
+		query['bool']['must'].append(personShouldBool)
+
+
+	if ('informants_birth_years' in request.GET):
+		birthYears = request.GET['informants_birth_years'].split(',')
+
+		personShouldBool = {
+			'nested': {
+				'path': 'persons',
+				'query': {
+					'bool': {
+						'must': [
+							{
+								'range': {
+									'persons.birth_year': {
+										'gte': birthYears[0],
+										'lt': birthYears[1]
+									}
+								}
+							},
+							{
+								'match': {
+									'persons.relation': 'informant'
+								}
+							}
+						]
+					}
+				}
+			}
+		}
 
 		query['bool']['must'].append(personShouldBool)
 
@@ -383,6 +549,33 @@ def createQuery(request):
 				'max_query_terms' : 500
 			}
 		})
+
+	if ('geo_box' in request.GET):
+		latLngs = request.GET['geo_box'].split(',')
+		query['bool']['must'].append({
+			'nested': {
+				'path': 'places',
+				'query': {
+					'bool': {
+						'must': {
+							'geo_bounding_box' : {
+								'places.location' : {
+									'top_left' : {
+										'lat' : latLngs[0],
+										'lon' : latLngs[1]
+									},
+									'bottom_right' : {
+										'lat' : latLngs[2],
+										'lon' : latLngs[3]
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		})
+
 	return query
 
 def esQuery(request, query, formatFunc = None):
@@ -1130,6 +1323,9 @@ def getPersons(request):
 			'doc_count': item['doc_count']
 		}
 
+		if (len(item['birth_year']['buckets']) > 0):
+			retObj['birth_year'] = item['birth_year']['buckets'][0]['key_as_string'].split('-')[0]
+
 		if len(item['home']['buckets']) > 0:
 			retObj['home'] = {
 				'id': item['home']['buckets'][0]['key'],
@@ -1159,7 +1355,16 @@ def getPersons(request):
 							'data': {
 								'terms': {
 									'field': 'persons.name',
-									'size': request.GET['count'] if 'count' in request.GET else 10000,
+									'size': 1,
+									'order': {
+										'_term': 'asc'
+									}
+								}
+							},
+							'birth_year': {
+								'terms': {
+									'field': 'persons.birth_year',
+									'size': 1,
 									'order': {
 										'_term': 'asc'
 									}
@@ -1168,7 +1373,7 @@ def getPersons(request):
 							'relation': {
 								'terms': {
 									'field': 'persons.relation',
-									'size': request.GET['count'] if 'count' in request.GET else 10000,
+									'size': 1,
 									'order': {
 										'_term': 'asc'
 									}
@@ -1177,7 +1382,7 @@ def getPersons(request):
 							'home': {
 								'terms': {
 									'field': 'persons.home.id',
-									'size': request.GET['count'] if 'count' in request.GET else 10000,
+									'size': 10,
 									'order': {
 										'_term': 'asc'
 									}
@@ -1186,7 +1391,7 @@ def getPersons(request):
 									'data': {
 										'terms': {
 											'field': 'persons.home.name',
-											'size': request.GET['count'] if 'count' in request.GET else 10000,
+											'size': 10,
 											'order': {
 												'_term': 'asc'
 											}
@@ -1205,6 +1410,128 @@ def getPersons(request):
 	return esQueryResponse
 
 
+def getPersonsAutocomplete(request):
+	def itemFormat(item):
+		retObj = {
+			'id': item['key'],
+			'name': item['data']['buckets'][0]['key'],
+			'doc_count': item['doc_count']
+		}
+
+		if (len(item['birth_year']['buckets']) > 0):
+			retObj['birth_year'] = item['birth_year']['buckets'][0]['key_as_string'].split('-')[0]
+
+		if len(item['home']['buckets']) > 0:
+			retObj['home'] = {
+				'id': item['home']['buckets'][0]['key'],
+				'name': item['home']['buckets'][0]['data']['buckets'][0]['key']
+			}
+
+		return retObj
+
+	def jsonFormat(json):
+		return list(map(itemFormat, json['aggregations']['data']['data']['data']['buckets']))
+
+	query = {
+		'size': 0,
+		'aggs': {
+			'data': {
+				'nested': {
+					'path': 'persons'
+				},
+				'aggs': {
+					'data': {
+						'filter': {
+							'bool': {
+								'must': [
+									{
+										'regexp': {
+											'persons.name': '(.+?)'+request.GET['search']+'(.+?)'
+										}
+									}
+								]
+							}
+						},
+						'aggs': {
+							'data': {
+
+						'terms': {
+							'field': 'persons.id',
+							'size': request.GET['count'] if 'count' in request.GET else 10000
+						},
+						'aggs': {
+							'data': {
+								'terms': {
+									'field': 'persons.name',
+									'size': 1,
+									'order': {
+										'_term': 'asc'
+									}
+								}
+							},
+							'birth_year': {
+								'terms': {
+									'field': 'persons.birth_year',
+									'size': 1,
+									'order': {
+										'_term': 'asc'
+									}
+								}
+							},
+							'relation': {
+								'terms': {
+									'field': 'persons.relation',
+									'size': 1,
+									'order': {
+										'_term': 'asc'
+									}
+								}
+							},
+							'home': {
+								'terms': {
+									'field': 'persons.home.id',
+									'size': 10,
+									'order': {
+										'_term': 'asc'
+									}
+								},
+								'aggs': {
+									'data': {
+										'terms': {
+											'field': 'persons.home.name',
+											'size': 10,
+											'order': {
+												'_term': 'asc'
+											}
+										}
+									}
+								}
+							}
+						}
+
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	if ('relation' in request.GET):
+		print(request.GET['relation'])
+		relationObj = {
+			'match': {
+				'persons.relation': request.GET['relation']
+			}
+		}
+		query['aggs']['data']['aggs']['data']['filter']['bool']['must'].append(relationObj)
+
+	print(query)
+
+	esQueryResponse = esQuery(request, query, jsonFormat)
+	return esQueryResponse
+
+
 def getRelatedPersons(request, relation):
 	def itemFormat(item):
 		retObj = {
@@ -1213,6 +1540,9 @@ def getRelatedPersons(request, relation):
 			'doc_count': item['doc_count'],
 			'relation': item['relation']['buckets'][0]['key']
 		}
+
+		if (len(item['birth_year']['buckets']) > 0):
+			retObj['birth_year'] = item['birth_year']['buckets'][0]['key_as_string'].split('-')[0]
 
 		if len(item['home']['buckets']) > 0:
 			retObj['home'] = {
@@ -1250,7 +1580,16 @@ def getRelatedPersons(request, relation):
 									'data': {
 										'terms': {
 											'field': 'persons.name',
-											'size': 10000,
+											'size': 1,
+											'order': {
+												'_term': 'asc'
+											}
+										}
+									},
+									'birth_year': {
+										'terms': {
+											'field': 'persons.birth_year',
+											'size': 1,
 											'order': {
 												'_term': 'asc'
 											}
@@ -1259,7 +1598,7 @@ def getRelatedPersons(request, relation):
 									'relation': {
 										'terms': {
 											'field': 'persons.relation',
-											'size': 10000,
+											'size': 1,
 											'order': {
 												'_term': 'asc'
 											}
@@ -1268,7 +1607,7 @@ def getRelatedPersons(request, relation):
 									'home': {
 										'terms': {
 											'field': 'persons.home.id',
-											'size': 10000,
+											'size': 10,
 											'order': {
 												'_term': 'asc'
 											}
@@ -1277,7 +1616,7 @@ def getRelatedPersons(request, relation):
 											'data': {
 												'terms': {
 													'field': 'persons.home.name',
-													'size': 10000,
+													'size': 10,
 													'order': {
 														'_term': 'asc'
 													}
