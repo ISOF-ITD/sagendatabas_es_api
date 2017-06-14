@@ -20,17 +20,11 @@ urlpatterns = [
 	#	documents: list
 	url(r'^documents/', views.getDocuments, name='getDocuments'),
 
-	# aggregate topics for autocomplete
-	url(r'^topics_autocomplete/', views.getTopicsAutocomplete, name='getTopicsAutocomplete'),
-
 	# aggregate topics
 	url(r'^topics/', views.getTopics, name='getTopics'),
 
 	# aggregate title topics
 	url(r'^title_topics/', views.getTitleTopics, name='getTitleTopics'),
-
-	# aggregate title topics
-	url(r'^title_topics_autocomplete/', views.getTitleTopicsAutocomplete, name='getTitleTopicsAutocomplete'),
 
 	# aggregate topics
 	url(r'^topics/', views.getTopics, name='getTopics'),
@@ -77,7 +71,10 @@ urlpatterns = [
 	# hamta similar document
 	url(r'^similar/(?P<documentId>[^/]+)/$', views.getSimilar, name='getSimilar'),
 
-	# aggregate titlar
+	# autocomplete
+	url(r'^topics_autocomplete/', views.getTopicsAutocomplete, name='getTopicsAutocomplete'),
+	url(r'^title_topics_autocomplete/', views.getTitleTopicsAutocomplete, name='getTitleTopicsAutocomplete'),
+	url(r'^persons_autocomplete/', views.getPersonsAutocomplete, name='getPersonsAutocomplete'),
 
 	url(r'^document/(?P<documentId>[^/]+)/$', views.getDocument, name='getDocument'),
 ]
