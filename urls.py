@@ -56,6 +56,9 @@ urlpatterns = [
 	# aggregate personer
 	url(r'^persons/', views.getPersons, name='getPersons'),
 
+	# enskild person
+	url(r'^person/(?P<personId>[^/]+)/$', views.getPerson, name='getPerson'),
+
 	# aggregate informants
 	url(r'^informants/', views.getInformants, name='getInformants'),
 
@@ -70,6 +73,9 @@ urlpatterns = [
 
 	# hamta similar document
 	url(r'^similar/(?P<documentId>[^/]+)/$', views.getSimilar, name='getSimilar'),
+
+	# graph
+	url(r'^graph/', views.getGraph, name='getGraph'),
 
 	# autocomplete
 	url(r'^topics_autocomplete/', views.getTopicsAutocomplete, name='getTopicsAutocomplete'),

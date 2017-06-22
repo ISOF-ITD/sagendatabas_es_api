@@ -1,5 +1,5 @@
 from django.http import JsonResponse
-import requests, json, sys
+import requests, json, sys, Geohash
 from requests.auth import HTTPBasicAuth
 
 import es_config
@@ -563,6 +563,9 @@ def createQuery(request):
 						'_id' : request.GET['similar']
 					}
 				],
+				
+				'min_word_length': 4,
+
 				'min_term_freq' : 1,
 				'max_query_terms' : 500
 			}
@@ -596,8 +599,8 @@ def createQuery(request):
 
 	return query
 
-def esQuery(request, query, formatFunc = None):
-	esResponse = requests.get('https://'+es_config.user+':'+es_config.password+'@'+es_config.host+'/'+es_config.index_name+'/legend/_search', data=json.dumps(query), verify=False)
+def esQuery(request, query, formatFunc = None, apiUrl = None):
+	esResponse = requests.get('https://'+es_config.user+':'+es_config.password+'@'+es_config.host+'/'+es_config.index_name+(apiUrl if apiUrl else '/legend/_search'), data=json.dumps(query), verify=False)
 	
 	responseData = esResponse.json()
 
@@ -609,8 +612,8 @@ def esQuery(request, query, formatFunc = None):
 		outputData = responseData
 
 	outputData['metadata'] ={
-		'total': responseData['hits']['total'],
-		'took': responseData['took']
+		'total': responseData['hits']['total'] if 'hits' in responseData else 0,
+		'took': responseData['took'] if 'took' in responseData else 0
 	}
 
 	if ('showQuery' in request.GET) and request.GET['showQuery']:
@@ -1130,6 +1133,7 @@ def getSocken(request):
 			'harad': item['harad']['buckets'][0]['key'],
 			'landskap': item['landskap']['buckets'][0]['key'],
 			'lan': item['lan']['buckets'][0]['key'],
+			'location': Geohash.decode(item['location']['buckets'][0]['key']),
 			'doc_count': item['data']['buckets'][0]['doc_count']
 		};
 
@@ -1154,7 +1158,7 @@ def getSocken(request):
 							'data': {
 								'terms': {
 									'field': 'places.name',
-									'size': 10000,
+									'size': 1,
 									'order': {
 										'_term': 'asc'
 									}
@@ -1163,7 +1167,7 @@ def getSocken(request):
 							'harad': {
 								'terms': {
 									'field': 'places.harad',
-									'size': 10000,
+									'size': 1,
 									'order': {
 										'_term': 'asc'
 									}
@@ -1172,7 +1176,7 @@ def getSocken(request):
 							'landskap': {
 								'terms': {
 									'field': 'places.landskap',
-									'size': 10000,
+									'size': 1,
 									'order': {
 										'_term': 'asc'
 									}
@@ -1181,10 +1185,16 @@ def getSocken(request):
 							'lan': {
 								'terms': {
 									'field': 'places.county',
-									'size': 10000,
+									'size': 1,
 									'order': {
 										'_term': 'asc'
 									}
+								}
+							},
+							'location': {
+								'geohash_grid': {
+									'field': 'places.location',
+									'precision': 12
 								}
 							}
 						}
@@ -1193,6 +1203,8 @@ def getSocken(request):
 			}
 		}
 	}
+
+	print(json.dumps(query))
 
 	esQueryResponse = esQuery(request, query, jsonFormat)
 	return esQueryResponse
@@ -1425,6 +1437,22 @@ def getPersons(request):
 	esQueryResponse = esQuery(request, query, jsonFormat)
 	return esQueryResponse
 
+
+def getPerson(request, personId):
+	query = {
+		'query': {
+			'filter': {
+				'term': {
+					'persons.id': personId
+				}
+			}
+		}
+	}
+
+	print(query)
+
+	esQueryResponse = esQuery(request, query)
+	return esQueryResponse
 
 def getPersonsAutocomplete(request):
 	def itemFormat(item):
@@ -1812,7 +1840,8 @@ def getDocuments(request):
 
 	query = {
 		'query': createQuery(request),
-		'size': 100,
+		'size': request.GET['size'] if 'size' in request.GET else 100,
+		'from': request.GET['from'] if 'from' in request.GET else 0,
 		'highlight' : {
 			'pre_tags': [
 				'<span class="highlight">'
@@ -1840,4 +1869,35 @@ def getDocuments(request):
 	print(json.dumps(query))
 
 	esQueryResponse = esQuery(request, query, jsonFormat)
+	return esQueryResponse
+
+
+def getGraph(request):
+	def jsonFormat(json):
+		return json
+
+	query = {
+		'query': createQuery(request),
+		'controls': {
+			'use_significance': True,
+			'sample_size': 20000,
+			'timeout': 20000
+		},
+		'vertices': [
+			{
+				'field': 'topics_graph',
+				'size': 50,
+				'min_doc_count': 5
+			}
+		],
+		'connections': {
+			'vertices': [
+				{
+					'field': 'topics_graph'
+				}
+			]
+		}
+	}
+
+	esQueryResponse = esQuery(request, query, jsonFormat, '/_xpack/_graph/_explore')
 	return esQueryResponse
