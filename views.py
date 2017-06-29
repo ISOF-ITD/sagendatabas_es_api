@@ -1133,6 +1133,7 @@ def getSocken(request):
 			'harad': item['harad']['buckets'][0]['key'],
 			'landskap': item['landskap']['buckets'][0]['key'],
 			'lan': item['lan']['buckets'][0]['key'],
+			'lm_id': item['lm_id']['buckets'][0]['key'] if len(item['lm_id']['buckets']) > 0 else '',
 			'location': Geohash.decode(item['location']['buckets'][0]['key']),
 			'doc_count': item['data']['buckets'][0]['doc_count']
 		};
@@ -1195,6 +1196,15 @@ def getSocken(request):
 								'geohash_grid': {
 									'field': 'places.location',
 									'precision': 12
+								}
+							},
+							'lm_id': {
+								'terms': {
+									'field': 'places.lm_id',
+									'size': 1,
+									'order': {
+										'_term': 'asc'
+									}
 								}
 							}
 						}

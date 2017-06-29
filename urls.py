@@ -26,9 +26,6 @@ urlpatterns = [
 	# aggregate title topics
 	url(r'^title_topics/', views.getTitleTopics, name='getTitleTopics'),
 
-	# aggregate topics
-	url(r'^topics/', views.getTopics, name='getTopics'),
-
 	# aggregate upptackningsar
 	url(r'^collection_years/', views.getCollectionYears, name='getCollectionYears'),
 
