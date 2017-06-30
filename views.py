@@ -179,6 +179,30 @@ def createQuery(request):
 		query['bool']['must'].append(sockenShouldBool)
 
 
+	if ('landskap' in request.GET):
+		landskapShouldBool = {
+			'nested': {
+				'path': 'places',
+				'query': {
+					'bool': {
+						'should': []
+					}
+				}
+			}
+		}
+
+		sockenNames = request.GET['landskap'].split(',')
+
+		for landskap in sockenNames:
+			landskapShouldBool['nested']['query']['bool']['should'].append({
+					'match': {
+						'places.landskap': landskap
+					}
+			})
+
+		query['bool']['must'].append(landskapShouldBool)
+
+
 	if ('person' in request.GET):
 		personShouldBool = {
 			'nested': {
@@ -1218,6 +1242,116 @@ def getSocken(request):
 
 	esQueryResponse = esQuery(request, query, jsonFormat)
 	return esQueryResponse
+
+
+def getSockenAutocomplete(request):
+	def itemFormat(item):
+		return {
+			'id': item['key'],
+			'name': item['data']['buckets'][0]['key'],
+			'harad': item['harad']['buckets'][0]['key'],
+			'landskap': item['landskap']['buckets'][0]['key'],
+			'lan': item['lan']['buckets'][0]['key'],
+			'lm_id': item['lm_id']['buckets'][0]['key'] if len(item['lm_id']['buckets']) > 0 else '',
+			'location': Geohash.decode(item['location']['buckets'][0]['key']),
+			'doc_count': item['data']['buckets'][0]['doc_count']
+		};
+
+	def jsonFormat(json):
+		return list(map(itemFormat, json['aggregations']['data']['data']['data']['buckets']))
+
+	query = {
+		'size': 0,
+		'aggs': {
+			'data': {
+				'nested': {
+					'path': 'places'
+				},
+				'aggs': {
+					'data': {
+						'filter': {
+							'bool': {
+								'must': [
+									{
+										'regexp': {
+											'places.name': '(.+?)'+request.GET['search']+'(.+?)'
+										}
+									}
+								]
+							}
+						},
+						'aggs': {
+							'data': {
+								'terms': {
+									'field': 'places.id',
+									'size': 10000
+								},
+								'aggs': {
+									'data': {
+										'terms': {
+											'field': 'places.name',
+											'size': 1,
+											'order': {
+												'_term': 'asc'
+											}
+										}
+									},
+									'harad': {
+										'terms': {
+											'field': 'places.harad',
+											'size': 1,
+											'order': {
+												'_term': 'asc'
+											}
+										}
+									},
+									'landskap': {
+										'terms': {
+											'field': 'places.landskap',
+											'size': 1,
+											'order': {
+												'_term': 'asc'
+											}
+										}
+									},
+									'lan': {
+										'terms': {
+											'field': 'places.county',
+											'size': 1,
+											'order': {
+												'_term': 'asc'
+											}
+										}
+									},
+									'location': {
+										'geohash_grid': {
+											'field': 'places.location',
+											'precision': 12
+										}
+									},
+									'lm_id': {
+										'terms': {
+											'field': 'places.lm_id',
+											'size': 1,
+											'order': {
+												'_term': 'asc'
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	print(json.dumps(query))
+
+	esQueryResponse = esQuery(request, query, jsonFormat)
+	return esQueryResponse
+
 
 def getHarad(request):
 	def itemFormat(item):

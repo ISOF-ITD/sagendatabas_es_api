@@ -75,9 +75,10 @@ urlpatterns = [
 	url(r'^graph/', views.getGraph, name='getGraph'),
 
 	# autocomplete
-	url(r'^topics_autocomplete/', views.getTopicsAutocomplete, name='getTopicsAutocomplete'),
-	url(r'^title_topics_autocomplete/', views.getTitleTopicsAutocomplete, name='getTitleTopicsAutocomplete'),
-	url(r'^persons_autocomplete/', views.getPersonsAutocomplete, name='getPersonsAutocomplete'),
+	url(r'^autocomplete/topics/', views.getTopicsAutocomplete, name='getTopicsAutocomplete'),
+	url(r'^autocomplete/title_topics/', views.getTitleTopicsAutocomplete, name='getTitleTopicsAutocomplete'),
+	url(r'^autocomplete/persons/', views.getPersonsAutocomplete, name='getPersonsAutocomplete'),
+	url(r'^autocomplete/socken/', views.getSockenAutocomplete, name='getSockenAutocomplete'),
 
 	url(r'^document/(?P<documentId>[^/]+)/$', views.getDocument, name='getDocument'),
 ]
