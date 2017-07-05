@@ -56,12 +56,20 @@ def createQuery(request):
 						'should': [
 							{
 								'match_phrase': {
-									'text': term.replace('"', '')
+									'text': {
+										'query': term.replace('"', '')
+									}
 								}
 							}
 						]
 					}
-				};
+				}
+				if ('search_options' in request.GET):
+					if (request.GET['search_options'] == 'nearer'):
+						matchObj['bool']['should'][0]['match_phrase']['text']['slop'] = 1
+					if (request.GET['search_options'] == 'near'):
+						matchObj['bool']['should'][0]['match_phrase']['text']['slop'] = 3
+
 			else:
 				matchObj = {
 					'bool': {
@@ -81,7 +89,7 @@ def createQuery(request):
 							}
 						]
 					}
-				};
+				}
 
 			query['bool']['must'].append(matchObj)
 
@@ -662,7 +670,7 @@ def getTopics(request):
 			'topic': item['key'],
 			'doc_count': item['parent_doc_count']['doc_count'],
 			'terms': item['doc_count']
-		};
+		}
 
 	def jsonFormat(json):
 		return list(map(itemFormat, json['aggregations']['data']['data']['data']['buckets']))
@@ -721,7 +729,7 @@ def getTopicsAutocomplete(request):
 			'topic': item['key'],
 			'doc_count': item['parent_doc_count']['doc_count'],
 			'terms': item['doc_count']
-		};
+		}
 
 	def jsonFormat(json):
 		return list(map(itemFormat, json['aggregations']['data']['data']['data']['data']['buckets']))
@@ -787,7 +795,7 @@ def getTitleTopics(request):
 			'topic': item['key'],
 			'doc_count': item['parent_doc_count']['doc_count'],
 			'terms': item['doc_count']
-		};
+		}
 
 	def jsonFormat(json):
 		return list(map(itemFormat, json['aggregations']['data']['data']['data']['buckets']))
@@ -869,7 +877,7 @@ def getTitleTopicsAutocomplete(request):
 			'topic': item['key'],
 			'doc_count': item['parent_doc_count']['doc_count'],
 			'terms': item['doc_count']
-		};
+		}
 
 	def jsonFormat(json):
 		return list(map(itemFormat, json['aggregations']['data']['data']['data']['data']['buckets']))
@@ -935,7 +943,7 @@ def getCollectionYears(request):
 			'year': item['key_as_string'],
 			'timestamp': item['key'],
 			'doc_count': item['doc_count']
-		};
+		}
 
 	def jsonFormat(json):
 		return list(map(itemFormat, json['aggregations']['data']['data']['buckets']))
@@ -975,7 +983,7 @@ def getBirthYears(request):
 			'timestamp': item['key'],
 			'doc_count': item['doc_count'],
 			'person_count': item['person_count']['value']
-		};
+		}
 
 	def jsonFormat(json):
 		return {
@@ -1125,7 +1133,7 @@ def getTypes(request):
 		return {
 			'type': item['key'],
 			'doc_count': item['doc_count']
-		};
+		}
 
 	def jsonFormat(json):
 		return list(map(itemFormat, json['aggregations']['data']['buckets']))
@@ -1160,7 +1168,7 @@ def getSocken(request):
 			'lm_id': item['lm_id']['buckets'][0]['key'] if len(item['lm_id']['buckets']) > 0 else '',
 			'location': Geohash.decode(item['location']['buckets'][0]['key']),
 			'doc_count': item['data']['buckets'][0]['doc_count']
-		};
+		}
 
 	def jsonFormat(json):
 		return list(map(itemFormat, json['aggregations']['data']['data']['buckets']))
@@ -1255,7 +1263,7 @@ def getSockenAutocomplete(request):
 			'lm_id': item['lm_id']['buckets'][0]['key'] if len(item['lm_id']['buckets']) > 0 else '',
 			'location': Geohash.decode(item['location']['buckets'][0]['key']),
 			'doc_count': item['data']['buckets'][0]['doc_count']
-		};
+		}
 
 	def jsonFormat(json):
 		return list(map(itemFormat, json['aggregations']['data']['data']['data']['buckets']))
@@ -1361,7 +1369,7 @@ def getHarad(request):
 			'landskap': item['landskap']['buckets'][0]['key'],
 			'lan': item['lan']['buckets'][0]['key'],
 			'doc_count': item['data']['buckets'][0]['doc_count']
-		};
+		}
 
 	def jsonFormat(json):
 		return list(map(itemFormat, json['aggregations']['data']['data']['buckets']))
@@ -1426,7 +1434,7 @@ def getLandskap(request):
 		return {
 			'name': item['key'],
 			'doc_count': item['doc_count']
-		};
+		}
 
 	def jsonFormat(json):
 		return list(map(itemFormat, json['aggregations']['data']['data']['buckets']))
@@ -1459,7 +1467,7 @@ def getCounty(request):
 		return {
 			'name': item['key'],
 			'doc_count': item['doc_count']
-		};
+		}
 
 	def jsonFormat(json):
 		return list(map(itemFormat, json['aggregations']['data']['data']['buckets']))
@@ -1836,7 +1844,7 @@ def getGender(request):
 			'gender': item['key'],
 			'doc_count': item['doc_count'],
 			'person_count': item['person_count']['value']
-		};
+		}
 
 	def jsonFormat(json):
 		return {
@@ -2030,8 +2038,8 @@ def getGraph(request):
 		'vertices': [
 			{
 				'field': 'topics_graph',
-				'size': 50,
-				'min_doc_count': 5
+				'size': 100,
+				'min_doc_count': 2
 			}
 		],
 		'connections': {
@@ -2042,6 +2050,11 @@ def getGraph(request):
 			]
 		}
 	}
+
+	# Flera resultat (men inte så bra):
+	# sample_size 50000
+	# size 550
+	# min_doc_count 2
 
 	esQueryResponse = esQuery(request, query, jsonFormat, '/_xpack/_graph/_explore')
 	return esQueryResponse
