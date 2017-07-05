@@ -1,4 +1,4 @@
-from django.http import JsonResponse
+	from django.http import JsonResponse
 import requests, json, sys, Geohash
 from requests.auth import HTTPBasicAuth
 
@@ -2051,7 +2051,7 @@ def getGraph(request):
 		}
 	}
 
-	# Flera resultat (men inte så bra):
+	# Flera resultat (men inte sa bra):
 	# sample_size 50000
 	# size 550
 	# min_doc_count 2
