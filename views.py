@@ -1,4 +1,4 @@
-	from django.http import JsonResponse
+from django.http import JsonResponse
 import requests, json, sys, Geohash
 from requests.auth import HTTPBasicAuth
 
