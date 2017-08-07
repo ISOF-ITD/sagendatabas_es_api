@@ -11,8 +11,8 @@ def createQuery(request):
 	#	kategori X
 	#	typ X
 	#	institut ?
-	#	topic X
-	#	title_topic X
+	#	terms X
+	#	title_terms X
 
 	#	insamlingsar (fran och till) X
 	#	insamlingsort (sockennamn, socken-id, harad, landskap, bounding box, ...)
@@ -494,8 +494,8 @@ def createQuery(request):
 		query['bool']['must'].append(personShouldBool)
 
 
-	if ('topics' in request.GET):
-		topicsShouldBool = {
+	if ('terms' in request.GET):
+		termsShouldBool = {
 			'nested': {
 				'path': 'topics',
 				'query': {
@@ -506,10 +506,10 @@ def createQuery(request):
 			}
 		}
 
-		topicStrings = request.GET['topics'].split(',')
+		termstrings = request.GET['terms'].split(',')
 
-		for topic in topicStrings:
-			topicsShouldBool['nested']['query']['bool']['must'].append({
+		for topic in termstrings:
+			termsShouldBool['nested']['query']['bool']['must'].append({
 				'nested': {
 					'path': 'topics.terms',
 					'query': {
@@ -537,10 +537,10 @@ def createQuery(request):
 				}
 			})
 
-		query['bool']['must'].append(topicsShouldBool)
+		query['bool']['must'].append(termsShouldBool)
 
-	if ('title_topics' in request.GET):
-		titleTopicsShouldBool = {
+	if ('title_terms' in request.GET):
+		titleTermsShouldBool = {
 			'nested': {
 				'path': 'title_topics',
 				'query': {
@@ -551,10 +551,10 @@ def createQuery(request):
 			}
 		}
 
-		titleTopicStrings = request.GET['title_topics'].split(',')
+		titleTermsStrings = request.GET['title_terms'].split(',')
 
-		for topic in titleTopicStrings:
-			titleTopicsShouldBool['nested']['query']['bool']['must'].append({
+		for topic in titleTermsStrings:
+			titleTermsShouldBool['nested']['query']['bool']['must'].append({
 				'nested': {
 					'path': 'title_topics.terms',
 					'query': {
@@ -582,7 +582,7 @@ def createQuery(request):
 				}
 			})
 
-		query['bool']['must'].append(titleTopicsShouldBool)
+		query['bool']['must'].append(titleTermsShouldBool)
 
 	if ('similar' in request.GET):
 		query['bool']['must'].append({
@@ -664,10 +664,10 @@ def getDocument(request, documentId):
 
 	return jsonResponse
 
-def getTopics(request):
+def getTerms(request):
 	def itemFormat(item):
 		return {
-			'topic': item['key'],
+			'term': item['key'],
 			'doc_count': item['parent_doc_count']['doc_count'],
 			'terms': item['doc_count']
 		}
@@ -723,10 +723,10 @@ def getTopics(request):
 	esQueryResponse = esQuery(request, query, jsonFormat)
 	return esQueryResponse
 
-def getTopicsAutocomplete(request):
+def getTermsAutocomplete(request):
 	def itemFormat(item):
 		return {
-			'topic': item['key'],
+			'term': item['key'],
 			'doc_count': item['parent_doc_count']['doc_count'],
 			'terms': item['doc_count']
 		}
@@ -789,10 +789,10 @@ def getTopicsAutocomplete(request):
 	esQueryResponse = esQuery(request, query, jsonFormat)
 	return esQueryResponse
 
-def getTitleTopics(request):
+def getTitleTerms(request):
 	def itemFormat(item):
 		return {
-			'topic': item['key'],
+			'term': item['key'],
 			'doc_count': item['parent_doc_count']['doc_count'],
 			'terms': item['doc_count']
 		}
@@ -871,10 +871,10 @@ def getTitleTopics(request):
 	esQueryResponse = esQuery(request, query, jsonFormat)
 	return esQueryResponse
 
-def getTitleTopicsAutocomplete(request):
+def getTitleTermsAutocomplete(request):
 	def itemFormat(item):
 		return {
-			'topic': item['key'],
+			'term': item['key'],
 			'doc_count': item['parent_doc_count']['doc_count'],
 			'terms': item['doc_count']
 		}

@@ -11,7 +11,7 @@ urlpatterns = [
 
 	#	kategorier: agg
 	#	socken: agg
-	#	topics: agg
+	#	terms: agg
 	#	kon: agg
 	#	insamlingsar: agg
 	#	fodelsear: agg
@@ -20,11 +20,11 @@ urlpatterns = [
 	#	documents: list
 	url(r'^documents/', views.getDocuments, name='getDocuments'),
 
-	# aggregate topics
-	url(r'^topics/', views.getTopics, name='getTopics'),
+	# aggregate terms
+	url(r'^terms/', views.getTerms, name='getTerms'),
 
-	# aggregate title topics
-	url(r'^title_topics/', views.getTitleTopics, name='getTitleTopics'),
+	# aggregate title terms
+	url(r'^title_terms/', views.getTitleTerms, name='getTitleTerms'),
 
 	# aggregate upptackningsar
 	url(r'^collection_years/', views.getCollectionYears, name='getCollectionYears'),
@@ -75,8 +75,8 @@ urlpatterns = [
 	url(r'^graph/', views.getGraph, name='getGraph'),
 
 	# autocomplete
-	url(r'^autocomplete/topics/', views.getTopicsAutocomplete, name='getTopicsAutocomplete'),
-	url(r'^autocomplete/title_topics/', views.getTitleTopicsAutocomplete, name='getTitleTopicsAutocomplete'),
+	url(r'^autocomplete/terms/', views.getTermsAutocomplete, name='getTermsAutocomplete'),
+	url(r'^autocomplete/title_terms/', views.getTitleTermsAutocomplete, name='getTitleTermsAutocomplete'),
 	url(r'^autocomplete/persons/', views.getPersonsAutocomplete, name='getPersonsAutocomplete'),
 	url(r'^autocomplete/socken/', views.getSockenAutocomplete, name='getSockenAutocomplete'),
 
