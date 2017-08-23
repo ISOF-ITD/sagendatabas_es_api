@@ -220,7 +220,7 @@ def createQuery(request):
 						'must': [
 							{
 								'match': {
-									'persons.name_analyzed': request.GET['person']
+									'persons.name_analysed': request.GET['person']
 								}
 							}
 						]
