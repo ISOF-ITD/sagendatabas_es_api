@@ -1,8 +1,9 @@
 from django.http import JsonResponse
-import requests, json, sys, Geohash
+import requests, json, sys
 from requests.auth import HTTPBasicAuth
 
 import es_config
+import geohash
 
 def createQuery(request):
 	# Parameters:
@@ -1166,7 +1167,7 @@ def getSocken(request):
 			'landskap': item['landskap']['buckets'][0]['key'],
 			'lan': item['lan']['buckets'][0]['key'],
 			'lm_id': item['lm_id']['buckets'][0]['key'] if len(item['lm_id']['buckets']) > 0 else '',
-			'location': Geohash.decode(item['location']['buckets'][0]['key']),
+			'location': geohash.decode(item['location']['buckets'][0]['key']),
 			'doc_count': item['data']['buckets'][0]['doc_count']
 		}
 
@@ -1261,7 +1262,7 @@ def getSockenAutocomplete(request):
 			'landskap': item['landskap']['buckets'][0]['key'],
 			'lan': item['lan']['buckets'][0]['key'],
 			'lm_id': item['lm_id']['buckets'][0]['key'] if len(item['lm_id']['buckets']) > 0 else '',
-			'location': Geohash.decode(item['location']['buckets'][0]['key']),
+			'location': geohash.decode(item['location']['buckets'][0]['key']),
 			'doc_count': item['data']['buckets'][0]['doc_count']
 		}
 
