@@ -1186,7 +1186,11 @@ def getSocken(request, sockenId = None):
 		}
 
 	def jsonFormat(json):
-		return list(map(itemFormat, json['aggregations']['data']['data']['buckets']))
+		if sockenId is not None:
+			socken = [item for item in map(itemFormat, json['aggregations']['data']['data']['buckets']) if item.id == sockenId]
+			return list(socken)
+		else:
+			return list(map(itemFormat, json['aggregations']['data']['data']['buckets']))
 
 	if sockenId is not None:
 		queryObject = {
