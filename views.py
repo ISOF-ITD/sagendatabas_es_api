@@ -1172,7 +1172,7 @@ def getTypes(request):
 	esQueryResponse = esQuery(request, query, jsonFormat)
 	return esQueryResponse
 
-def getSocken(request):
+def getSocken(request, sockenId):
 	def itemFormat(item):
 		return {
 			'id': item['key'],
@@ -1187,6 +1187,32 @@ def getSocken(request):
 
 	def jsonFormat(json):
 		return list(map(itemFormat, json['aggregations']['data']['data']['buckets']))
+
+	if sockenId is not None:
+		esQuery = {
+			'bool': {
+				'must': [
+					{
+						'nested': {
+						'path': 'places',
+						'query': {
+							'bool': {
+								'should': [
+									{
+										'match': {
+											'places.id': sockenId
+										}
+									}
+								]
+							}
+						}
+					}
+				}
+			]
+		}
+	}
+	else:
+		esQuery = createQuery(request)
 
 	query = {
 		'query': createQuery(request),
