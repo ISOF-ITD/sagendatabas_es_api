@@ -38,7 +38,7 @@ urlpatterns = [
 	# aggregate kategorier
 	url(r'^types/', views.getTypes, name='getTypes'),
 
-	url(r'^socken/(?P<sockenId>[^/]+)/$', views.getSocken, name='getSocken'),
+	url(r'^get_socken/(?P<sockenId>[^/]+)/$', views.getSocken, name='getSocken'),
 	# aggregate socken
 	url(r'^socken/', views.getSocken, name='getSocken'),
 
