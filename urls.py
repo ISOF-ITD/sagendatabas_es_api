@@ -38,6 +38,7 @@ urlpatterns = [
 	# aggregate kategorier
 	url(r'^types/', views.getTypes, name='getTypes'),
 
+	url(r'^socken/(?P<sockenId>[^/]+)/$', views.getSocken, name='getSocken'),
 	# aggregate socken
 	url(r'^socken/', views.getSocken, name='getSocken'),
 
@@ -80,6 +81,5 @@ urlpatterns = [
 	url(r'^autocomplete/persons/', views.getPersonsAutocomplete, name='getPersonsAutocomplete'),
 	url(r'^autocomplete/socken/', views.getSockenAutocomplete, name='getSockenAutocomplete'),
 
-	url(r'^socken/(?P<sockenId>[^/]+)/$', views.getSocken, name='getSocken'),
 	url(r'^document/(?P<documentId>[^/]+)/$', views.getDocument, name='getDocument'),
 ]
