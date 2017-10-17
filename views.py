@@ -630,6 +630,20 @@ def createQuery(request):
 			}
 		})
 
+	if ('only_categories' in request.GET and request.GET['only_categories'] == True):
+		query['bool']['must'].append({
+			'exists': {
+				'field': 'taxonomy.category'
+			}
+		})
+
+	if ('country' in request.GET):
+		query['bool']['must'].append({
+			'term': {
+				'archive.country': request.GET['country'].lower()
+			}
+		})
+
 	return query
 
 def esQuery(request, query, formatFunc = None, apiUrl = None):
