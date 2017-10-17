@@ -630,7 +630,7 @@ def createQuery(request):
 			}
 		})
 
-	if ('only_categories' in request.GET and request.GET['only_categories'].lowert() == 'true'):
+	if ('only_categories' in request.GET and request.GET['only_categories'].lower() == 'true'):
 		query['bool']['must'].append({
 			'exists': {
 				'field': 'taxonomy.category'
