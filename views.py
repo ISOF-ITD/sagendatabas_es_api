@@ -1189,7 +1189,7 @@ def getSocken(request, sockenId = None):
 		return list(map(itemFormat, json['aggregations']['data']['data']['buckets']))
 
 	if sockenId is not None:
-		esQuery = {
+		queryObject = {
 			'bool': {
 				'must': [
 					{
@@ -1212,10 +1212,10 @@ def getSocken(request, sockenId = None):
 		}
 	}
 	else:
-		esQuery = createQuery(request)
+		queryObject = createQuery(request)
 
 	query = {
-		'query': createQuery(request),
+		'query': queryObject,
 		'size': 0,
 		'aggs': {
 			'data': {
