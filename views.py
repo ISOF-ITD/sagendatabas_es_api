@@ -1172,7 +1172,7 @@ def getTypes(request):
 	esQueryResponse = esQuery(request, query, jsonFormat)
 	return esQueryResponse
 
-def getSocken(request, sockenId):
+def getSocken(request, sockenId = None):
 	def itemFormat(item):
 		return {
 			'id': item['key'],
