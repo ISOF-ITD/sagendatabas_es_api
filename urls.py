@@ -38,7 +38,6 @@ urlpatterns = [
 	# aggregate kategorier
 	url(r'^types/', views.getTypes, name='getTypes'),
 
-	url(r'^get_socken/(?P<sockenId>[^/]+)/$', views.getSocken, name='getSocken'),
 	# aggregate socken
 	url(r'^socken/', views.getSocken, name='getSocken'),
 
@@ -55,7 +54,7 @@ urlpatterns = [
 	url(r'^persons/', views.getPersons, name='getPersons'),
 
 	# enskild person
-	url(r'^person/(?P<personId>[^/]+)/$', views.getPerson, name='getPerson'),
+	#url(r'^person/(?P<personId>[^/]+)/$', views.getPerson, name='getPerson'),
 
 	# aggregate informants
 	url(r'^informants/', views.getInformants, name='getInformants'),
@@ -81,5 +80,7 @@ urlpatterns = [
 	url(r'^autocomplete/persons/', views.getPersonsAutocomplete, name='getPersonsAutocomplete'),
 	url(r'^autocomplete/socken/', views.getSockenAutocomplete, name='getSockenAutocomplete'),
 
+	url(r'^get_socken/(?P<sockenId>[^/]+)/$', views.getSocken, name='getSocken'),
+	url(r'^get_person/(?P<personId>[^/]+)/$', views.getPersons, name='getPersons'),
 	url(r'^document/(?P<documentId>[^/]+)/$', views.getDocument, name='getDocument'),
 ]

@@ -163,6 +163,44 @@ def createQuery(request):
 		query['bool']['must'].append(sockenShouldBool)
 
 
+	if ('place' in request.GET):
+		placeShouldBool = {
+			'nested': {
+				'path': 'places',
+				'query': {
+					'bool': {
+						'should': []
+					}
+				}
+			}
+		}
+
+		placeShouldBool['nested']['query']['bool']['should'].append({
+			'wildcard': {
+				'places.name': request.GET['place']+'*'
+			}
+		})
+
+		placeShouldBool['nested']['query']['bool']['should'].append({
+			'wildcard': {
+				'places.harad': request.GET['place']+'*'
+			}
+		})
+
+		placeShouldBool['nested']['query']['bool']['should'].append({
+			'wildcard': {
+				'places.landskap': request.GET['place']+'*'
+			}
+		})
+
+		placeShouldBool['nested']['query']['bool']['should'].append({
+			'wildcard': {
+				'places.county': request.GET['place']+'*'
+			}
+		})
+
+		query['bool']['must'].append(placeShouldBool)
+
 
 	if ('socken' in request.GET):
 		sockenShouldBool = {
@@ -180,8 +218,8 @@ def createQuery(request):
 
 		for socken in sockenNames:
 			sockenShouldBool['nested']['query']['bool']['should'].append({
-					'match': {
-						'places.name': socken
+					'wildcard': {
+						'places.name': socken+'*'
 					}
 			})
 
@@ -221,7 +259,7 @@ def createQuery(request):
 						'must': [
 							{
 								'match': {
-									'persons.name_analysed': request.GET['person']
+									'persons.name': request.GET['person']
 								}
 							}
 						]
@@ -249,7 +287,7 @@ def createQuery(request):
 						'must': [
 							{
 								'match': {
-									'persons.name': request.GET['person_exact']
+									'persons.name.raw': request.GET['person_exact']
 								}
 							}
 						]
@@ -268,6 +306,79 @@ def createQuery(request):
 		query['bool']['must'].append(personShouldBool)
 
 
+	if ('person_id' in request.GET):
+		personShouldBool = {
+			'nested': {
+				'path': 'persons',
+				'query': {
+					'bool': {
+						'must': [
+							{
+								'match': {
+									'persons.id': request.GET['person_id']
+								}
+							}
+						]
+					}
+				}
+			}
+		}
+
+		query['bool']['must'].append(personShouldBool)
+
+
+	if ('collector_id' in request.GET):
+		personShouldBool = {
+			'nested': {
+				'path': 'persons',
+				'query': {
+					'bool': {
+						'must': [
+							{
+								'match': {
+									'persons.id': request.GET['collector_id']
+								}
+							},
+							{
+								'match': {
+									'persons.relation': 'collector'
+								}
+							}
+						]
+					}
+				}
+			}
+		}
+
+		query['bool']['must'].append(personShouldBool)
+
+
+	if ('informant_id' in request.GET):
+		personShouldBool = {
+			'nested': {
+				'path': 'persons',
+				'query': {
+					'bool': {
+						'must': [
+							{
+								'match': {
+									'persons.id': request.GET['informant_id']
+								}
+							},
+							{
+								'match': {
+									'persons.relation': 'informant'
+								}
+							}
+						]
+					}
+				}
+			}
+		}
+
+		query['bool']['must'].append(personShouldBool)
+
+
 	if ('collector' in request.GET):
 		personShouldBool = {
 			'nested': {
@@ -277,7 +388,7 @@ def createQuery(request):
 						'must': [
 							{
 								'match': {
-									'persons.name': request.GET['collector']
+									'persons.name.raw': request.GET['collector']
 								}
 							},
 							{
@@ -303,7 +414,7 @@ def createQuery(request):
 						'must': [
 							{
 								'match': {
-									'persons.name': request.GET['informant']
+									'persons.name.raw': request.GET['informant']
 								}
 							},
 							{
@@ -1540,7 +1651,7 @@ def getCounty(request):
 	esQueryResponse = esQuery(request, query, jsonFormat)
 	return esQueryResponse
 
-def getPersons(request):
+def getPersons(request, personId = None):
 	def itemFormat(item):
 		retObj = {
 			'id': item['key'],
@@ -1560,10 +1671,40 @@ def getPersons(request):
 		return retObj
 
 	def jsonFormat(json):
-		return list(map(itemFormat, json['aggregations']['data']['data']['buckets']))
+		if personId is not None:
+			person = [item for item in map(itemFormat, json['aggregations']['data']['data']['buckets']) if item['id'] == personId]
+			return person[0]
+		else:
+			return list(map(itemFormat, json['aggregations']['data']['data']['buckets']))
+
+	if personId is not None:
+		queryObject = {
+			'bool': {
+				'must': [
+					{
+						'nested': {
+						'path': 'persons',
+						'query': {
+							'bool': {
+								'should': [
+									{
+										'match': {
+											'persons.id': personId
+										}
+									}
+								]
+							}
+						}
+					}
+				}
+			]
+		}
+	}
+	else:
+		queryObject = createQuery(request)
 
 	query = {
-		'query': createQuery(request),
+		'query': queryObject,
 		'size': 0,
 		'aggs': {
 			'data': {
@@ -1579,7 +1720,7 @@ def getPersons(request):
 						'aggs': {
 							'data': {
 								'terms': {
-									'field': 'persons.name',
+									'field': 'persons.name.raw',
 									'size': 1,
 									'order': {
 										'_term': 'asc'
@@ -1631,11 +1772,13 @@ def getPersons(request):
 		}
 	}
 
+	print(json.dumps(query))
+
 	esQueryResponse = esQuery(request, query, jsonFormat)
 	return esQueryResponse
 
 
-def getPerson(request, personId):
+def _getPerson(request, personId):
 	query = {
 		'query': {
 			'filter': {
@@ -1703,7 +1846,7 @@ def getPersonsAutocomplete(request):
 						'aggs': {
 							'data': {
 								'terms': {
-									'field': 'persons.name',
+									'field': 'persons.name.raw',
 									'size': 1,
 									'order': {
 										'_term': 'asc'
@@ -1817,7 +1960,7 @@ def getRelatedPersons(request, relation):
 								'aggs': {
 									'data': {
 										'terms': {
-											'field': 'persons.name',
+											'field': 'persons.name.raw',
 											'size': 1,
 											'order': {
 												'_term': 'asc'
