@@ -2019,11 +2019,11 @@ def getRelatedPersons(request, relation):
 
 
 def getInformants(request):
-	return getRelatedPersons(request, 'informant')
+	return getRelatedPersons(request, 'i')
 
 
 def getCollectors(request):
-	return getRelatedPersons(request, 'collector')
+	return getRelatedPersons(request, 'i')
 
 
 def getGender(request):
@@ -2053,7 +2053,7 @@ def getGender(request):
 					'data': {
 						'filter': {
 							'term': {
-								'persons.relation': 'collector'
+								'persons.relation': 'c'
 							}
 						},
 						'aggs': {
@@ -2085,7 +2085,7 @@ def getGender(request):
 					'data': {
 						'filter': {
 							'term': {
-								'persons.relation': 'informant'
+								'persons.relation': 'i'
 							}
 						},
 						'aggs': {
