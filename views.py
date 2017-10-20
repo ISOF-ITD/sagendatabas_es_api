@@ -341,7 +341,7 @@ def createQuery(request):
 							},
 							{
 								'match': {
-									'persons.relation': 'collector'
+									'persons.relation': 'c'
 								}
 							}
 						]
@@ -367,7 +367,7 @@ def createQuery(request):
 							},
 							{
 								'match': {
-									'persons.relation': 'informant'
+									'persons.relation': 'i'
 								}
 							}
 						]
@@ -393,7 +393,7 @@ def createQuery(request):
 							},
 							{
 								'match': {
-									'persons.relation': 'collector'
+									'persons.relation': 'c'
 								}
 							}
 						]
@@ -419,7 +419,7 @@ def createQuery(request):
 							},
 							{
 								'match': {
-									'persons.relation': 'informant'
+									'persons.relation': 'i'
 								}
 							}
 						]
@@ -445,7 +445,7 @@ def createQuery(request):
 							},
 							{
 								'match': {
-									'persons.relation': 'collector'
+									'persons.relation': 'c'
 								}
 							}
 						]
@@ -471,7 +471,7 @@ def createQuery(request):
 							},
 							{
 								'match': {
-									'persons.relation': 'informant'
+									'persons.relation': 'i'
 								}
 							}
 						]
@@ -563,7 +563,7 @@ def createQuery(request):
 							},
 							{
 								'match': {
-									'persons.relation': 'collector'
+									'persons.relation': 'c'
 								}
 							}
 						]
@@ -594,7 +594,7 @@ def createQuery(request):
 							},
 							{
 								'match': {
-									'persons.relation': 'informant'
+									'persons.relation': 'i'
 								}
 							}
 						]
@@ -1130,7 +1130,7 @@ def getBirthYears(request):
 					'data': {
 						'filter': {
 							'term': {
-								'persons.relation': 'collector'
+								'persons.relation': 'c'
 							}
 						},
 						'aggs': {
@@ -1160,7 +1160,7 @@ def getBirthYears(request):
 					'data': {
 						'filter': {
 							'term': {
-								'persons.relation': 'informant'
+								'persons.relation': 'i'
 							}
 						},
 						'aggs': {
