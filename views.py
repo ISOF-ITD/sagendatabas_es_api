@@ -2023,7 +2023,7 @@ def getInformants(request):
 
 
 def getCollectors(request):
-	return getRelatedPersons(request, 'i')
+	return getRelatedPersons(request, 'c')
 
 
 def getGender(request):
