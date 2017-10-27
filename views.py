@@ -1,6 +1,7 @@
 from django.http import JsonResponse
 import requests, json, sys
 from requests.auth import HTTPBasicAuth
+from random import randint
 
 import es_config
 import geohash
@@ -137,6 +138,24 @@ def createQuery(request):
 				}
 			})
 		query['bool']['must'].append(typeShouldBool)
+
+
+	if ('documents' in request.GET):
+		docIdShouldBool = {
+			'bool': {
+				'should': []
+			}
+		}
+
+		documentIds = request.GET['documents'].split(',')
+
+		for docId in documentIds:
+			docIdShouldBool['bool']['should'].append({
+				'match': {
+					'_id': docId
+				}
+			})
+		query['bool']['must'].append(docIdShouldBool)
 
 
 	if ('socken_id' in request.GET):
@@ -789,6 +808,23 @@ def getDocument(request, documentId):
 	jsonResponse['Access-Control-Allow-Origin'] = '*'
 
 	return jsonResponse
+
+
+def getRandomDocument(request):
+	query = {
+		'size': 1,
+		'query': {
+			'function_score': {
+				'random_score': {
+					'seed': randint(0, 1000000)
+				},
+				'query': createQuery(request)
+			}
+		}
+	}
+
+	esQueryResponse = esQuery(request, query)
+	return esQueryResponse
 
 def getTerms(request):
 	def itemFormat(item):
