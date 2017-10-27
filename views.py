@@ -140,6 +140,14 @@ def createQuery(request):
 		query['bool']['must'].append(typeShouldBool)
 
 
+	if ('has_metadata' in request.GET):
+		query['bool']['must'].append({
+			'match_phrase': {
+				'metadata.type': request.GET['has_metadata']
+			}
+		})
+
+
 	if ('documents' in request.GET):
 		docIdShouldBool = {
 			'bool': {
@@ -1319,6 +1327,25 @@ def getTypes(request):
 	esQueryResponse = esQuery(request, query, jsonFormat)
 	return esQueryResponse
 
+def getSockenMetadata(request):
+	print(request.get_full_path())
+	print(request.path)
+	print(request.META['HTTP_HOST'])
+
+	sockenUrl = 'http://'+request.META['HTTP_HOST']+request.get_full_path().replace('socken_metadata', 'socken')
+
+	allSockenResponse = requests.get(sockenUrl, None, verify=False).json()
+	metadataSockenResponse = requests.get(sockenUrl+'&has_metadata='+request.GET['metadata_field'], None, verify=False).json()
+
+	print(allSockenResponse)
+
+	for socken in allSockenResponse['data']:
+		print(socken)
+		socken['has_metadata'] = any(s['id'] == socken['id'] for s in metadataSockenResponse['data'])
+
+	return JsonResponse(allSockenResponse)
+
+
 def getSocken(request, sockenId = None):
 	def itemFormat(item):
 		return {
@@ -1438,8 +1465,6 @@ def getSocken(request, sockenId = None):
 		}
 	}
 
-	print(json.dumps(query))
-
 	esQueryResponse = esQuery(request, query, jsonFormat)
 	return esQueryResponse
 
@@ -1546,8 +1571,6 @@ def getSockenAutocomplete(request):
 			}
 		}
 	}
-
-	print(json.dumps(query))
 
 	esQueryResponse = esQuery(request, query, jsonFormat)
 	return esQueryResponse
@@ -1808,8 +1831,6 @@ def getPersons(request, personId = None):
 		}
 	}
 
-	print(json.dumps(query))
-
 	esQueryResponse = esQuery(request, query, jsonFormat)
 	return esQueryResponse
 
@@ -1824,8 +1845,6 @@ def _getPerson(request, personId):
 			}
 		}
 	}
-
-	print(query)
 
 	esQueryResponse = esQuery(request, query)
 	return esQueryResponse
@@ -2241,8 +2260,6 @@ def getDocuments(request):
 		sort.append(sortObj)
 
 		query['sort'] = sort
-
-	print(json.dumps(query))
 
 	esQueryResponse = esQuery(request, query, jsonFormat)
 	return esQueryResponse

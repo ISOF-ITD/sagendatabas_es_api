@@ -41,6 +41,9 @@ urlpatterns = [
 	# aggregate socken
 	url(r'^socken/', views.getSocken, name='getSocken'),
 
+	# aggregate socken för matkartan
+	url(r'^socken_metadata/', views.getSockenMetadata, name='getSockenMetadata'),
+
 	# aggregate harad
 	url(r'^harad/', views.getHarad, name='getHarad'),
 
