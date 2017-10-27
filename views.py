@@ -104,6 +104,14 @@ def createQuery(request):
 		})
 
 
+	if ('has_metadata' in request.GET):
+		query['bool']['must'].append({
+			'match': {
+				'metadata.type': request.GET['has_metadata']
+			}
+		})
+
+
 	if ('category' in request.GET):
 		categoryShouldBool = {
 			'bool': {
@@ -138,14 +146,6 @@ def createQuery(request):
 				}
 			})
 		query['bool']['must'].append(typeShouldBool)
-
-
-	if ('has_metadata' in request.GET):
-		query['bool']['must'].append({
-			'match_phrase': {
-				'metadata.type': request.GET['has_metadata']
-			}
-		})
 
 
 	if ('documents' in request.GET):
@@ -784,7 +784,7 @@ def createQuery(request):
 
 	return query
 
-def esQuery(request, query, formatFunc = None, apiUrl = None):
+def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False):
 	esResponse = requests.get('https://'+es_config.user+':'+es_config.password+'@'+es_config.host+'/'+es_config.index_name+(apiUrl if apiUrl else '/legend/_search'), data=json.dumps(query), verify=False)
 	
 	responseData = esResponse.json()
@@ -804,10 +804,13 @@ def esQuery(request, query, formatFunc = None, apiUrl = None):
 	if ('showQuery' in request.GET) and request.GET['showQuery']:
 		outputData['metadata']['query'] = query
 
-	jsonResponse = JsonResponse(outputData)
-	jsonResponse['Access-Control-Allow-Origin'] = '*'
+	if returnRaw:
+		return outputData
+	else:
+		jsonResponse = JsonResponse(outputData)
+		jsonResponse['Access-Control-Allow-Origin'] = '*'
 
-	return jsonResponse
+		return jsonResponse
 
 def getDocument(request, documentId):
 	esResponse = requests.get('https://'+es_config.user+':'+es_config.password+'@'+es_config.host+'/'+es_config.index_name+'/legend/'+documentId, verify=False)
@@ -1327,24 +1330,6 @@ def getTypes(request):
 	esQueryResponse = esQuery(request, query, jsonFormat)
 	return esQueryResponse
 
-def getSockenMetadata(request):
-	print(request.get_full_path())
-	print(request.path)
-	print(request.META['HTTP_HOST'])
-
-	sockenUrl = 'http://'+request.META['HTTP_HOST']+request.get_full_path().replace('socken_metadata', 'socken')
-
-	allSockenResponse = requests.get(sockenUrl, None, verify=False).json()
-	metadataSockenResponse = requests.get(sockenUrl+'&has_metadata='+request.GET['metadata_field'], None, verify=False).json()
-
-	print(allSockenResponse)
-
-	for socken in allSockenResponse['data']:
-		print(socken)
-		socken['has_metadata'] = any(s['id'] == socken['id'] for s in metadataSockenResponse['data'])
-
-	return JsonResponse(allSockenResponse)
-
 
 def getSocken(request, sockenId = None):
 	def itemFormat(item):
@@ -1391,6 +1376,10 @@ def getSocken(request, sockenId = None):
 	}
 	else:
 		queryObject = createQuery(request)
+
+
+	print('queryObject:')
+	print(queryObject)
 
 	query = {
 		'query': queryObject,
@@ -1465,8 +1454,35 @@ def getSocken(request, sockenId = None):
 		}
 	}
 
-	esQueryResponse = esQuery(request, query, jsonFormat)
-	return esQueryResponse
+	esQueryResponse = esQuery(request, query, jsonFormat, None, True)
+
+	if ('mark_metadata' in request.GET):
+		if not 'bool' in query['query']:
+			query['query'] = {
+				'bool': {
+					'must': []
+				}
+			}
+		query['query']['bool']['must'].append({
+			'match_phrase': {
+				'metadata.type': request.GET['mark_metadata']
+			}
+		})
+		metadataSockenResponse = esQuery(request, query, jsonFormat, None, True)
+
+		sockenJson = esQueryResponse
+		print('sockenJson')
+		print(sockenJson)
+
+		for socken in sockenJson['data']:
+			print(socken)
+			socken['has_metadata'] = any(s['id'] == socken['id'] for s in metadataSockenResponse['data'])
+
+
+	jsonResponse = JsonResponse(esQueryResponse)
+	jsonResponse['Access-Control-Allow-Origin'] = '*'
+
+	return jsonResponse
 
 
 def getSockenAutocomplete(request):
