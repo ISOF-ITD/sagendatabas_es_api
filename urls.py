@@ -74,6 +74,9 @@ urlpatterns = [
 	# graph
 	url(r'^graph/', views.getGraph, name='getGraph'),
 
+	# text highlight interface
+	url(r'^texts/', views.getTexts, name='getTexts'),
+
 	# autocomplete
 	url(r'^autocomplete/terms/', views.getTermsAutocomplete, name='getTermsAutocomplete'),
 	url(r'^autocomplete/title_terms/', views.getTitleTermsAutocomplete, name='getTitleTermsAutocomplete'),

@@ -78,11 +78,6 @@ def createQuery(request):
 						'should': [
 							{
 								'match': {
-									'title': term
-								}
-							},
-							{
-								'match': {
 									'text': {
 										'query': term,
 										'boost': 2
@@ -92,6 +87,13 @@ def createQuery(request):
 						]
 					}
 				}
+
+				if (not 'search_exclude_title' in request.GET or request.GET['search_exclude_title'] == 'false'):
+					matchObj['bool']['should'].append({
+						'match': {
+							'title': term
+						}
+					})
 
 			query['bool']['must'].append(matchObj)
 
@@ -2235,7 +2237,7 @@ def getSimilar(request, documentId):
 			],
 			'fields': {
 				'text': {
-					'fragment_size': 1000
+					'number_of_fragments': 0
 				}
 			}
 		}
@@ -2262,7 +2264,7 @@ def getDocuments(request):
 			],
 			'fields' : {
 				'text' : {
-					'fragment_size': 1000
+					'number_of_fragments': 0
 				}
 			}
 		}
@@ -2278,6 +2280,69 @@ def getDocuments(request):
 		query['sort'] = sort
 
 	esQueryResponse = esQuery(request, query, jsonFormat)
+	return esQueryResponse
+
+
+def getTexts(request):
+	def jsonFormat(json):
+		retList = []
+
+		for hit in json['hits']['hits']:
+			if 'title' in hit['highlight']:
+				for highlight in hit['highlight']['title']:
+					retList.append({
+						'_id': hit['_id'],
+						'title': hit['_source']['title'],
+						'materialtype': hit['_source']['materialtype'],
+						'taxonomy': hit['_source']['taxonomy'],
+						'archive': hit['_source']['archive'],
+						'year': hit['_source']['year'],
+						'source': hit['_source']['source'],
+						'highlight': '<td>'+highlight+'</td>'
+					})
+			if 'text' in hit['highlight']:
+				for highlight in hit['highlight']['text']:
+					retList.append({
+						'_id': hit['_id'],
+						'title': hit['_source']['title'],
+						'materialtype': hit['_source']['materialtype'],
+						'taxonomy': hit['_source']['taxonomy'],
+						'archive': hit['_source']['archive'],
+						'year': hit['_source']['year'],
+						'source': hit['_source']['source'],
+						'highlight': '<td>'+highlight+'</td>'
+					})
+		return retList
+
+	query = {
+		'query': createQuery(request),
+		'size': request.GET['size'] if 'size' in request.GET else 100,
+		'from': request.GET['from'] if 'from' in request.GET else 0,
+		'highlight' : {
+			'pre_tags': [
+				'</td><td class="highlight-cell"><span class="highlight">'
+			],
+			'post_tags': [
+				'</span></td><td>'
+			],
+			'fields' : {
+				'title': {},
+				'text' : {}
+			}
+		}
+	}
+
+	if ('sort' in request.GET):
+		sort = []
+		sortObj = {}
+		sortObj[request.GET['sort']] = request.GET['order'] if 'order' in request.GET else 'asc'
+
+		sort.append(sortObj)
+
+		query['sort'] = sort
+
+	esQueryResponse = esQuery(request, query, jsonFormat)
+
 	return esQueryResponse
 
 
