@@ -1903,7 +1903,7 @@ def getPersonsAutocomplete(request):
 								'must': [
 									{
 										'regexp': {
-											'persons.name': '(.+?)'+request.GET['search']+'(.+?)'
+											'persons.name.raw': '(.+?)'+request.GET['search']+'(.+?)'
 										}
 									}
 								]
@@ -1912,59 +1912,59 @@ def getPersonsAutocomplete(request):
 						'aggs': {
 							'data': {
 
-						'terms': {
-							'field': 'persons.id',
-							'size': request.GET['count'] if 'count' in request.GET else 10000
-						},
-						'aggs': {
-							'data': {
 								'terms': {
-									'field': 'persons.name.raw',
-									'size': 1,
-									'order': {
-										'_term': 'asc'
-									}
-								}
-							},
-							'birth_year': {
-								'terms': {
-									'field': 'persons.birth_year',
-									'size': 1,
-									'order': {
-										'_term': 'asc'
-									}
-								}
-							},
-							'relation': {
-								'terms': {
-									'field': 'persons.relation',
-									'size': 1,
-									'order': {
-										'_term': 'asc'
-									}
-								}
-							},
-							'home': {
-								'terms': {
-									'field': 'persons.home.id',
-									'size': 10,
-									'order': {
-										'_term': 'asc'
-									}
+									'field': 'persons.id',
+									'size': request.GET['count'] if 'count' in request.GET else 10000
 								},
 								'aggs': {
 									'data': {
 										'terms': {
-											'field': 'persons.home.name',
-											'size': 10,
+											'field': 'persons.name.raw',
+											'size': 1,
 											'order': {
 												'_term': 'asc'
 											}
 										}
+									},
+									'birth_year': {
+										'terms': {
+											'field': 'persons.birth_year',
+											'size': 1,
+											'order': {
+												'_term': 'asc'
+											}
+										}
+									},
+									'relation': {
+										'terms': {
+											'field': 'persons.relation',
+											'size': 1,
+											'order': {
+												'_term': 'asc'
+											}
+										}
+									},
+									'home': {
+										'terms': {
+											'field': 'persons.home.id',
+											'size': 10,
+											'order': {
+												'_term': 'asc'
+											}
+										},
+										'aggs': {
+											'data': {
+												'terms': {
+													'field': 'persons.home.name',
+													'size': 10,
+													'order': {
+														'_term': 'asc'
+													}
+												}
+											}
+										}
 									}
 								}
-							}
-						}
 
 							}
 						}
