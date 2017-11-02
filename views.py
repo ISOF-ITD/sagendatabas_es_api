@@ -2296,7 +2296,7 @@ def getTexts(request):
 						'materialtype': hit['_source']['materialtype'],
 						'taxonomy': hit['_source']['taxonomy'],
 						'archive': hit['_source']['archive'],
-						'year': hit['_source']['year'],
+						'year': hit['_source']['year'] if 'year' in hit['_source'] else '',
 						'source': hit['_source']['source'],
 						'highlight': '<td>'+highlight+'</td>'
 					})
@@ -2308,7 +2308,7 @@ def getTexts(request):
 						'materialtype': hit['_source']['materialtype'],
 						'taxonomy': hit['_source']['taxonomy'],
 						'archive': hit['_source']['archive'],
-						'year': hit['_source']['year'],
+						'year': hit['_source']['year'] if 'year' in hit['_source'] else '',
 						'source': hit['_source']['source'],
 						'highlight': '<td>'+highlight+'</td>'
 					})
