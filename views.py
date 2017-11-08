@@ -2270,6 +2270,18 @@ def getDocuments(request):
 		}
 	}
 
+	if ('mark_metadata' in request.GET):
+		query['query']['bool']['should'] = [
+			{
+				'match': {
+					'metadata.type': {
+						'query': request.GET['mark_metadata'],
+						'boost': 10
+					}
+				}
+			}
+		]
+
 	if ('sort' in request.GET):
 		sort = []
 		sortObj = {}
