@@ -2372,7 +2372,7 @@ def getGraph(request):
 		'vertices': [
 			{
 				'field': 'topics_graph',
-				'size': 100,
+				'size': 160,
 				'min_doc_count': 2
 			}
 		],
