@@ -2366,13 +2366,13 @@ def getGraph(request):
 		'query': createQuery(request),
 		'controls': {
 			'use_significance': True,
-			'sample_size': 20000,
+			'sample_size': int(request.GET['sample_size']) if 'sample_size' in request.GET else 20000,
 			'timeout': 20000
 		},
 		'vertices': [
 			{
 				'field': 'topics_graph',
-				'size': 160,
+				'size': int(request.GET['vertices_size']) if 'vertices_size' in request.GET else 160,
 				'min_doc_count': 2
 			}
 		],
