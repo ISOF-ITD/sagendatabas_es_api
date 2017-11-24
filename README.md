@@ -10,9 +10,9 @@ Koden för API:et finns i `sagenkarta_api/urls.py` och `sagenkarta_api/views.py`
 
 documents/?[params]
 
-topics/?[params]
+terms/?[params]
 
-title_topics/?[params]
+title_terms/?[params]
 
 collection_years/?[params]
 
@@ -23,6 +23,8 @@ categories/?[params]
 types/?[params]
 
 socken/?[params]
+
+get_socken/?[id]
 
 harad/?[params]
 
@@ -38,10 +40,17 @@ gender/?[params]
 
 document/?[id]
 
+random_document/
+
+similar/?[id]
+
+graph/?[params]
+
 ### Autocomplete antop
-topics_autocomplete/?search=[söksträng]
-title_topics_autocomplete/?search=[söksträng]
-persons_autocomplete/?search=[söksträng]
+autocomplete/terms/?search=[söksträng]
+autocomplete/title_terms/?search=[söksträng]
+autocomplete/persons/?search=[söksträng]
+autocomplete/socken/?search=[söksträng]
 
 ## sagenkarta_es_api
 
@@ -57,18 +66,30 @@ Hämtar documenter var `year` är mellan från och till. Exempel: `collection_ye
 Hämtar documenter var ett eller flera eller alla ord förekommer i titel eller text. Exempel: (ett eller flera ord) `search=svart hund`, (alla ord) `search=svart,hund`, (fras sökning, endast i `text` fältet `search="svart hund"`
 - **phrase=[söksträng]**
 Hämtar documenter var fras förekommer i text. Exempel: `phrase=svart hund`
+- **has_metadata=[metadata typ]**
+Hämtar documenter som har speciell typ av metadata. Exempel: `has_metadata=sitevision_url` (hämtar kurerade postar för matkartan).
+- **mark_metadata=[metadata typ]**
+Markerar socknar som är kopplade till textar som har speciell typ av metadata. Funkar bara för socken/.
 - **category=[kategori bokstav]**
 Hämtar documenter som finns i angiven kategori (en eller flera). Exempel: `category=L,H`
 - **type=[type]**
 Hämtar documenter av angiven typ (en eller flera). Exempel: `type=arkiv,tryckt`
+- **documents=[type]**
+Hämtar documenter som har speciella ID.
 - **soken_id=[id]**
 Hämtar documenter samlat in i angiven socken (en eller flera). Exempel: (sägner från Göteborgs stad och Partille) `socken_id=202,243`
 - **socken=[socken namn]**
-Hämtar documenter samlat in i angiven socken, men här letar vi efter namn (etter eller flera, måste vara helt namn med ' sn' i slutet). Exempel: `socken=Fritsla sn`
+Hämtar documenter samlat in i angiven socken, men här letar vi efter namn (wildcard sökning). Exempel: `socken=Fritsla`
+- **landskap=[landskap namn]**
+Hämtar documenter samlat in i angiven landskap. Exempel: `landskap=Värmland`
+- **place=[socken namn]**
+Hämtar documenter samlat in i angiven socken, härad, landskap eller län, sök via namn (wildcard sökning). Exempel: `place=Bolle`
 - **person=[person namn]**
 Hämtar documenter var uppteckare eller informant matchar angivet namn. Exempel: (alla som heter Ragnar eller Nilsson) `person=Ragnar Nilsson`
 - **person_exact=[person namn]**
 Hämtar documenter var uppteckare eller informant matchar angivet helt namn. Exempel: (leter bara efter "Ragnar Nilsson") `person=Ragnar Nilsson`
+- **person_id=[person id]**
+Hämtar documenter var uppteckare eller informant matchar angivet id.
 - **person_relation=[informant,collector]**
 Säger till om `person` eller `person_exact` letar efter uppteckare eller informantar. Exempel: `person_relation=informant`
 - **collector=[person namn]**
