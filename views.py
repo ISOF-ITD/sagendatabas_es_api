@@ -784,6 +784,13 @@ def createQuery(request):
 			}
 		})
 
+	if ('archive' in request.GET):
+		query['bool']['must'].append({
+			'term': {
+				'archive.archive.keyword': request.GET['archive']
+			}
+		})
+
 	return query
 
 def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False):
