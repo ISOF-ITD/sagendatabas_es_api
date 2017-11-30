@@ -72,7 +72,8 @@ urlpatterns = [
 	url(r'^similar/(?P<documentId>[^/]+)/$', views.getSimilar, name='getSimilar'),
 
 	# graph
-	url(r'^graph/', views.getGraph, name='getGraph'),
+	url(r'^terms_graph/', views.getTermsGraph, name='getTermsGraph'),
+	url(r'^persons_graph/', views.getPersonsGraph, name='getPersonsGraph'),
 
 	# text highlight interface
 	url(r'^texts/', views.getTexts, name='getTexts'),

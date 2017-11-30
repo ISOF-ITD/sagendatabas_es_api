@@ -2365,16 +2365,22 @@ def getTexts(request):
 	return esQueryResponse
 
 
-def getGraph(request):
+def getTermsGraph(request):
 	def jsonFormat(json):
 		return json
 
+	queryObject = createQuery(request)
+
 	query = {
-		'query': createQuery(request),
+		'query': queryObject,
 		'controls': {
 			'use_significance': True,
 			'sample_size': int(request.GET['sample_size']) if 'sample_size' in request.GET else 20000,
-			'timeout': 20000
+			'timeout': 20000,
+			'sample_diversity': {
+				'field': 'id',
+				'max_docs_per_value': 500
+			}
 		},
 		'vertices': [
 			{
@@ -2384,18 +2390,54 @@ def getGraph(request):
 			}
 		],
 		'connections': {
+			'query': queryObject if 'query_connections' in request.GET and request.GET['query_connections'] == 'true' else {},
 			'vertices': [
 				{
-					'field': 'topics_graph'
+					'field': 'topics_graph',
+					'size': 10
 				}
 			]
 		}
 	}
 
-	# Flera resultat (men inte sa bra):
-	# sample_size 50000
-	# size 550
-	# min_doc_count 2
+	esQueryResponse = esQuery(request, query, jsonFormat, '/_xpack/_graph/_explore')
+	return esQueryResponse
+
+
+def getPersonsGraph(request):
+	def jsonFormat(json):
+		return json
+
+	queryObject = createQuery(request)
+
+	query = {
+		'query': queryObject,
+		'controls': {
+			'use_significance': True,
+			'sample_size': int(request.GET['sample_size']) if 'sample_size' in request.GET else 200000,
+			'timeout': 20000,
+			'sample_diversity': {
+				'field': 'id',
+				'max_docs_per_value': 500
+			}
+		},
+		'vertices': [
+			{
+				'field': 'persons_graph.name_id.keyword',
+				'min_doc_count': int(request.GET['min_doc_count']) if 'min_doc_count' in request.GET else 1
+			}
+		],
+		'connections': {
+			'query': queryObject,
+			'vertices': [
+				{
+					'field': 'persons_graph.name_id.keyword',
+					'size': 100000,
+					'min_doc_count': 1
+				}
+			]
+		}
+	}
 
 	esQueryResponse = esQuery(request, query, jsonFormat, '/_xpack/_graph/_explore')
 	return esQueryResponse
