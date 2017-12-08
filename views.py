@@ -88,6 +88,7 @@ def createQuery(request):
 					}
 				}
 
+				# search_exclude_title = true, sök inte i titel fältet
 				if (not 'search_exclude_title' in request.GET or request.GET['search_exclude_title'] == 'false'):
 					matchObj['bool']['should'].append({
 						'match': {
@@ -763,6 +764,22 @@ def createQuery(request):
 										'lon' : latLngs[3]
 									}
 								}
+							}
+						}
+					}
+				}
+			}
+		})
+
+	if ('only_geography' in request.GET and request.GET['only_geography'].lower() == 'true'):
+		query['bool']['must'].append({
+			'nested': {
+				'path': 'places',
+				'query': {
+					'bool': {
+						'filter': {
+							'exists': {
+								'field': 'places'
 							}
 						}
 					}
