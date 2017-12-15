@@ -2388,6 +2388,23 @@ def getTermsGraph(request):
 
 	queryObject = createQuery(request)
 
+	basicQueryObject = {};
+
+	if 'country' in request.GET or 'type' in request.GET:
+		basicQueryObject['query_string'] = {
+			'query': '*'
+		}
+
+		criterias = []
+
+		if 'country' in request.GET:
+			criterias.append('archive.country: '+request.GET['country'])
+
+		if 'type' in request.GET:
+			criterias.append('(materialtype: '+' OR materialtype: '.join(request.GET['type'].split(','))+')')
+
+		basicQueryObject['query_string']['query'] = ' AND '.join(criterias)
+
 	query = {
 		'query': queryObject,
 		'controls': {
@@ -2407,7 +2424,7 @@ def getTermsGraph(request):
 			}
 		],
 		'connections': {
-			'query': queryObject if 'query_connections' in request.GET and request.GET['query_connections'] == 'true' else {},
+			'query': queryObject if 'query_connections' in request.GET and request.GET['query_connections'] == 'true' else basicQueryObject,
 			'vertices': [
 				{
 					'field': 'topics_graph',
