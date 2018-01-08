@@ -84,10 +84,10 @@ urlpatterns = [
 	url(r'^autocomplete/persons/', views.getPersonsAutocomplete, name='getPersonsAutocomplete'),
 	url(r'^autocomplete/socken/', views.getSockenAutocomplete, name='getSockenAutocomplete'),
 
-	url(r'^total/socken/', views.getSockenTotal, name='getSockenTotal'),
-	url(r'^total/collection_years/', views.getCollectionYearsTotal, name='getCollectionYearsTotal'),
-	url(r'^total/birth_years/', views.getBirthYearsTotal, name='getBirthYearsTotal'),
-	url(r'^total/gender/', views.getGenderTotal, name='getGenderTotal'),
+	url(r'^total_by_type/socken/', views.getSockenTotal, name='getSockenTotal'),
+	url(r'^total_by_type/collection_years/', views.getCollectionYearsTotal, name='getCollectionYearsTotal'),
+	url(r'^total_by_type/birth_years/', views.getBirthYearsTotal, name='getBirthYearsTotal'),
+	url(r'^total_by_type/gender/', views.getGenderTotal, name='getGenderTotal'),
 
 	url(r'^get_socken/(?P<sockenId>[^/]+)/$', views.getSocken, name='getSocken'),
 	url(r'^get_person/(?P<personId>[^/]+)/$', views.getPersons, name='getPersons'),
