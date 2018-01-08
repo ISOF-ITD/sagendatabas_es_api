@@ -1136,6 +1136,76 @@ def getTitleTermsAutocomplete(request):
 	esQueryResponse = esQuery(request, query, jsonFormat)
 	return esQueryResponse
 
+def getCollectionYearsTotal(request):
+	def itemFormat(item):
+		return {
+			'year': item['key_as_string'],
+			'timestamp': item['key'],
+			'doc_count': item['doc_count']
+		}
+
+	def jsonFormat(json):
+		return list(map(itemFormat, json['aggregations']['data']['data']['buckets']))
+
+	query = {
+		'size': 0,
+		'aggs': {
+			'data': {
+				'terms': {
+					'field': 'materialtype',
+					'size': 10000,
+					'order': {
+						'_term': 'asc'
+					}
+				}
+			}
+		}
+	}
+
+	response = {}
+
+	typesResponse = esQuery(request, query, None, None, True)
+
+	for type in typesResponse['aggregations']['data']['buckets']:
+		query = {
+			'query': {
+				'query_string': {
+					'query': 'materialtype: '+type['key']
+				}
+			},
+			'size': 0,
+			'aggs': {
+				'data': {
+					'filter': {
+						'range': {
+							'year': {
+								'lte': 2020
+							}
+						}
+					},
+					'aggs': {
+						'data': {
+							'date_histogram' : {
+								'field' : 'year',
+								'interval' : 'year',
+								'format': 'yyyy'
+							}
+						}
+					}
+				}
+			}
+		}
+
+		queryResponse = esQuery(request, query, jsonFormat, None, True)
+
+		response[type['key']] = type['doc_count'] = queryResponse
+
+
+	jsonResponse = JsonResponse(response)
+	jsonResponse['Access-Control-Allow-Origin'] = '*'
+
+	return jsonResponse
+
 def getCollectionYears(request):
 	def itemFormat(item):
 		return {
@@ -1174,6 +1244,144 @@ def getCollectionYears(request):
 
 	esQueryResponse = esQuery(request, query, jsonFormat)
 	return esQueryResponse
+
+def getBirthYearsTotal(request):
+	def itemFormat(item):
+		return {
+			'year': item['key_as_string'],
+			'timestamp': item['key'],
+			'doc_count': item['doc_count'],
+			'person_count': item['person_count']['value']
+		}
+
+	def jsonFormat(json):
+		return {
+			'all': list(map(itemFormat, json['aggregations']['data']['data']['buckets'])),
+			'collectors': list(map(itemFormat, json['aggregations']['collectors']['data']['data']['buckets'])),
+			'informants': list(map(itemFormat, json['aggregations']['informants']['data']['data']['buckets']))
+		}
+
+	query = {
+		'size': 0,
+		'aggs': {
+			'data': {
+				'terms': {
+					'field': 'materialtype',
+					'size': 10000,
+					'order': {
+						'_term': 'asc'
+					}
+				}
+			}
+		}
+	}
+
+	response = {}
+
+	typesResponse = esQuery(request, query, None, None, True)
+
+	for type in typesResponse['aggregations']['data']['buckets']:
+		query = {
+			'query': {
+				'query_string': {
+					'query': 'materialtype: '+type['key']
+				}
+			},
+			'size': 0,
+			'aggs': {
+				'collectors': {
+					'nested': {
+						'path': 'persons'
+					},
+					'aggs': {
+						'data': {
+							'filter': {
+								'term': {
+									'persons.relation': 'c'
+								}
+							},
+							'aggs': {
+								'data': {
+									'date_histogram' : {
+										'field' : 'persons.birth_year',
+										'interval' : 'year',
+										'format': 'yyyy'
+									},
+									'aggs': {
+										'person_count': {
+											'cardinality': {
+												'field': 'persons.id'
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				},
+				'informants': {
+					'nested': {
+						'path': 'persons'
+					},
+					'aggs': {
+						'data': {
+							'filter': {
+								'term': {
+									'persons.relation': 'i'
+								}
+							},
+							'aggs': {
+								'data': {
+									'date_histogram' : {
+										'field' : 'persons.birth_year',
+										'interval' : 'year',
+										'format': 'yyyy'
+									},
+									'aggs': {
+										'person_count': {
+											'cardinality': {
+												'field': 'persons.id'
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				},
+				'data': {
+					'nested': {
+						'path': 'persons'
+					},
+					'aggs': {
+						'data': {
+							'date_histogram' : {
+								'field' : 'persons.birth_year',
+								'interval' : 'year',
+								'format': 'yyyy'
+							},
+							'aggs': {
+								'person_count': {
+									'cardinality': {
+										'field': 'persons.id'
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		queryResponse = esQuery(request, query, jsonFormat, None, True)
+
+		response[type['key']] = type['doc_count'] = queryResponse
+
+
+	jsonResponse = JsonResponse(response)
+	jsonResponse['Access-Control-Allow-Origin'] = '*'
+
+	return jsonResponse
 
 def getBirthYears(request):
 	def itemFormat(item):
@@ -1356,6 +1564,128 @@ def getTypes(request):
 	esQueryResponse = esQuery(request, query, jsonFormat)
 	return esQueryResponse
 
+def getSockenTotal(request):
+	def itemFormat(item):
+		return {
+			'id': item['key'],
+			'name': item['data']['buckets'][0]['key'],
+			'harad': item['harad']['buckets'][0]['key'] if len(item['harad']['buckets']) > 0 else None,
+			'landskap': item['landskap']['buckets'][0]['key'] if len(item['landskap']['buckets']) > 0 else None,
+			'lan': item['lan']['buckets'][0]['key'] if len(item['lan']['buckets']) > 0 else None,
+			'lm_id': item['lm_id']['buckets'][0]['key'] if len(item['lm_id']['buckets']) > 0 else '',
+			'location': geohash.decode(item['location']['buckets'][0]['key']),
+			'doc_count': item['data']['buckets'][0]['doc_count']
+		}
+
+	def jsonFormat(json):
+		return list(map(itemFormat, json['aggregations']['data']['data']['buckets']))
+
+	query = {
+		'size': 0,
+		'aggs': {
+			'data': {
+				'terms': {
+					'field': 'materialtype',
+					'size': 10000,
+					'order': {
+						'_term': 'asc'
+					}
+				}
+			}
+		}
+	}
+
+	response = {}
+
+	typesResponse = esQuery(request, query, None, None, True)
+
+	for type in typesResponse['aggregations']['data']['buckets']:
+		query = {
+			'query': {
+				'query_string': {
+					'query': 'materialtype: '+type['key']
+				}
+			},
+			'size': 0,
+			'aggs': {
+				'data': {
+					'nested': {
+						'path': 'places'
+					},
+					'aggs': {
+						'data': {
+							'terms': {
+								'field': 'places.id',
+								'size': 10000
+							},
+							'aggs': {
+								'data': {
+									'terms': {
+										'field': 'places.name',
+										'size': 1,
+										'order': {
+											'_term': 'asc'
+										}
+									}
+								},
+								'harad': {
+									'terms': {
+										'field': 'places.harad',
+										'size': 1,
+										'order': {
+											'_term': 'asc'
+										}
+									}
+								},
+								'landskap': {
+									'terms': {
+										'field': 'places.landskap',
+										'size': 1,
+										'order': {
+											'_term': 'asc'
+										}
+									}
+								},
+								'lan': {
+									'terms': {
+										'field': 'places.county',
+										'size': 1,
+										'order': {
+											'_term': 'asc'
+										}
+									}
+								},
+								'location': {
+									'geohash_grid': {
+										'field': 'places.location',
+										'precision': 12
+									}
+								},
+								'lm_id': {
+									'terms': {
+										'field': 'places.lm_id',
+										'size': 1,
+										'order': {
+											'_term': 'asc'
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		queryResponse = esQuery(request, query, jsonFormat, None, True)
+
+		response[type['key']] = type['doc_count'] = queryResponse
+
+
+	jsonResponse = JsonResponse(response)
+	jsonResponse['Access-Control-Allow-Origin'] = '*'
+
+	return jsonResponse
 
 def getSocken(request, sockenId = None):
 	def itemFormat(item):
@@ -2122,6 +2452,148 @@ def getInformants(request):
 def getCollectors(request):
 	return getRelatedPersons(request, 'c')
 
+def getGenderTotal(request):
+	def itemFormat(item):
+		return {
+			'gender': item['key'],
+			'doc_count': item['doc_count'],
+			'person_count': item['person_count']['value']
+		}
+
+	def jsonFormat(json):
+		return {
+			'all': list(map(itemFormat, json['aggregations']['data']['data']['buckets'])),
+			'collectors': list(map(itemFormat, json['aggregations']['collectors']['data']['data']['buckets'])),
+			'informants': list(map(itemFormat, json['aggregations']['informants']['data']['data']['buckets']))
+		}
+
+	query = {
+		'size': 0,
+		'aggs': {
+			'data': {
+				'terms': {
+					'field': 'materialtype',
+					'size': 10000,
+					'order': {
+						'_term': 'asc'
+					}
+				}
+			}
+		}
+	}
+
+	response = {}
+
+	typesResponse = esQuery(request, query, None, None, True)
+
+	for type in typesResponse['aggregations']['data']['buckets']:
+		query = {
+			'query': {
+				'query_string': {
+					'query': 'materialtype: '+type['key']
+				}
+			},
+			'size': 0,
+			'aggs': {
+				'collectors': {
+					'nested': {
+						'path': 'persons'
+					},
+					'aggs': {
+						'data': {
+							'filter': {
+								'term': {
+									'persons.relation': 'c'
+								}
+							},
+							'aggs': {
+								'data': {
+									'terms': {
+										'field': 'persons.gender',
+										'size': 10000,
+										'order': {
+											'_term': 'asc'
+										}
+									},
+									'aggs': {
+										'person_count': {
+											'cardinality': {
+												'field': 'persons.id'
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				},
+				'informants': {
+					'nested': {
+						'path': 'persons'
+					},
+					'aggs': {
+						'data': {
+							'filter': {
+								'term': {
+									'persons.relation': 'i'
+								}
+							},
+							'aggs': {
+								'data': {
+									'terms': {
+										'field': 'persons.gender',
+										'size': 10000,
+										'order': {
+											'_term': 'asc'
+										}
+									},
+									'aggs': {
+										'person_count': {
+											'cardinality': {
+												'field': 'persons.id'
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				},
+				'data': {
+					'nested': {
+						'path': 'persons'
+					},
+					'aggs': {
+						'data': {
+							'terms': {
+								'field': 'persons.gender',
+								'size': 10000,
+								'order': {
+									'_term': 'asc'
+								}
+							},
+							'aggs': {
+								'person_count': {
+									'cardinality': {
+										'field': 'persons.id'
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		queryResponse = esQuery(request, query, jsonFormat, None, True)
+
+		response[type['key']] = type['doc_count'] = queryResponse
+
+
+	jsonResponse = JsonResponse(response)
+	jsonResponse['Access-Control-Allow-Origin'] = '*'
+
+	return jsonResponse
 
 def getGender(request):
 	def itemFormat(item):
