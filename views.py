@@ -740,7 +740,7 @@ def createQuery(request):
 				
 				'min_word_length': int(request.GET['min_word_length']) if 'min_word_length' in request.GET else 4,
 				'min_term_freq' : int(request.GET['min_term_freq']) if 'min_term_freq' in request.GET else 1,
-				'max_query_terms' : int(request.GET['max_query_terms']) if 'max_query_terms' in request.GET else 25
+				'max_query_terms' : int(request.GET['max_query_terms']) if 'max_query_terms' in request.GET else 25,
 				'minimum_should_match' : request.GET['minimum_should_match'] if 'minimum_should_match' in request.GET else 25
 			}
 		})
