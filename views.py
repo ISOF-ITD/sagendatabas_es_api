@@ -2890,7 +2890,7 @@ def getTermsGraph(request):
 		},
 		'vertices': [
 			{
-				'field': 'topics_graph',
+				'field': request.GET['terms_field'] if 'terms_field' in request.GET else 'topics_graph',
 				'size': int(request.GET['vertices_size']) if 'vertices_size' in request.GET else 160,
 				'min_doc_count': 2
 			}
@@ -2899,7 +2899,7 @@ def getTermsGraph(request):
 			'query': queryObject if 'query_connections' in request.GET and request.GET['query_connections'] == 'true' else basicQueryObject,
 			'vertices': [
 				{
-					'field': 'topics_graph',
+					'field': request.GET['terms_field'] if 'terms_field' in request.GET else 'topics_graph',
 					'size': 10
 				}
 			]
