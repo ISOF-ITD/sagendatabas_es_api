@@ -1697,7 +1697,8 @@ def getSocken(request, sockenId = None):
 			'lan': item['lan']['buckets'][0]['key'] if len(item['lan']['buckets']) > 0 else None,
 			'lm_id': item['lm_id']['buckets'][0]['key'] if len(item['lm_id']['buckets']) > 0 else '',
 			'location': geohash.decode(item['location']['buckets'][0]['key']),
-			'doc_count': item['data']['buckets'][0]['doc_count']
+			'doc_count': item['parent_doc_count']['doc_count'],
+			'page_count': item['page_count']['pages']['value']
 		}
 
 	def jsonFormat(json):
@@ -1752,6 +1753,16 @@ def getSocken(request, sockenId = None):
 							'size': 10000
 						},
 						'aggs': {
+							'page_count': {
+								'reverse_nested': {},
+								'aggs': {
+									'pages': {
+										'sum': {
+											'field': 'archive.total_pages'
+										}
+									}
+								}
+							},
 							'data': {
 								'terms': {
 									'field': 'places.name',
@@ -1760,6 +1771,9 @@ def getSocken(request, sockenId = None):
 										'_term': 'asc'
 									}
 								}
+							},
+							'parent_doc_count': {
+								'reverse_nested': {}
 							},
 							'harad': {
 								'terms': {
