@@ -99,6 +99,54 @@ def createQuery(request):
 			query['bool']['must'].append(matchObj)
 
 
+	if ('search_all' in request.GET):
+		searchString = request.GET['search_all']
+
+		matchObj = {
+			'bool': {
+				'should': [
+					{
+						'match': {
+							'title': searchString
+						}
+					},
+					{
+						'match': {
+							'text': searchString
+						}
+					},
+					{
+						'match': {
+							'taxonomy.name': searchString
+						}
+					},
+					{
+						'match': {
+							'taxonomy.category': searchString
+						}
+					},
+					{
+						'match': {
+							'metadata.value': searchString
+						}
+					},
+					{
+						'match': {
+							'archive.archive': searchString
+						}
+					},
+					{
+						'match': {
+							'places.name': searchString
+						}
+					}
+				]
+			}
+		}
+
+		query['bool']['must'].append(matchObj)
+
+
 	if ('phrase' in request.GET):
 		query['bool']['must'].append({
 			'match_phrase': {
@@ -1819,6 +1867,251 @@ def getSocken(request, sockenId = None):
 							}
 						}
 					}
+				}
+			}
+		}
+	}
+
+	esQueryResponse = esQuery(request, query, jsonFormat, None, True)
+
+	if ('mark_metadata' in request.GET):
+		if not 'bool' in query['query']:
+			query['query'] = {
+				'bool': {
+					'must': []
+				}
+			}
+		query['query']['bool']['must'].append({
+			'match_phrase': {
+				'metadata.type': request.GET['mark_metadata']
+			}
+		})
+		metadataSockenResponse = esQuery(request, query, jsonFormat, None, True)
+
+		sockenJson = esQueryResponse
+		print('sockenJson')
+		print(sockenJson)
+
+		for socken in sockenJson['data']:
+			print(socken)
+			socken['has_metadata'] = any(s['id'] == socken['id'] for s in metadataSockenResponse['data'])
+
+
+	jsonResponse = JsonResponse(esQueryResponse)
+	jsonResponse['Access-Control-Allow-Origin'] = '*'
+
+	return jsonResponse
+
+def getLetters(request, sockenId = None):
+	def itemFormat(item):
+		ret = {
+			'id': item['key'],
+			'name': item['data']['buckets'][0]['key'],
+			'harad': item['harad']['buckets'][0]['key'] if len(item['harad']['buckets']) > 0 else None,
+			'landskap': item['landskap']['buckets'][0]['key'] if len(item['landskap']['buckets']) > 0 else None,
+			'lan': item['lan']['buckets'][0]['key'] if len(item['lan']['buckets']) > 0 else None,
+			'lm_id': item['lm_id']['buckets'][0]['key'] if len(item['lm_id']['buckets']) > 0 else '',
+			'location': geohash.decode(item['location']['buckets'][0]['key'])
+		}
+
+		if 'destination_places' in item:
+			ret['destinations'] = subItemListFormat(item)
+
+		return ret
+
+	def subItemListFormat(subItem):
+		return [item for item in map(itemFormat, subItem['destination_places']['sub']['places']['places']['buckets'])]
+
+	def jsonFormat(json):
+		if sockenId is not None:
+			socken = [item for item in map(itemFormat, json['aggregations']['data']['data']['buckets']) if item['id'] == sockenId]
+			return socken[0]
+		else:
+			return list(map(itemFormat, json['aggregations']['letters']['dispatch_places']['places']['buckets']))
+
+	if sockenId is not None:
+		queryObject = {
+			'bool': {
+				'must': [
+					{
+						'nested': {
+						'path': 'places',
+						'query': {
+							'bool': {
+								'should': [
+									{
+										'match': {
+											'places.id': sockenId
+										}
+									}
+								]
+							}
+						}
+					}
+				}
+			]
+		}
+	}
+	else:
+		queryObject = createQuery(request)
+
+	query = {
+		'query': queryObject,
+		'size': 0,
+		'aggs': {
+			'letters': {
+				'aggs': {
+					'dispatch_places': {
+						'aggs': {
+							'places': {
+								'aggs': {
+									'data': {
+										'terms': {
+											'field': 'places.name',
+											'order': {
+												'_term': 'asc'
+											},
+											'size': 1
+										}
+									},
+									'destination_places': {
+										'aggs': {
+											'sub': {
+												'aggs': {
+													'places': {
+														'aggs': {
+															'places': {
+																'aggs': {
+																	'data': {
+																		'terms': {
+																			'field': 'places.name',
+																			'order': {
+																				'_term': 'asc'
+																			},
+																			'size': 1
+																		}
+																	},
+																	'harad': {
+																		'terms': {
+																			'field': 'places.harad',
+																			'order': {
+																				'_term': 'asc'
+																			},
+																			'size': 1
+																		}
+																	},
+																	'lan': {
+																		'terms': {
+																			'field': 'places.county',
+																			'order': {
+																				'_term': 'asc'
+																			},
+																			'size': 1
+																		}
+																	},
+																	'landskap': {
+																		'terms': {
+																			'field': 'places.landskap',
+																			'order': {
+																				'_term': 'asc'
+																			},
+																			'size': 1
+																		}
+																	},
+																	'lm_id': {
+																		'terms': {
+																			'field': 'places.lm_id',
+																			'order': {
+																				'_term': 'asc'
+																			},
+																			'size': 1
+																		}
+																	},
+																	'location': {
+																		'geohash_grid': {
+																			'field': 'places.location',
+																			'precision': 12
+																		}
+																	}
+																},
+																'terms': {
+																	'field': 'places.id',
+																	'size': 1000
+																}
+															}
+														},
+														'filter': {
+															'term': {
+																'places.type': 'destination_place'
+															}
+														}
+													}
+												},
+												'nested': {
+													'path': 'places'
+												}
+											}
+										},
+										'reverse_nested': {}
+									},
+									'harad': {
+										'terms': {
+											'field': 'places.harad',
+											'order': {
+												'_term': 'asc'
+											},
+											'size': 1
+										}
+									},
+									'lan': {
+										'terms': {
+											'field': 'places.county',
+											'order': {
+												'_term': 'asc'
+											},
+											'size': 1
+										}
+									},
+									'landskap': {
+										'terms': {
+											'field': 'places.landskap',
+											'order': {
+												'_term': 'asc'
+											},
+											'size': 1
+										}
+									},
+									'lm_id': {
+										'terms': {
+											'field': 'places.lm_id',
+											'order': {
+												'_term': 'asc'
+											},
+											'size': 1
+										}
+									},
+									'location': {
+										'geohash_grid': {
+											'field': 'places.location',
+											'precision': 12
+										}
+									}
+								},
+								'terms': {
+									'field': 'places.id',
+									'size': 1000
+								}
+							}
+						},
+						'filter': {
+							'term': {
+								'places.type': 'dispatch_place'
+							}
+						}
+					}
+				},
+				'nested': {
+					'path': 'places'
 				}
 			}
 		}

@@ -68,6 +68,9 @@ urlpatterns = [
 	# aggregate kon
 	url(r'^gender/', views.getGender, name='getGender'),
 
+	# aggregate brev avsändings- och destinationort
+	url(r'^letters/', views.getLetters, name='getLetters'),
+
 	# hamta similar document
 	url(r'^similar/(?P<documentId>[^/]+)/$', views.getSimilar, name='getSimilar'),
 
