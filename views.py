@@ -329,80 +329,103 @@ def createQuery(request):
 
 
 	if ('person' in request.GET):
-		personShouldBool = {
-			'nested': {
-				'path': 'persons',
-				'query': {
-					'bool': {
-						'must': [
-							{
-								'match': {
-									'persons.name': request.GET['person']
+		personNameQueries = request.GET['person'].split(',')
+
+		for personNameQueryStr in personNameQueries:
+			personNameQuery = personNameQueryStr.split(':')
+
+			personShouldBool = {
+				'nested': {
+					'path': 'persons',
+					'query': {
+						'bool': {
+							'must': [
+								{
+									'match': {
+										'persons.name': personNameQuery[1] if len(personNameQuery) > 1 else personNameQuery[0]
+									}
 								}
-							}
-						]
+							]
+						}
 					}
 				}
 			}
-		}
 
-		if ('person_relation' in request.GET):
-			personShouldBool['nested']['query']['bool']['must'].append({
-				'match': {
-					'persons.relation': request.GET['person_relation']
-				}
-			})
+			if len(personNameQuery) == 2:
+				personShouldBool['nested']['query']['bool']['must'].append({
+					'match': {
+						'persons.relation': personNameQuery[0]
+					}
+				})
 
-		query['bool']['must'].append(personShouldBool)
+			query['bool']['must'].append(personShouldBool)
+
 
 
 	if ('person_exact' in request.GET):
-		personShouldBool = {
-			'nested': {
-				'path': 'persons',
-				'query': {
-					'bool': {
-						'must': [
-							{
-								'match': {
-									'persons.name.raw': request.GET['person_exact']
+		personNameQueries = request.GET['person_exact'].split(',')
+
+		for personNameQueryStr in personNameQueries:
+			personNameQuery = personNameQueryStr.split(':')
+
+			personShouldBool = {
+				'nested': {
+					'path': 'persons',
+					'query': {
+						'bool': {
+							'must': [
+								{
+									'match': {
+										'persons.name.raw': personNameQuery[1] if len(personNameQuery) > 1 else personNameQuery[0]
+									}
 								}
-							}
-						]
+							]
+						}
 					}
 				}
 			}
-		}
 
-		if ('person_relation' in request.GET):
-			personShouldBool['nested']['query']['bool']['must'].append({
-				'match': {
-					'persons.relation': request.GET['person_relation']
-				}
-			})
+			if len(personNameQuery) == 2:
+				personShouldBool['nested']['query']['bool']['must'].append({
+					'match': {
+						'persons.relation': personNameQuery[0]
+					}
+				})
 
-		query['bool']['must'].append(personShouldBool)
+			query['bool']['must'].append(personShouldBool)
 
 
 	if ('person_id' in request.GET):
-		personShouldBool = {
-			'nested': {
-				'path': 'persons',
-				'query': {
-					'bool': {
-						'must': [
-							{
-								'match': {
-									'persons.id': request.GET['person_id']
+		personIdQueries = request.GET['person_id'].split(',')
+
+		for personIdQueryStr in personIdQueries:
+			personIdQuery = personIdQueryStr.split(':')
+
+			personShouldBool = {
+				'nested': {
+					'path': 'persons',
+					'query': {
+						'bool': {
+							'must': [
+								{
+									'match': {
+										'persons.id': personIdQuery[1] if len(personIdQuery) > 1 else personIdQuery[0]
+									}
 								}
-							}
-						]
+							]
+						}
 					}
 				}
 			}
-		}
 
-		query['bool']['must'].append(personShouldBool)
+			if len(personIdQuery) == 2:
+				personShouldBool['nested']['query']['bool']['must'].append({
+					'match': {
+						'persons.relation': personIdQuery[0]
+					}
+				})
+
+			query['bool']['must'].append(personShouldBool)
 
 
 	if ('collector_id' in request.GET):
@@ -562,64 +585,70 @@ def createQuery(request):
 
 
 	if ('gender' in request.GET):
-		personShouldBool = {
-			'nested': {
-				'path': 'persons',
-				'query': {
-					'bool': {
-						'must': [
-							{
-								'match': {
-									'persons.gender': request.GET['gender']
+		genderQueries = request.GET['gender'].split(',')
+
+		for genderQueryStr in genderQueries:
+			genderQuery = genderQueryStr.split(':')
+
+			personShouldBool = {
+				'nested': {
+					'path': 'persons',
+					'query': {
+						'bool': {
+							'must': [
+								{
+									'match': {
+										'persons.gender': genderQuery[1]
+									}
+								},
+								{
+									'match': {
+										'persons.relation': genderQuery[0]
+									}
 								}
-							}
-						]
+							]
+						}
 					}
 				}
 			}
-		}
 
-		if ('person_relation' in request.GET):
-			personShouldBool['nested']['query']['bool']['must'].append({
-				'match': {
-					'persons.relation': request.GET['person_relation']
-				}
-			})
-
-		query['bool']['must'].append(personShouldBool)
+			query['bool']['must'].append(personShouldBool)
 
 
 	if ('birth_years' in request.GET):
-		birthYears = request.GET['birth_years'].split(',')
+		birthYearsQueries = request.GET['birth_years'].split(',')
 
-		personShouldBool = {
-			'nested': {
-				'path': 'persons',
-				'query': {
-					'bool': {
-						'must': [
-							{
-								'range': {
-									'persons.birth_year': {
-										'gte': birthYears[0],
-										'lt': birthYears[1]
+		for birthYearsQueryStr in birthYearsQueries:
+			birthYearsQuery = birthYearsQueryStr.split(':')
+
+			birthYears = birthYearsQuery[1].split('-')
+
+			personShouldBool = {
+				'nested': {
+					'path': 'persons',
+					'query': {
+						'bool': {
+							'must': [
+								{
+									'range': {
+										'persons.birth_year': {
+											'gte': birthYears[0],
+											'lt': birthYears[1]
+										}
+									}
+								},
+								{
+									'match': {
+										'persons.relation': birthYearsQuery[0]
 									}
 								}
-							}
-						]
+							]
+						}
 					}
 				}
 			}
-		}
 
-		if ('person_relation' in request.GET):
-			personShouldBool['nested']['query']['bool']['must'].append({
-				'match': {
-					'persons.relation': request.GET['person_relation']
-				}
-			})
-
-		query['bool']['must'].append(personShouldBool)
+			query['bool']['must'].append(personShouldBool)
 
 
 	if ('collectors_birth_years' in request.GET):
@@ -875,7 +904,7 @@ def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False)
 		'took': responseData['took'] if 'took' in responseData else 0
 	}
 
-	if ('showQuery' in request.GET) and request.GET['showQuery']:
+	if request is not None and ('showQuery' in request.GET) and request.GET['showQuery']:
 		outputData['metadata']['query'] = query
 
 	if returnRaw:
@@ -1303,11 +1332,15 @@ def getBirthYearsTotal(request):
 		}
 
 	def jsonFormat(json):
-		return {
-			'all': list(map(itemFormat, json['aggregations']['data']['data']['buckets'])),
-			'collectors': list(map(itemFormat, json['aggregations']['collectors']['data']['data']['buckets'])),
-			'informants': list(map(itemFormat, json['aggregations']['informants']['data']['data']['buckets']))
-		}
+		ret = {}
+
+		for agg in json['aggregations']:
+			if 'buckets' in json['aggregations'][agg]['data']:
+				ret[agg] = list(map(itemFormat, json['aggregations'][agg]['data']['buckets']))
+			elif 'buckets' in json['aggregations'][agg]['data']['data']:
+				ret[agg] = list(map(itemFormat, json['aggregations'][agg]['data']['data']['buckets']))
+
+		return ret
 
 	query = {
 		'size': 0,
@@ -1324,6 +1357,67 @@ def getBirthYearsTotal(request):
 		}
 	}
 
+	def createAggregations(roles):
+		aggs = {
+			'all': {
+				'nested': {
+					'path': 'persons'
+				},
+				'aggs': {
+					'data': {
+						'date_histogram' : {
+							'field' : 'persons.birth_year',
+							'interval' : 'year',
+							'format': 'yyyy'
+						},
+						'aggs': {
+							'person_count': {
+								'cardinality': {
+									'field': 'persons.id'
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		for role in roles:
+			aggs[role] = {
+				'nested': {
+					'path': 'persons'
+				},
+				'aggs': {
+					'data': {
+						'filter': {
+							'term': {
+								'persons.relation': role
+							}
+						},
+						'aggs': {
+							'data': {
+								'date_histogram' : {
+									'field' : 'persons.birth_year',
+									'interval' : 'year',
+									'format': 'yyyy'
+								},
+								'aggs': {
+									'person_count': {
+										'cardinality': {
+											'field': 'persons.id'
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+
+		return aggs
+
+	roles = getPersonRoles(None)
+
 	response = {}
 
 	typesResponse = esQuery(request, query, None, None, True)
@@ -1336,89 +1430,7 @@ def getBirthYearsTotal(request):
 				}
 			},
 			'size': 0,
-			'aggs': {
-				'collectors': {
-					'nested': {
-						'path': 'persons'
-					},
-					'aggs': {
-						'data': {
-							'filter': {
-								'term': {
-									'persons.relation': 'c'
-								}
-							},
-							'aggs': {
-								'data': {
-									'date_histogram' : {
-										'field' : 'persons.birth_year',
-										'interval' : 'year',
-										'format': 'yyyy'
-									},
-									'aggs': {
-										'person_count': {
-											'cardinality': {
-												'field': 'persons.id'
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-				},
-				'informants': {
-					'nested': {
-						'path': 'persons'
-					},
-					'aggs': {
-						'data': {
-							'filter': {
-								'term': {
-									'persons.relation': 'i'
-								}
-							},
-							'aggs': {
-								'data': {
-									'date_histogram' : {
-										'field' : 'persons.birth_year',
-										'interval' : 'year',
-										'format': 'yyyy'
-									},
-									'aggs': {
-										'person_count': {
-											'cardinality': {
-												'field': 'persons.id'
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-				},
-				'data': {
-					'nested': {
-						'path': 'persons'
-					},
-					'aggs': {
-						'data': {
-							'date_histogram' : {
-								'field' : 'persons.birth_year',
-								'interval' : 'year',
-								'format': 'yyyy'
-							},
-							'aggs': {
-								'person_count': {
-									'cardinality': {
-										'field': 'persons.id'
-									}
-								}
-							}
-						}
-					}
-				}
-			}
+			'aggs': createAggregations(roles)
 		}
 
 		queryResponse = esQuery(request, query, jsonFormat, None, True)
@@ -1441,77 +1453,19 @@ def getBirthYears(request):
 		}
 
 	def jsonFormat(json):
-		return {
-			'all': list(map(itemFormat, json['aggregations']['data']['data']['buckets'])),
-			'collectors': list(map(itemFormat, json['aggregations']['collectors']['data']['data']['buckets'])),
-			'informants': list(map(itemFormat, json['aggregations']['informants']['data']['data']['buckets']))
-		}
+		ret = {}
 
-	query = {
-		'query': createQuery(request),
-		'size': 0,
-		'aggs': {
-			'collectors': {
-				'nested': {
-					'path': 'persons'
-				},
-				'aggs': {
-					'data': {
-						'filter': {
-							'term': {
-								'persons.relation': 'c'
-							}
-						},
-						'aggs': {
-							'data': {
-								'date_histogram' : {
-									'field' : 'persons.birth_year',
-									'interval' : 'year',
-									'format': 'yyyy'
-								},
-								'aggs': {
-									'person_count': {
-										'cardinality': {
-											'field': 'persons.id'
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			},
-			'informants': {
-				'nested': {
-					'path': 'persons'
-				},
-				'aggs': {
-					'data': {
-						'filter': {
-							'term': {
-								'persons.relation': 'i'
-							}
-						},
-						'aggs': {
-							'data': {
-								'date_histogram' : {
-									'field' : 'persons.birth_year',
-									'interval' : 'year',
-									'format': 'yyyy'
-								},
-								'aggs': {
-									'person_count': {
-										'cardinality': {
-											'field': 'persons.id'
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			},
-			'data': {
+		for agg in json['aggregations']:
+			if 'buckets' in json['aggregations'][agg]['data']:
+				ret[agg] = list(map(itemFormat, json['aggregations'][agg]['data']['buckets']))
+			elif 'buckets' in json['aggregations'][agg]['data']['data']:
+				ret[agg] = list(map(itemFormat, json['aggregations'][agg]['data']['data']['buckets']))
+
+		return ret
+
+	def createAggregations(roles):
+		aggs = {
+			'all': {
 				'nested': {
 					'path': 'persons'
 				},
@@ -1533,6 +1487,47 @@ def getBirthYears(request):
 				}
 			}
 		}
+
+		for role in roles:
+			aggs[role] = {
+				'nested': {
+					'path': 'persons'
+				},
+				'aggs': {
+					'data': {
+						'filter': {
+							'term': {
+								'persons.relation': role
+							}
+						},
+						'aggs': {
+							'data': {
+								'date_histogram' : {
+									'field' : 'persons.birth_year',
+									'interval' : 'year',
+									'format': 'yyyy'
+								},
+								'aggs': {
+									'person_count': {
+										'cardinality': {
+											'field': 'persons.id'
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+
+		return aggs
+
+	roles = getPersonRoles(request)
+
+	query = {
+		'query': createQuery(request),
+		'size': 0,
+		'aggs': createAggregations(roles)
 	}
 
 	esQueryResponse = esQuery(request, query, jsonFormat)
@@ -1782,10 +1777,6 @@ def getSocken(request, sockenId = None):
 	else:
 		queryObject = createQuery(request)
 
-
-	print('queryObject:')
-	print(queryObject)
-
 	query = {
 		'query': queryObject,
 		'size': 0,
@@ -1889,13 +1880,9 @@ def getSocken(request, sockenId = None):
 		metadataSockenResponse = esQuery(request, query, jsonFormat, None, True)
 
 		sockenJson = esQueryResponse
-		print('sockenJson')
-		print(sockenJson)
 
 		for socken in sockenJson['data']:
-			print(socken)
 			socken['has_metadata'] = any(s['id'] == socken['id'] for s in metadataSockenResponse['data'])
-
 
 	jsonResponse = JsonResponse(esQueryResponse)
 	jsonResponse['Access-Control-Allow-Origin'] = '*'
@@ -2134,13 +2121,9 @@ def getLetters(request, sockenId = None):
 		metadataSockenResponse = esQuery(request, query, jsonFormat, None, True)
 
 		sockenJson = esQueryResponse
-		print('sockenJson')
-		print(sockenJson)
 
 		for socken in sockenJson['data']:
-			print(socken)
 			socken['has_metadata'] = any(s['id'] == socken['id'] for s in metadataSockenResponse['data'])
-
 
 	jsonResponse = JsonResponse(esQueryResponse)
 	jsonResponse['Access-Control-Allow-Origin'] = '*'
@@ -2759,6 +2742,37 @@ def getInformants(request):
 def getCollectors(request):
 	return getRelatedPersons(request, 'c')
 
+def getPersonRoles(request):
+	def itemFormat(item):
+		return item['key']
+
+	def jsonFormat(json):
+		return list(map(itemFormat, json['aggregations']['data']['data']['buckets']))
+
+	roleQuery = {
+		'query': createQuery(request) if request is not None else {},
+		'size': 0,
+		'aggs': {
+			'data': {
+				'nested': {
+					'path': 'persons'
+				},
+				'aggs': {
+					'data': {
+						'terms': {
+							'field': 'persons.relation',
+							'size': 50
+						}
+					}
+				}
+			}
+		}
+	}
+
+	roles = esQuery(request, roleQuery, jsonFormat, None, True)
+
+	return list(filter(None, roles['data']))
+
 def getGenderTotal(request):
 	def itemFormat(item):
 		return {
@@ -2768,11 +2782,15 @@ def getGenderTotal(request):
 		}
 
 	def jsonFormat(json):
-		return {
-			'all': list(map(itemFormat, json['aggregations']['data']['data']['buckets'])),
-			'collectors': list(map(itemFormat, json['aggregations']['collectors']['data']['data']['buckets'])),
-			'informants': list(map(itemFormat, json['aggregations']['informants']['data']['data']['buckets']))
-		}
+		ret = {}
+
+		for agg in json['aggregations']:
+			if 'buckets' in json['aggregations'][agg]['data']:
+				ret[agg] = list(map(itemFormat, json['aggregations'][agg]['data']['buckets']))
+			elif 'buckets' in json['aggregations'][agg]['data']['data']:
+				ret[agg] = list(map(itemFormat, json['aggregations'][agg]['data']['data']['buckets']))
+
+		return ret
 
 	query = {
 		'size': 0,
@@ -2789,203 +2807,9 @@ def getGenderTotal(request):
 		}
 	}
 
-	response = {}
-
-	typesResponse = esQuery(request, query, None, None, True)
-
-	for type in typesResponse['aggregations']['data']['buckets']:
-		query = {
-			'query': {
-				'query_string': {
-					'query': 'materialtype: '+type['key']
-				}
-			},
-			'size': 0,
-			'aggs': {
-				'collectors': {
-					'nested': {
-						'path': 'persons'
-					},
-					'aggs': {
-						'data': {
-							'filter': {
-								'term': {
-									'persons.relation': 'c'
-								}
-							},
-							'aggs': {
-								'data': {
-									'terms': {
-										'field': 'persons.gender',
-										'size': 10000,
-										'order': {
-											'_term': 'asc'
-										}
-									},
-									'aggs': {
-										'person_count': {
-											'cardinality': {
-												'field': 'persons.id'
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-				},
-				'informants': {
-					'nested': {
-						'path': 'persons'
-					},
-					'aggs': {
-						'data': {
-							'filter': {
-								'term': {
-									'persons.relation': 'i'
-								}
-							},
-							'aggs': {
-								'data': {
-									'terms': {
-										'field': 'persons.gender',
-										'size': 10000,
-										'order': {
-											'_term': 'asc'
-										}
-									},
-									'aggs': {
-										'person_count': {
-											'cardinality': {
-												'field': 'persons.id'
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-				},
-				'data': {
-					'nested': {
-						'path': 'persons'
-					},
-					'aggs': {
-						'data': {
-							'terms': {
-								'field': 'persons.gender',
-								'size': 10000,
-								'order': {
-									'_term': 'asc'
-								}
-							},
-							'aggs': {
-								'person_count': {
-									'cardinality': {
-										'field': 'persons.id'
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-
-		queryResponse = esQuery(request, query, jsonFormat, None, True)
-
-		response[type['key']] = type['doc_count'] = queryResponse
-
-
-	jsonResponse = JsonResponse(response)
-	jsonResponse['Access-Control-Allow-Origin'] = '*'
-
-	return jsonResponse
-
-def getGender(request):
-	def itemFormat(item):
-		return {
-			'gender': item['key'],
-			'doc_count': item['doc_count'],
-			'person_count': item['person_count']['value']
-		}
-
-	def jsonFormat(json):
-		return {
-			'all': list(map(itemFormat, json['aggregations']['data']['data']['buckets'])),
-			'collectors': list(map(itemFormat, json['aggregations']['collectors']['data']['data']['buckets'])),
-			'informants': list(map(itemFormat, json['aggregations']['informants']['data']['data']['buckets']))
-		}
-
-	query = {
-		'query': createQuery(request),
-		'size': 0,
-		'aggs': {
-			'collectors': {
-				'nested': {
-					'path': 'persons'
-				},
-				'aggs': {
-					'data': {
-						'filter': {
-							'term': {
-								'persons.relation': 'c'
-							}
-						},
-						'aggs': {
-							'data': {
-								'terms': {
-									'field': 'persons.gender',
-									'size': 10000,
-									'order': {
-										'_term': 'asc'
-									}
-								},
-								'aggs': {
-									'person_count': {
-										'cardinality': {
-											'field': 'persons.id'
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			},
-			'informants': {
-				'nested': {
-					'path': 'persons'
-				},
-				'aggs': {
-					'data': {
-						'filter': {
-							'term': {
-								'persons.relation': 'i'
-							}
-						},
-						'aggs': {
-							'data': {
-								'terms': {
-									'field': 'persons.gender',
-									'size': 10000,
-									'order': {
-										'_term': 'asc'
-									}
-								},
-								'aggs': {
-									'person_count': {
-										'cardinality': {
-											'field': 'persons.id'
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			},
-			'data': {
+	def createAggregations(roles):
+		aggs = {
+			'all': {
 				'nested': {
 					'path': 'persons'
 				},
@@ -3009,6 +2833,158 @@ def getGender(request):
 				}
 			}
 		}
+
+		for role in roles:
+			aggs[role] = {
+				'nested': {
+					'path': 'persons'
+				},
+				'aggs': {
+					'data': {
+						'filter': {
+							'term': {
+								'persons.relation': role
+							}
+						},
+						'aggs': {
+							'data': {
+								'terms': {
+									'field': 'persons.gender',
+									'size': 10000,
+									'order': {
+										'_term': 'asc'
+									}
+								},
+								'aggs': {
+									'person_count': {
+										'cardinality': {
+											'field': 'persons.id'
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+
+		return aggs
+
+	roles = getPersonRoles(None)
+
+	response = {}
+
+	typesResponse = esQuery(request, query, None, None, True)
+
+	for type in typesResponse['aggregations']['data']['buckets']:
+		query = {
+			'query': {
+				'query_string': {
+					'query': 'materialtype: '+type['key']
+				}
+			},
+			'size': 0,
+			'aggs': createAggregations(roles)
+		}
+
+		queryResponse = esQuery(request, query, jsonFormat, None, True)
+
+		response[type['key']] = type['doc_count'] = queryResponse
+
+
+	jsonResponse = JsonResponse(response)
+	jsonResponse['Access-Control-Allow-Origin'] = '*'
+
+	return jsonResponse
+
+def getGender(request):
+	def itemFormat(item):
+		return {
+			'gender': item['key'],
+			'doc_count': item['doc_count'],
+			'person_count': item['person_count']['value']
+		}
+
+	def jsonFormat(json):
+		ret = {}
+
+		for agg in json['aggregations']:
+			if 'buckets' in json['aggregations'][agg]['data']:
+				ret[agg] = list(map(itemFormat, json['aggregations'][agg]['data']['buckets']))
+			elif 'buckets' in json['aggregations'][agg]['data']['data']:
+				ret[agg] = list(map(itemFormat, json['aggregations'][agg]['data']['data']['buckets']))
+
+		return ret
+
+	def createAggregations(roles):
+		aggs = {
+			'all': {
+				'nested': {
+					'path': 'persons'
+				},
+				'aggs': {
+					'data': {
+						'terms': {
+							'field': 'persons.gender',
+							'size': 10000,
+							'order': {
+								'_term': 'asc'
+							}
+						},
+						'aggs': {
+							'person_count': {
+								'cardinality': {
+									'field': 'persons.id'
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		for role in roles:
+			aggs[role] = {
+				'nested': {
+					'path': 'persons'
+				},
+				'aggs': {
+					'data': {
+						'filter': {
+							'term': {
+								'persons.relation': role
+							}
+						},
+						'aggs': {
+							'data': {
+								'terms': {
+									'field': 'persons.gender',
+									'size': 10000,
+									'order': {
+										'_term': 'asc'
+									}
+								},
+								'aggs': {
+									'person_count': {
+										'cardinality': {
+											'field': 'persons.id'
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+
+		return aggs
+
+	roles = getPersonRoles(request)
+
+	query = {
+		'query': createQuery(request),
+		'size': 0,
+		'aggs': createAggregations(roles)
 	}
 
 	esQueryResponse = esQuery(request, query, jsonFormat)
