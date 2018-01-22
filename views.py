@@ -3165,11 +3165,7 @@ def getTermsGraph(request):
 		'controls': {
 			'use_significance': True,
 			'sample_size': int(request.GET['sample_size']) if 'sample_size' in request.GET else 20000,
-			'timeout': 20000,
-			'sample_diversity': {
-				'field': 'id',
-				'max_docs_per_value': 500
-			}
+			'timeout': 20000
 		},
 		'vertices': [
 			{
