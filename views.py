@@ -178,6 +178,11 @@ def createQuery(request):
 					'taxonomy.category': category.upper()
 				}
 			})
+			categoryShouldBool['bool']['should'].append({
+				'match': {
+					'taxonomy.category': category
+				}
+			})
 		query['bool']['must'].append(categoryShouldBool)
 
 
