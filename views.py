@@ -85,7 +85,7 @@ def createQuery(request):
 
 				# search_exclude_title = true, sök inte i titel fältet
 				if (not 'search_exclude_title' in request.GET or request.GET['search_exclude_title'] == 'false'):
-					matchObj['query_string']['fields'].append(term)
+					matchObj['query_string']['fields'].append('title')
 
 			query['bool']['must'].append(matchObj)
 
