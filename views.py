@@ -74,27 +74,18 @@ def createQuery(request):
 
 			else:
 				matchObj = {
-					'bool': {
-						'should': [
-							{
-								'match': {
-									'text': {
-										'query': term,
-										'boost': 2
-									}
-								}
-							}
-						]
+					'query_string': {
+						'query': term+'*',
+						'fields': [
+							'text^2'
+						],
+						'minimum_should_match': '100%'
 					}
 				}
 
 				# search_exclude_title = true, sök inte i titel fältet
 				if (not 'search_exclude_title' in request.GET or request.GET['search_exclude_title'] == 'false'):
-					matchObj['bool']['should'].append({
-						'match': {
-							'title': term
-						}
-					})
+					matchObj['query_string']['fields'].append(term)
 
 			query['bool']['must'].append(matchObj)
 
@@ -819,7 +810,7 @@ def createQuery(request):
 						'_id' : request.GET['similar']
 					}
 				],
-				
+
 				'min_word_length': int(request.GET['min_word_length']) if 'min_word_length' in request.GET else 4,
 				'min_term_freq' : int(request.GET['min_term_freq']) if 'min_term_freq' in request.GET else 1,
 				'max_query_terms' : int(request.GET['max_query_terms']) if 'max_query_terms' in request.GET else 25,
@@ -894,7 +885,7 @@ def createQuery(request):
 
 def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False):
 	esResponse = requests.get('https://'+es_config.user+':'+es_config.password+'@'+es_config.host+'/'+es_config.index_name+(apiUrl if apiUrl else '/legend/_search'), data=json.dumps(query), verify=False)
-	
+
 	responseData = esResponse.json()
 
 	if (formatFunc):
