@@ -73,11 +73,13 @@ def createQuery(request):
 						matchObj['bool']['should'][0]['match_phrase']['text']['slop'] = 3
 
 			else:
+				textField = 'text.raw' if 'search_raw' in request.GET and request.GET['search_raw'] != 'false' else 'text'
 				matchObj = {
-					'query_string': {
+					'multi_match': {
 						'query': term,
+						'type': 'best_fields',
 						'fields': [
-							'text^2'
+							textField+'^2'
 						],
 						'minimum_should_match': '100%'
 					}
@@ -85,7 +87,7 @@ def createQuery(request):
 
 				# search_exclude_title = true, sök inte i titel fältet
 				if (not 'search_exclude_title' in request.GET or request.GET['search_exclude_title'] == 'false'):
-					matchObj['query_string']['fields'].append('title')
+					matchObj['multi_match']['fields'].append('title')
 
 			query['bool']['must'].append(matchObj)
 
@@ -712,7 +714,7 @@ def createQuery(request):
 	if ('terms' in request.GET):
 		termsShouldBool = {
 			'nested': {
-				'path': 'topics',
+				'path': 'topics_10_10',
 				'query': {
 					'bool': {
 						'must': []
@@ -726,7 +728,7 @@ def createQuery(request):
 		for topic in termstrings:
 			termsShouldBool['nested']['query']['bool']['must'].append({
 				'nested': {
-					'path': 'topics.terms',
+					'path': 'topics_10_10.terms',
 					'query': {
 						'bool': {
 							'should': [
@@ -734,13 +736,13 @@ def createQuery(request):
 									'function_score': {
 										'query': {
 											'match': {
-												'topics.terms.term': topic
+												'topics_10_10.terms.term': topic
 											}
 										},
 										'functions': [
 											{
 												'field_value_factor': {
-													'field': 'topics.terms.probability'
+													'field': 'topics_10_10.terms.probability'
 												}
 											}
 										]
@@ -757,7 +759,7 @@ def createQuery(request):
 	if ('title_terms' in request.GET):
 		titleTermsShouldBool = {
 			'nested': {
-				'path': 'title_topics',
+				'path': 'title_topics_10_10',
 				'query': {
 					'bool': {
 						'must': []
@@ -771,7 +773,7 @@ def createQuery(request):
 		for topic in titleTermsStrings:
 			titleTermsShouldBool['nested']['query']['bool']['must'].append({
 				'nested': {
-					'path': 'title_topics.terms',
+					'path': 'title_topics_10_10.terms',
 					'query': {
 						'bool': {
 							'should': [
@@ -779,13 +781,13 @@ def createQuery(request):
 									'function_score': {
 										'query': {
 											'match': {
-												'title_topics.terms.term': topic
+												'title_topics_10_10.terms.term': topic
 											}
 										},
 										'functions': [
 											{
 												'field_value_factor': {
-													'field': 'title_topics.terms.probability'
+													'field': 'title_topics_10_10.terms.probability'
 												}
 											}
 										]
@@ -963,17 +965,17 @@ def getTerms(request):
 		'aggs': {
 			'data': {
 				'nested': {
-					'path': 'topics'
+					'path': 'topics_10_10'
 				},
 				'aggs': {
 					'data': {
 						'nested': {
-							'path': 'topics.terms'
+							'path': 'topics_10_10.terms'
 						},
 						'aggs': {
 							'data': {
 								'terms': {
-									'field': 'topics.terms.term',
+									'field': 'topics_10_10.terms.term',
 									'size': count,
 									'order': {
 										order: 'desc'
@@ -1016,12 +1018,12 @@ def getTermsAutocomplete(request):
 		'aggs': {
 			'data': {
 				'nested': {
-					'path': 'topics'
+					'path': 'topics_10_10'
 				},
 				'aggs': {
 					'data': {
 						'nested': {
-							'path': 'topics.terms'
+							'path': 'topics.10_10.terms'
 						},
 						'aggs': {
 							'data': {
@@ -1029,7 +1031,7 @@ def getTermsAutocomplete(request):
 									'bool': {
 										'must': {
 											'regexp': {
-												'topics.terms.term': request.GET['search']+'.+'
+												'topics.10_10.terms.term': request.GET['search']+'.+'
 											}
 										}
 									}
@@ -1041,7 +1043,7 @@ def getTermsAutocomplete(request):
 												'_count': 'desc'
 											},
 											'size': count,
-											'field': 'topics.terms.term'
+											'field': 'topics_10_10.terms.term'
 										},
 										'aggs': {
 											'parent_doc_count': {
@@ -1093,17 +1095,17 @@ def getTitleTerms(request):
 		'aggs': {
 			'data': {
 				'nested': {
-					'path': 'title_topics'
+					'path': 'title_topics_10_10'
 				},
 				'aggs': {
 					'data': {
 						'nested': {
-							'path': 'title_topics.terms'
+							'path': 'title_topics_10_10.terms'
 						},
 						'aggs': {
 							'data': {
 								'terms': {
-									'field': 'title_topics.terms.term',
+									'field': 'title_topics_10_10.terms.term',
 									'size': count,
 									'order': {
 										order: 'desc'
@@ -1115,17 +1117,17 @@ def getTitleTerms(request):
 									},
 									'probability_avg': {
 										'avg': {
-											'field': 'title_topics.terms.probability'
+											'field': 'title_topics_10_10.terms.probability'
 										}
 									},
 									'probability_max': {
 										'max': {
-											'field': 'title_topics.terms.probability'
+											'field': 'title_topics_10_10.terms.probability'
 										}
 									},
 									'probability_median': {
 										'percentiles': {
-											'field': 'title_topics.terms.probability',
+											'field': 'title_topics_10_10.terms.probability',
 											'percents': [
 												50
 											]
@@ -1164,12 +1166,12 @@ def getTitleTermsAutocomplete(request):
 		'aggs': {
 			'data': {
 				'nested': {
-					'path': 'title_topics'
+					'path': 'title_topics_10_10'
 				},
 				'aggs': {
 					'data': {
 						'nested': {
-							'path': 'title_topics.terms'
+							'path': 'title_topics_10_10.terms'
 						},
 						'aggs': {
 							'data': {
@@ -1177,7 +1179,7 @@ def getTitleTermsAutocomplete(request):
 									'bool': {
 										'must': {
 											'regexp': {
-												'title_topics.terms.term': request.GET['search']+'.+'
+												'title_topics_10_10.terms.term': request.GET['search']+'.+'
 											}
 										}
 									}
@@ -1189,7 +1191,7 @@ def getTitleTermsAutocomplete(request):
 												'_count': 'desc'
 											},
 											'size': count,
-											'field': 'title_topics.terms.term'
+											'field': 'title_topics_10_10.terms.term'
 										},
 										'aggs': {
 											'parent_doc_count': {
