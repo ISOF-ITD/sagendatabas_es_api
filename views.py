@@ -3042,6 +3042,7 @@ def getDocuments(request):
 	def jsonFormat(json):
 		return list(map(itemFormat, json['hits']['hits']))
 
+	textField = 'text.raw' if 'search_raw' in request.GET and request.GET['search_raw'] != 'false' else 'text'
 	query = {
 		'query': createQuery(request),
 		'size': request.GET['size'] if 'size' in request.GET else 100,
@@ -3054,7 +3055,7 @@ def getDocuments(request):
 				'</span>'
 			],
 			'fields' : {
-				'text' : {
+				textField : {
 					'number_of_fragments': 0
 				}
 			}
@@ -3115,8 +3116,21 @@ def getTexts(request):
 						'source': hit['_source']['source'],
 						'highlight': '<td>'+highlight+'</td>'
 					})
+			if 'text.raw' in hit['highlight']:
+				for highlight in hit['highlight']['text.raw']:
+					retList.append({
+						'_id': hit['_id'],
+						'title': hit['_source']['title'],
+						'materialtype': hit['_source']['materialtype'],
+						'taxonomy': hit['_source']['taxonomy'],
+						'archive': hit['_source']['archive'],
+						'year': hit['_source']['year'] if 'year' in hit['_source'] else '',
+						'source': hit['_source']['source'],
+						'highlight': '<td>'+highlight+'</td>'
+					})
 		return retList
 
+	textField = 'text.raw' if 'search_raw' in request.GET and request.GET['search_raw'] != 'false' else 'text'
 	query = {
 		'query': createQuery(request),
 		'size': request.GET['size'] if 'size' in request.GET else 100,
@@ -3130,7 +3144,7 @@ def getTexts(request):
 			],
 			'fields' : {
 				'title': {},
-				'text' : {}
+				textField : {}
 			}
 		}
 	}
