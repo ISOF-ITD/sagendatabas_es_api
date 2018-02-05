@@ -3023,8 +3023,22 @@ def getSimilar(request, documentId):
 
 
 def getDocuments(request):
+	def itemFormat(item):
+		if '_source' in item:
+			returnItem = dict(item)
+			returnItem['_source'] = {}
+
+			for key in item['_source']:
+				if not 'topics' in key:
+					#item['_source'].pop(key)
+					returnItem['_source'][key] = item['_source'][key]
+
+			return returnItem
+		else:
+			return item
+
 	def jsonFormat(json):
-		return json['hits']['hits']
+		return list(map(itemFormat, json['hits']['hits']))
 
 	query = {
 		'query': createQuery(request),
