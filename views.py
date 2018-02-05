@@ -75,7 +75,7 @@ def createQuery(request):
 			else:
 				matchObj = {
 					'query_string': {
-						'query': term+'*',
+						'query': term,
 						'fields': [
 							'text^2'
 						],
