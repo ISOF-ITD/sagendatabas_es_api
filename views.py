@@ -1553,19 +1553,13 @@ def getCategories(request):
 			'data': {
 				'terms': {
 					'field': 'taxonomy.category',
-					'size': 10000,
-					'order': {
-						'_term': 'asc'
-					}
+					'size': 10000
 				},
 				'aggs': {
 					'data': {
 						'terms': {
 							'field': 'taxonomy.name',
-							'size': 10000,
-							'order': {
-								'_term': 'asc'
-							}
+							'size': 10000
 						}
 					}
 				}
