@@ -49,103 +49,58 @@ def createQuery(request):
 		})
 
 	if ('search' in request.GET):
-		searchTerms = request.GET['search'].split(',')
+		term = request.GET['search']
+		textField = 'text.raw' if 'search_raw' in request.GET and request.GET['search_raw'] != 'false' else 'text'
 
-		for term in searchTerms:
-			if (term.startswith('"') and term.endswith('"')):
-				matchObj = {
-					'bool': {
-						'should': [
-							{
-								'match_phrase': {
-									'text': {
-										'query': term.replace('"', '')
-									}
-								}
-							}
-						]
-					}
-				}
-				if ('search_options' in request.GET):
-					if (request.GET['search_options'] == 'nearer'):
-						matchObj['bool']['should'][0]['match_phrase']['text']['slop'] = 1
-					if (request.GET['search_options'] == 'near'):
-						matchObj['bool']['should'][0]['match_phrase']['text']['slop'] = 3
+		matchObj = {
+			'multi_match': {
+				'query': term.replace('"', ''),
+				'type': 'phrase' if (term.startswith('"') and term.endswith('"')) else 'best_fields',
+				'fields': [
+					textField+'^2'
+				],
+				'minimum_should_match': '100%'
+			}
+		}
 
+		# search_exclude_title = true, sök inte i titel fältet
+		if (not 'search_exclude_title' in request.GET or request.GET['search_exclude_title'] == 'false') and (not 'search_raw' in request.GET or request.GET['search_raw'] != 'true'):
+			matchObj['multi_match']['fields'].append('title')
+
+		if term.startswith('"') and term.endswith('"'):
+			if ('phrase_options' in request.GET):
+				if (request.GET['phrase_options'] == 'nearer'):
+					matchObj['multi_match']['slop'] = 1
+				if (request.GET['phrase_options'] == 'near'):
+					matchObj['multi_match']['slop'] = 3
 			else:
-				textField = 'text.raw' if 'search_raw' in request.GET and request.GET['search_raw'] != 'false' else 'text'
-				matchObj = {
-					'multi_match': {
-						'query': term,
-						'type': 'best_fields',
-						'fields': [
-							textField+'^2'
-						],
-						'minimum_should_match': '100%'
-					}
-				}
+				matchObj['multi_match']['slop'] = 50
 
-				# search_exclude_title = true, sök inte i titel fältet
-				if (not 'search_exclude_title' in request.GET or request.GET['search_exclude_title'] == 'false') and (not 'search_raw' in request.GET or request.GET['search_raw'] != 'true'):
-					matchObj['multi_match']['fields'].append('title')
-
-			query['bool']['must'].append(matchObj)
+		query['bool']['must'].append(matchObj)
 
 
 	if ('search_all' in request.GET):
 		searchString = request.GET['search_all']
 
 		matchObj = {
-			'bool': {
-				'should': [
-					{
-						'match': {
-							'title': searchString
-						}
-					},
-					{
-						'match': {
-							'text': searchString
-						}
-					},
-					{
-						'match': {
-							'taxonomy.name': searchString
-						}
-					},
-					{
-						'match': {
-							'taxonomy.category': searchString
-						}
-					},
-					{
-						'match': {
-							'metadata.value': searchString
-						}
-					},
-					{
-						'match': {
-							'archive.archive': searchString
-						}
-					},
-					{
-						'match': {
-							'places.name': searchString
-						}
-					}
-				]
+			'multi_match': {
+				'query': searchString,
+				'type': 'best_fields',
+				'fields': [
+					'title',
+					'text',
+					'taxonomy.name',
+					'taxonomy.category',
+					'metadata.value',
+					'archive.archive',
+					'places.name'
+				],
+				'minimum_should_match': '100%'
 			}
 		}
 
+
 		query['bool']['must'].append(matchObj)
-
-
-	if ('phrase' in request.GET):
-		query['bool']['must'].append({
-			'match_phrase': {
-				'text': request.GET['phrase']
-			}
-		})
 
 
 	if ('has_metadata' in request.GET):
