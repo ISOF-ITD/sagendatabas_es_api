@@ -3041,42 +3041,43 @@ def getTexts(request):
 		retList = []
 
 		for hit in json['hits']['hits']:
-			if 'title' in hit['highlight']:
-				for highlight in hit['highlight']['title']:
-					retList.append({
-						'_id': hit['_id'],
-						'title': hit['_source']['title'],
-						'materialtype': hit['_source']['materialtype'],
-						'taxonomy': hit['_source']['taxonomy'],
-						'archive': hit['_source']['archive'],
-						'year': hit['_source']['year'] if 'year' in hit['_source'] else '',
-						'source': hit['_source']['source'],
-						'highlight': '<td>'+highlight+'</td>'
-					})
-			if 'text' in hit['highlight']:
-				for highlight in hit['highlight']['text']:
-					retList.append({
-						'_id': hit['_id'],
-						'title': hit['_source']['title'],
-						'materialtype': hit['_source']['materialtype'],
-						'taxonomy': hit['_source']['taxonomy'],
-						'archive': hit['_source']['archive'],
-						'year': hit['_source']['year'] if 'year' in hit['_source'] else '',
-						'source': hit['_source']['source'],
-						'highlight': '<td>'+highlight+'</td>'
-					})
-			if 'text.raw' in hit['highlight']:
-				for highlight in hit['highlight']['text.raw']:
-					retList.append({
-						'_id': hit['_id'],
-						'title': hit['_source']['title'],
-						'materialtype': hit['_source']['materialtype'],
-						'taxonomy': hit['_source']['taxonomy'],
-						'archive': hit['_source']['archive'],
-						'year': hit['_source']['year'] if 'year' in hit['_source'] else '',
-						'source': hit['_source']['source'],
-						'highlight': '<td>'+highlight+'</td>'
-					})
+			if 'highlight' in hit:
+				if 'title' in hit['highlight']:
+					for highlight in hit['highlight']['title']:
+						retList.append({
+							'_id': hit['_id'],
+							'title': hit['_source']['title'],
+							'materialtype': hit['_source']['materialtype'],
+							'taxonomy': hit['_source']['taxonomy'],
+							'archive': hit['_source']['archive'],
+							'year': hit['_source']['year'] if 'year' in hit['_source'] else '',
+							'source': hit['_source']['source'],
+							'highlight': '<td>'+highlight+'</td>'
+						})
+				if 'text' in hit['highlight']:
+					for highlight in hit['highlight']['text']:
+						retList.append({
+							'_id': hit['_id'],
+							'title': hit['_source']['title'],
+							'materialtype': hit['_source']['materialtype'],
+							'taxonomy': hit['_source']['taxonomy'],
+							'archive': hit['_source']['archive'],
+							'year': hit['_source']['year'] if 'year' in hit['_source'] else '',
+							'source': hit['_source']['source'],
+							'highlight': '<td>'+highlight+'</td>'
+						})
+				if 'text.raw' in hit['highlight']:
+					for highlight in hit['highlight']['text.raw']:
+						retList.append({
+							'_id': hit['_id'],
+							'title': hit['_source']['title'],
+							'materialtype': hit['_source']['materialtype'],
+							'taxonomy': hit['_source']['taxonomy'],
+							'archive': hit['_source']['archive'],
+							'year': hit['_source']['year'] if 'year' in hit['_source'] else '',
+							'source': hit['_source']['source'],
+							'highlight': '<td>'+highlight+'</td>'
+						})
 		return retList
 
 	textField = 'text.raw' if 'search_raw' in request.GET and request.GET['search_raw'] != 'false' else 'text'
