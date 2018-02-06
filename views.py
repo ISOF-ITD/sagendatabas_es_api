@@ -3090,7 +3090,7 @@ def getTexts(request):
 				'</td><td class="highlight-cell"><span class="highlight">'
 			],
 			'post_tags': [
-				'</span>'
+				'</span></td><td>'
 			],
 			'fields' : {
 				'title': {},
