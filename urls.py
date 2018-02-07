@@ -36,6 +36,9 @@ urlpatterns = [
 	url(r'^categories/', views.getCategories, name='getCategories'),
 
 	# aggregate kategorier
+	url(r'^category_types/', views.getCategoryTypes, name='getCategoryTypes'),
+
+	# aggregate kategorier
 	url(r'^types/', views.getTypes, name='getTypes'),
 
 	# aggregate socken

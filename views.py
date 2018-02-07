@@ -1535,6 +1535,34 @@ def getCategories(request):
 	esQueryResponse = esQuery(request, query, jsonFormat)
 	return esQueryResponse
 
+def getCategoryTypes(request):
+	def itemFormat(item):
+		retObj = {
+			'key': item['key'],
+			'doc_count': item['doc_count']
+		}
+
+		return retObj
+
+	def jsonFormat(json):
+		return list(map(itemFormat, json['aggregations']['data']['buckets']))
+
+	query = {
+		'query': createQuery(request),
+		'size': 0,
+		'aggs': {
+			'data': {
+				'terms': {
+					'field': 'taxonomy.type',
+					'size': 10000
+				}
+			}
+		}
+	}
+
+	esQueryResponse = esQuery(request, query, jsonFormat)
+	return esQueryResponse
+
 def getTypes(request):
 	def itemFormat(item):
 		return {
