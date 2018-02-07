@@ -1496,6 +1496,9 @@ def getCategories(request):
 		if len(item['data']['buckets']) > 0:
 			retObj['name'] = item['data']['buckets'][0]['key']
 
+			if len(item['data']['buckets'][0]['data']['buckets']) > 0:
+				retObj['type'] = item['data']['buckets'][0]['data']['buckets'][0]['key']
+
 		return retObj
 
 	def jsonFormat(json):
@@ -1515,6 +1518,13 @@ def getCategories(request):
 						'terms': {
 							'field': 'taxonomy.name',
 							'size': 10000
+						},
+						'aggs': {
+							'data': {
+								'terms': {
+									'field': 'taxonomy.type'
+								}
+							}
 						}
 					}
 				}
