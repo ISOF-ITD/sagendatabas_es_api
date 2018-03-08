@@ -842,7 +842,7 @@ def createQuery(request):
 	return query
 
 def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False):
-	esResponse = requests.get('http://'+(es_config.user+':'+es_config.password+'@' if hasattr(es_config, 'user') else '')+es_config.host+'/'+es_config.index_name+(apiUrl if apiUrl else '/legend/_search'), data=json.dumps(query), verify=False)
+	esResponse = requests.get(es_config.protocol+(es_config.user+':'+es_config.password+'@' if hasattr(es_config, 'user') else '')+es_config.host+'/'+es_config.index_name+(apiUrl if apiUrl else '/legend/_search'), data=json.dumps(query), verify=False)
 
 	responseData = esResponse.json()
 
@@ -870,7 +870,7 @@ def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False)
 		return jsonResponse
 
 def getDocument(request, documentId):
-	esResponse = requests.get('https://'+es_config.user+':'+es_config.password+'@'+es_config.host+'/'+es_config.index_name+'/legend/'+documentId, verify=False)
+	esResponse = requests.get(es_config.protocol+(es_config.user+':'+es_config.password+'@' if hasattr(es_config, 'user') else '')+es_config.host+'/'+es_config.index_name+'/legend/'+documentId, verify=False)
 
 	jsonResponse = JsonResponse(esResponse.json())
 	jsonResponse['Access-Control-Allow-Origin'] = '*'
