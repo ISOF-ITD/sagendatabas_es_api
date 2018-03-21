@@ -8,11 +8,9 @@ Koden för API:et finns i `sagenkarta_api/urls.py` och `sagenkarta_api/views.py`
 
 ## Endpoints
 
-documents/?[params]
-
-terms/?[params]
-
-title_terms/?[params]
+* documents/?[params]
+* terms/?[params]
+* title_terms/?[params]
 
 collection_years/?[params]
 
@@ -27,26 +25,17 @@ socken/?[params]
 get_socken/?[id]
 
 harad/?[params]
+* landskap/?[params]
+* persons/?[params]
+* informants/?[params]
+* collectors/?[params]
+* gender/?[params]
+* document/?[id]
+* random_document/
+* similar/?[id]
+* graph/?[params]
 
-landskap/?[params]
-
-persons/?[params]
-
-informants/?[params]
-
-collectors/?[params]
-
-gender/?[params]
-
-document/?[id]
-
-random_document/
-
-similar/?[id]
-
-graph/?[params]
-
-### Autocomplete antop
+### Autocomplete anrop
 autocomplete/terms/?search=[söksträng]
 autocomplete/title_terms/?search=[söksträng]
 autocomplete/persons/?search=[söksträng]
