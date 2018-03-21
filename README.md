@@ -11,20 +11,14 @@ Koden för API:et finns i `sagenkarta_api/urls.py` och `sagenkarta_api/views.py`
 * documents/?[params]
 * terms/?[params]
 * title_terms/?[params]
-
-collection_years/?[params]
-
-birth_years/?[params]
-
-categories/?[params]
-
-types/?[params]
-
-socken/?[params]
-
-get_socken/?[id]
-
-harad/?[params]
+* collection_years/?[params]
+* birth_years/?[params]
+* categories/?[params]
+* category_types/?[params]
+* types/?[params]
+* socken/?[params]
+* get_socken/?[id]
+* harad/?[params]
 * landskap/?[params]
 * persons/?[params]
 * informants/?[params]
@@ -36,10 +30,17 @@ harad/?[params]
 * graph/?[params]
 
 ### Autocomplete anrop
-autocomplete/terms/?search=[söksträng]
-autocomplete/title_terms/?search=[söksträng]
-autocomplete/persons/?search=[söksträng]
-autocomplete/socken/?search=[söksträng]
+* autocomplete/terms/?search=[söksträng]
+* autocomplete/title_terms/?search=[söksträng]
+* autocomplete/persons/?search=[söksträng]
+* autocomplete/socken/?search=[söksträng]
+
+### Total by type
+
+* total_by_type/socken
+* total_by_type/collection_years
+* total_by_type/birth_years
+* total_by_type/gender
 
 ## sagenkarta_es_api
 
