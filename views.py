@@ -36,6 +36,8 @@ def createQuery(request):
 	else:
 		query = {}
 
+
+	# Hämtar documenter var `year` är mellan från och till. Exempel: `collection_year=1900,1910`
 	if ('collection_years' in request.GET):
 		collectionYears = request.GET['collection_years'].split(',')
 
@@ -48,6 +50,8 @@ def createQuery(request):
 			}
 		})
 
+
+	# Hämtar documenter var ett eller flera eller alla ord förekommer i titel eller text. Exempel: (ett eller flera ord) `search=svart hund`, (alla ord) `search=svart,hund`, (fras sökning, endast i `text` fältet `search="svart hund"`
 	if ('search' in request.GET):
 		term = request.GET['search']
 		textField = 'text.raw' if 'search_raw' in request.GET and request.GET['search_raw'] != 'false' else 'text'
@@ -106,6 +110,7 @@ def createQuery(request):
 		query['bool']['must'].append(matchObj)
 
 
+	# Hämtar documenter som har speciell typ av metadata. Exempel: `has_metadata=sitevision_url` (hämtar kurerade postar för matkartan).
 	if ('has_metadata' in request.GET):
 		query['bool']['must'].append({
 			'match': {
@@ -114,6 +119,7 @@ def createQuery(request):
 		})
 
 
+	# Hämtar documenter som finns i angiven kategori (en eller flera). Exempel: `category=L,H`
 	if ('category' in request.GET):
 		categoryShouldBool = {
 			'bool': {
@@ -137,6 +143,7 @@ def createQuery(request):
 		query['bool']['must'].append(categoryShouldBool)
 
 
+	# Hämtar documenter av angiven typ (en eller flera). Exempel: `type=arkiv,tryckt`
 	if ('type' in request.GET):
 		typeShouldBool = {
 			'bool': {
@@ -155,6 +162,7 @@ def createQuery(request):
 		query['bool']['must'].append(typeShouldBool)
 
 
+	# Hämtar documenter som har speciella ID.
 	if ('documents' in request.GET):
 		docIdShouldBool = {
 			'bool': {
@@ -173,6 +181,7 @@ def createQuery(request):
 		query['bool']['must'].append(docIdShouldBool)
 
 
+	# Hämtar documenter samlat in i angiven socken (en eller flera). Exempel: (sägner från Göteborgs stad och Partille) `socken_id=202,243`
 	if ('socken_id' in request.GET):
 		sockenShouldBool = {
 			'nested': {
@@ -197,6 +206,7 @@ def createQuery(request):
 		query['bool']['must'].append(sockenShouldBool)
 
 
+	# Hämtar documenter samlat in i angiven socken, härad, landskap eller län, sök via namn (wildcard sökning). Exempel: `place=Bolle`
 	if ('place' in request.GET):
 		placeShouldBool = {
 			'nested': {
@@ -236,6 +246,7 @@ def createQuery(request):
 		query['bool']['must'].append(placeShouldBool)
 
 
+	# Hämtar documenter samlat in i angiven socken, men här letar vi efter namn (wildcard sökning). Exempel: `socken=Fritsla`
 	if ('socken' in request.GET):
 		sockenShouldBool = {
 			'nested': {
@@ -260,6 +271,7 @@ def createQuery(request):
 		query['bool']['must'].append(sockenShouldBool)
 
 
+	# Hämtar documenter samlat in i angiven landskap. Exempel: `landskap=Värmland`
 	if ('landskap' in request.GET):
 		landskapShouldBool = {
 			'nested': {
@@ -284,6 +296,7 @@ def createQuery(request):
 		query['bool']['must'].append(landskapShouldBool)
 
 
+	# Hämtar documenter var uppteckare eller informant matchar angivet namn. Exempel: (alla som heter Ragnar eller Nilsson) `person=Ragnar Nilsson`
 	if ('person' in request.GET):
 		personNameQueries = request.GET['person'].split(',')
 
@@ -318,6 +331,7 @@ def createQuery(request):
 
 
 
+	# Hämtar documenter var uppteckare eller informant matchar angivet helt namn. Exempel: (leter bara efter "Ragnar Nilsson") `person=Ragnar Nilsson`
 	if ('person_exact' in request.GET):
 		personNameQueries = request.GET['person_exact'].split(',')
 
@@ -351,6 +365,7 @@ def createQuery(request):
 			query['bool']['must'].append(personShouldBool)
 
 
+	# Hämtar documenter var uppteckare eller informant matchar angivet id.
 	if ('person_id' in request.GET):
 		personIdQueries = request.GET['person_id'].split(',')
 
@@ -540,6 +555,7 @@ def createQuery(request):
 		query['bool']['must'].append(personShouldBool)
 
 
+	# Hämtar documenter med koppling till personer av speciellt kön, möjligt att leta efter olika roll av personer. Exempel (informantar=män, upptecknare=kvinnor): gender=i:male,c:female
 	if ('gender' in request.GET):
 		genderQueries = request.GET['gender'].split(',')
 
@@ -554,12 +570,7 @@ def createQuery(request):
 							'must': [
 								{
 									'match': {
-										'persons.gender': genderQuery[1]
-									}
-								},
-								{
-									'match': {
-										'persons.relation': genderQuery[0]
+										'persons.gender': genderQuery[1] if len(genderQuery) > 1 else genderQuery[0]
 									}
 								}
 							]
@@ -568,16 +579,25 @@ def createQuery(request):
 				}
 			}
 
+			if len(genderQuery) > 1:
+				personShouldBool['nested']['query']['bool']['must'].append({
+					'match': {
+						'persons.relation': genderQuery[0]
+					}
+				})
+
+			print(personShouldBool)
+
 			query['bool']['must'].append(personShouldBool)
 
-
+	print(query)
 	if ('birth_years' in request.GET):
 		birthYearsQueries = request.GET['birth_years'].split(',')
 
 		for birthYearsQueryStr in birthYearsQueries:
 			birthYearsQuery = birthYearsQueryStr.split(':')
 
-			birthYears = birthYearsQuery[1].split('-')
+			birthYears = birthYearsQuery[1].split('-') if len(birthYearsQuery) > 1 else birthYearsQuery[0].split('-')
 
 			personShouldBool = {
 				'nested': {
@@ -592,17 +612,19 @@ def createQuery(request):
 											'lt': birthYears[1]
 										}
 									}
-								},
-								{
-									'match': {
-										'persons.relation': birthYearsQuery[0]
-									}
 								}
 							]
 						}
 					}
 				}
 			}
+
+			if len(birthYearsQuery) > 1:
+				personShouldBool['nested']['query']['bool']['must'].append({
+					'match': {
+						'persons.relation': birthYearsQuery[0]
+					}
+				})
 
 			query['bool']['must'].append(personShouldBool)
 
