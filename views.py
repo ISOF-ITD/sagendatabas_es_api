@@ -586,18 +586,28 @@ def createQuery(request):
 					}
 				})
 
-			print(personShouldBool)
-
 			query['bool']['must'].append(personShouldBool)
 
-	print(query)
 	if ('birth_years' in request.GET):
 		birthYearsQueries = request.GET['birth_years'].split(',')
 
 		for birthYearsQueryStr in birthYearsQueries:
 			birthYearsQuery = birthYearsQueryStr.split(':')
 
-			birthYears = birthYearsQuery[1].split('-') if len(birthYearsQuery) > 1 else birthYearsQuery[0].split('-')
+			personRelation = None
+			personGender = None
+
+			if len(birthYearsQuery) == 1:
+				birthYears = birthYearsQuery[0].split('-')
+			elif len(birthYearsQuery) == 2:
+				personRelation = birthYearsQuery[0]
+				birthYears = birthYearsQuery[1].split('-')
+			elif len(birthYearsQuery) == 3:
+				personRelation = birthYearsQuery[0]
+				personGender = birthYearsQuery[1]
+				birthYears = birthYearsQuery[2].split('-')
+
+			#birthYears = birthYearsQuery[1].split('-') if len(birthYearsQuery) > 1 else birthYearsQuery[0].split('-')
 
 			personShouldBool = {
 				'nested': {
@@ -619,10 +629,17 @@ def createQuery(request):
 				}
 			}
 
-			if len(birthYearsQuery) > 1:
+			if personRelation and personRelation.lower() != 'all':
 				personShouldBool['nested']['query']['bool']['must'].append({
 					'match': {
-						'persons.relation': birthYearsQuery[0]
+						'persons.relation': personRelation
+					}
+				})
+
+			if personGender and personRelation.lower() != 'all':
+				personShouldBool['nested']['query']['bool']['must'].append({
+					'match': {
+						'persons.gender': personGender
 					}
 				})
 
