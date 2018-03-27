@@ -85,8 +85,8 @@ Hämtar documenter samlat in i angiven landskap. Exempel: `landskap=Värmland`
 
 - **place=[socken namn]**
 Hämtar documenter samlat in i angiven socken, härad, landskap eller län, sök via namn (wildcard sökning). Exempel: `place=Bolle`
-- **person=[person namn]**
 
+- **person=[person namn]**
 Hämtar documenter var uppteckare eller informant matchar angivet namn. Exempel: (alla som heter Ragnar eller Nilsson) `person=Ragnar Nilsson`
 
 - **person_exact=[person namn]**
