@@ -85,8 +85,8 @@ Hämtar documenter samlat in i angiven landskap. Exempel: `landskap=Värmland`
 
 - **place=[socken namn]**
 Hämtar documenter samlat in i angiven socken, härad, landskap eller län, sök via namn (wildcard sökning). Exempel: `place=Bolle`
-- **person=[person namn]**
 
+- **person=[person namn]**
 Hämtar documenter var uppteckare eller informant matchar angivet namn. Exempel: (alla som heter Ragnar eller Nilsson) `person=Ragnar Nilsson`
 
 - **person_exact=[person namn]**
@@ -110,11 +110,13 @@ Hämtar documenter med uppteckare som är kvinnor, män eller okänt. Exempel: `
 - **informants_gender=[female|male|unknown]**
 Hämtar documenter med informantar som är kvinnor, män eller okänt. Exempel: `informants_gender=female`
 
-- **gender=[female|male|unknown]**
+- **gender=([relation]:)[female|male|unknown]**
 Hämtar documenter med informantar eller uppteckare som är kvinnor, män eller okänt. Exempel: `gender=female`
+Det är möjligt att definera relation till textar här. Exempel (kvinnor som informantar): `gender=i:female`
 
-- **birth_years=[från,till]**
+- **birth_years=([relation]:([kön]:))[från,till]**
 Hämtar documenter med informantar eller uppteckare föddes i en viss period. Exempel: `birth_years=1870,1890`
+Det är möjligt att definera relation till textar samt kön här. Exempel (kvinnor som informantar födda mellan 1878 och 1880): `birth_years=i:female:1878-1880`
 
 - **collectors_birth_years=[från,till]**
 Hämtar documenter med uppteckare föddes i en viss period. Exempel: `collectors_birth_years=1870,1890`
