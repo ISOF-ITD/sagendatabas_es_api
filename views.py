@@ -64,7 +64,13 @@ def createQuery(request):
 					textField+'^2',
 					'search_other',
 					'metadata.value',
-					'title'
+					'title',
+					'archive.archive',
+					'places.name',
+					'places.landskap',
+					'places.county',
+					'places.harad',
+					'persons.name'
 				],
 				'minimum_should_match': '100%'
 			}
