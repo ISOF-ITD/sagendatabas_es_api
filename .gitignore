@@ -1,3 +1,4 @@
 manage.py
 db.sqlite3
+es_config.py
 __pycache__/

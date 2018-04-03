@@ -4,10 +4,6 @@ from requests.auth import HTTPBasicAuth
 from random import randint
 
 
-#csfp = os.path.abspath(os.path.dirname(__file__))
-#if csfp not in sys.path:
-#	sys.path.insert(0, csfp)
-
 from . import es_config
 import geohash
 
