@@ -1,9 +1,14 @@
 from django.http import JsonResponse
-import requests, json, sys
+import requests, json, sys, os
 from requests.auth import HTTPBasicAuth
 from random import randint
 
-import es_config
+
+#csfp = os.path.abspath(os.path.dirname(__file__))
+#if csfp not in sys.path:
+#	sys.path.insert(0, csfp)
+
+from . import es_config
 import geohash
 
 def createQuery(request):
@@ -59,7 +64,7 @@ def createQuery(request):
 		matchObj = {
 			'multi_match': {
 				'query': term.replace('"', ''),
-				'type': 'phrase' if (term.startswith('"') and term.endswith('"')) else 'best_fields',
+				'type': 'phrase' if (term.startswith('"') and term.endswith('"')) else 'cross_fields',
 				'fields': [
 					textField+'^2',
 					'search_other',
