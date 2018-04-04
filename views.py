@@ -890,7 +890,7 @@ def createQuery(request):
 	return query
 
 def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False):
-	esResponse = requests.get(es_config.protocol+(es_config.user+':'+es_config.password+'@' if hasattr(es_config, 'user') else '')+es_config.host+'/'+es_config.index_name+(apiUrl if apiUrl else '/legend/_search'), data=json.dumps(query), verify=False)
+	esResponse = requests.get(es_config.protocol+(es_config.user+':'+es_config.password+'@' if hasattr(es_config, 'user') else '')+es_config.host+'/'+es_config.index_name+(apiUrl if apiUrl else '/legend/_search'), data=json.dumps(query), verify=hasattr(es_config, 'cert_file'), cert=[es_config.cert_file] if hasattr(es_config, 'cert_file') else None)
 
 	responseData = esResponse.json()
 
