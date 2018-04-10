@@ -60,7 +60,7 @@ def createQuery(request):
 		matchObj = {
 			'multi_match': {
 				'query': term.replace('"', ''),
-				'type': 'phrase' if (term.startswith('"') and term.endswith('"')) else 'cross_fields',
+				'type': 'phrase' if (term.startswith('"') and term.endswith('"')) else 'best_fields',
 				'fields': [
 					textField+'^2',
 					'search_other',
