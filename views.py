@@ -8,25 +8,12 @@ from . import es_config
 import geohash
 
 def createQuery(request):
-	# Parameters:
+	# Function som tar in request object och bygger upp Elasticsearch JSON query som skickas till es_config
 
-	#	sokstrang (title, text, acc. number) X
-	#	kategori X
-	#	typ X
-	#	institut ?
-	#	terms X
-	#	title_terms X
+	# Den letar efter varje param som skickas via url:et (?search=söksträng&type=arkiv&...) och
+	# lägger till query object till bool.must i hela query:en
 
-	#	insamlingsar (fran och till) X
-	#	insamlingsort (sockennamn, socken-id, harad, landskap, bounding box, ...)
-
-	#	liknande dokumenter X
-
-	#	person relation X
-	#	namn X
-	#	fodelsear
-	#	kon X
-	#	fodelseort
+	# Mer om bool: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-bool-query.html
 
 	if (len(request.GET) > 0):
 		query = {
@@ -93,6 +80,7 @@ def createQuery(request):
 		query['bool']['must'].append(matchObj)
 
 
+	# Används inte längre, ersätts av 'search'
 	if ('search_all' in request.GET):
 		searchString = request.GET['search_all']
 
@@ -890,25 +878,48 @@ def createQuery(request):
 	return query
 
 def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False):
-	esResponse = requests.get(es_config.protocol+(es_config.user+':'+es_config.password+'@' if hasattr(es_config, 'user') else '')+es_config.host+'/'+es_config.index_name+(apiUrl if apiUrl else '/legend/_search'), data=json.dumps(query), verify=hasattr(es_config, 'cert_file'), cert=[es_config.cert_file] if hasattr(es_config, 'cert_file') else None)
+	# Function som anropar ES
 
+	# Tar in request (Django Rest API request), Elasticsearch query som skapas av createQuery och formatFunc
+
+	# formatFunc:
+	# function som formaterar resultatet som kom kommer från ES
+	# formatFunc är definerad av metoder (enpoints) som anropar ES (se t.ex. getDocuments)
+	
+	# apiUrl: override url i config
+
+	# returnRaw: levererar raw outputData som objekt, om returnRaw är inte 'true' levereras outputData som json
+
+	# Anropar ES, bygger upp url från es_config och skickar data som json (query)
+	esResponse = requests.get(es_config.protocol+(es_config.user+':'+es_config.password+'@' if hasattr(es_config, 'user') else '')+es_config.host+'/'+es_config.index_name+(apiUrl if apiUrl else '/legend/_search'), 
+		data=json.dumps(query), 
+		verify=hasattr(es_config, 'cert_file'), 
+		cert=[es_config.cert_file] if hasattr(es_config, 'cert_file') else None)
+
+	# Tar emot svaret som json
 	responseData = esResponse.json()
 
 	if (formatFunc):
+		# Om det finns formatFunc formatterar vi svaret och lägger i outputData.data
 		outputData = {
 			'data': formatFunc(responseData)
 		}
 	else:
+		# Om formatFunc finns inte lägger vi responseData direkt till outputData
 		outputData = responseData
 
-	outputData['metadata'] ={
+	# Lägger till metadata section till outputData med information om total dokument och tiden som det tog för ES att hämta data
+	outputData['metadata'] = {
 		'total': responseData['hits']['total'] if 'hits' in responseData else 0,
 		'took': responseData['took'] if 'took' in responseData else 0
 	}
 
+	# Om vi har lagt till 'showQuery=true' till url:et lägger vi hela querien till outputData.metadata
 	if request is not None and ('showQuery' in request.GET) and request.GET['showQuery']:
 		outputData['metadata']['query'] = query
 
+	# If returnRaw leverar vi outputData som objekt, men annars som JsonResponse med Access-Control-Allow-Origin header
+	# returnRaw används av functioner som behandlar svaret från esQuery och inte leverarar outputData direkt som svar till Rest API
 	if returnRaw:
 		return outputData
 	else:
@@ -918,6 +929,7 @@ def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False)
 		return jsonResponse
 
 def getDocument(request, documentId):
+	# Hämtar enda dokument, använder inte esQuery för den anropar ES direkt
 	esResponse = requests.get(es_config.protocol+(es_config.user+':'+es_config.password+'@' if hasattr(es_config, 'user') else '')+es_config.host+'/'+es_config.index_name+'/legend/'+documentId, verify=hasattr(es_config, 'cert_file'), cert=[es_config.cert_file] if hasattr(es_config, 'cert_file') else None)
 
 	jsonResponse = JsonResponse(esResponse.json())
