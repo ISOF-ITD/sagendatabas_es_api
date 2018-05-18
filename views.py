@@ -1901,6 +1901,15 @@ def getSocken(request, sockenId = None):
 										'_term': 'asc'
 									}
 								}
+							},
+							'relation_type': {
+								'terms': {
+									'field': 'places.type',
+									'size': 100,
+									'order': {
+										'_term': 'asc'
+									}
+								}
 							}
 						}
 					}
