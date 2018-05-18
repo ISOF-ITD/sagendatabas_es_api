@@ -1788,7 +1788,7 @@ def getSocken(request, sockenId = None):
 			'location': geohash.decode(item['location']['buckets'][0]['key']),
 			'doc_count': item['parent_doc_count']['doc_count'],
 			'page_count': item['page_count']['pages']['value'],
-			'relation_type': relation_type['key'] for relation_type in item['relation_type']['buckets'] if len(item['relation_type']['buckets']) > 0 else None
+			'relation_type': [relation_type['key'] for relation_type in item['relation_type']['buckets'] if len(item['relation_type']['buckets']) > 0]
 		}
 
 	def jsonFormat(json):
