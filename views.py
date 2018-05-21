@@ -115,26 +115,26 @@ def createQuery(request):
 
 	# Hämtar documenter som finns i angiven kategori (en eller flera). Exempel: `category=L,H`
 	if ('category' in request.GET):
-		categoryBool = {
+		categoryShouldBool = {
 			'bool': {
-				'must': []
+				'should': []
 			}
 		}
 
 		categoryStrings = request.GET['category'].split(',')
 
 		for category in categoryStrings:
-			categoryBool['bool']['must'].append({
+			categoryShouldBool['bool']['should'].append({
 				'match': {
 					'taxonomy.category': category.upper()
 				}
 			})
-			categoryBool['bool']['must'].append({
+			categoryShouldBool['bool']['should'].append({
 				'match': {
 					'taxonomy.category': category
 				}
 			})
-		query['bool']['must'].append(categoryBool)
+		query['bool']['must'].append(categoryShouldBool)
 
 
 	# Hämtar documenter av angiven typ (en eller flera). Exempel: `type=arkiv,tryckt`
