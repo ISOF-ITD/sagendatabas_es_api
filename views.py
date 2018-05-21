@@ -124,22 +124,26 @@ def createQuery(request):
 		categoryStrings = request.GET['category'].split(',')
 
 		for category in categoryStrings:
-			categoryBool['bool']['must'].append({
+			categoryQuery = {
 				'bool': {
-					'should:' [
-						{
-							'match': {
-								'taxonomy.category': category.upper()
-							}
-						},
-						{
-							'match': {
-								'taxonomy.category': category
-							}
-						}
-					]
+					'should:' []
+				}
+			}
+
+			categoryQuery['bool']['should'].append({
+				'match': {
+					'taxonomy.category': category.upper()
 				}
 			})
+
+			categoryQuery['bool']['should'].append({
+				'match': {
+					'taxonomy.category': category
+				}
+			})
+
+			categoryBool['bool']['must'].append(categoryQuery)
+
 		query['bool']['must'].append(categoryBool)
 
 
