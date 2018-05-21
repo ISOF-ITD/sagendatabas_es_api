@@ -126,7 +126,7 @@ def createQuery(request):
 		for category in categoryStrings:
 			categoryQuery = {
 				'bool': {
-					'should:' []
+					'should': []
 				}
 			}
 
