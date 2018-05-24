@@ -802,6 +802,8 @@ def createQuery(request):
 
 		query['bool']['must'].append(titleTermsShouldBool)
 
+	# Hämtar dokument som liknar angivet document (id)
+	# Använder more_like_this query, parametrar kan anges via api url params (min_word_length, min_term_freq, max_query_terms, minimum_should_match)
 	if ('similar' in request.GET):
 		query['bool']['must'].append({
 			'more_like_this' : {
@@ -821,6 +823,7 @@ def createQuery(request):
 			}
 		})
 
+	# Hämtar dokument var place (socken) coordinator finns inom angived geo_box (top,left,bottom,right)
 	if ('geo_box' in request.GET):
 		latLngs = request.GET['geo_box'].split(',')
 		query['bool']['must'].append({
@@ -847,6 +850,7 @@ def createQuery(request):
 			}
 		})
 
+	# Hämtar dokument som måste innehålla socken object (places)
 	if ('only_geography' in request.GET and request.GET['only_geography'].lower() == 'true'):
 		query['bool']['must'].append({
 			'nested': {
@@ -863,6 +867,7 @@ def createQuery(request):
 			}
 		})
 
+	# Hämtar dokument som måste finnas i en kategory, kollar om taxonomy.category existerar
 	if ('only_categories' in request.GET and request.GET['only_categories'].lower() == 'true'):
 		query['bool']['must'].append({
 			'exists': {
@@ -870,6 +875,7 @@ def createQuery(request):
 			}
 		})
 
+	# Hämtar dokument från angivet land
 	if ('country' in request.GET):
 		query['bool']['must'].append({
 			'term': {
@@ -877,6 +883,7 @@ def createQuery(request):
 			}
 		})
 
+	# Hämtar dokument från angivet arkiv (arkiv är dock inte standardiserad i databasen)
 	if ('archive' in request.GET):
 		query['bool']['must'].append({
 			'term': {
@@ -887,17 +894,17 @@ def createQuery(request):
 	return query
 
 def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False):
-	# Function som anropar ES
+	# Function som formulerar query och anropar ES
 
 	# Tar in request (Django Rest API request), Elasticsearch query som skapas av createQuery och formatFunc
 
 	# formatFunc:
-	# function som formaterar resultatet som kom kommer från ES
+	# function som formaterar resultatet som kom kommer från ES och skickar vidare (return JsonResponse(outputData))
 	# formatFunc är definerad av metoder (enpoints) som anropar ES (se t.ex. getDocuments)
 	
 	# apiUrl: override url i config
 
-	# returnRaw: levererar raw outputData som objekt, om returnRaw är inte 'true' levereras outputData som json
+	# returnRaw: levererar raw outputData som python objekt, om returnRaw är inte 'true' levereras outputData som json
 
 	# Anropar ES, bygger upp url från es_config och skickar data som json (query)
 	esResponse = requests.get(es_config.protocol+(es_config.user+':'+es_config.password+'@' if hasattr(es_config, 'user') else '')+es_config.host+'/'+es_config.index_name+(apiUrl if apiUrl else '/legend/_search'), 
@@ -960,10 +967,14 @@ def getRandomDocument(request):
 		}
 	}
 
+	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
 	esQueryResponse = esQuery(request, query)
 	return esQueryResponse
 
 def getTerms(request):
+	# Aggrigerar terms (topic_10_10 fält)
+
+	# itemFormat som säger till hur varje object i esQuery resultatet skulle formateras
 	def itemFormat(item):
 		return {
 			'term': item['key'],
@@ -971,6 +982,7 @@ def getTerms(request):
 			'terms': item['doc_count']
 		}
 
+	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
 	def jsonFormat(json):
 		return list(map(itemFormat, json['aggregations']['data']['data']['data']['buckets']))
 
@@ -1019,10 +1031,12 @@ def getTerms(request):
 		}
 	}
 
+	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
 	esQueryResponse = esQuery(request, query, jsonFormat)
 	return esQueryResponse
 
 def getTermsAutocomplete(request):
+	# itemFormat som säger till hur varje object i esQuery resultatet skulle formateras
 	def itemFormat(item):
 		return {
 			'term': item['key'],
@@ -1030,6 +1044,7 @@ def getTermsAutocomplete(request):
 			'terms': item['doc_count']
 		}
 
+	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
 	def jsonFormat(json):
 		return list(map(itemFormat, json['aggregations']['data']['data']['data']['data']['buckets']))
 
@@ -1085,10 +1100,12 @@ def getTermsAutocomplete(request):
 		}
 	}
 
+	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
 	esQueryResponse = esQuery(request, query, jsonFormat)
 	return esQueryResponse
 
 def getTitleTerms(request):
+	# itemFormat som säger till hur varje object i esQuery resultatet skulle formateras
 	def itemFormat(item):
 		return {
 			'term': item['key'],
@@ -1096,6 +1113,7 @@ def getTitleTerms(request):
 			'terms': item['doc_count']
 		}
 
+	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
 	def jsonFormat(json):
 		return list(map(itemFormat, json['aggregations']['data']['data']['data']['buckets']))
 
@@ -1167,10 +1185,12 @@ def getTitleTerms(request):
 		}
 	}
 
+	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
 	esQueryResponse = esQuery(request, query, jsonFormat)
 	return esQueryResponse
 
 def getTitleTermsAutocomplete(request):
+	# itemFormat som säger till hur varje object i esQuery resultatet skulle formateras
 	def itemFormat(item):
 		return {
 			'term': item['key'],
@@ -1178,6 +1198,7 @@ def getTitleTermsAutocomplete(request):
 			'terms': item['doc_count']
 		}
 
+	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
 	def jsonFormat(json):
 		return list(map(itemFormat, json['aggregations']['data']['data']['data']['data']['buckets']))
 
@@ -1233,10 +1254,12 @@ def getTitleTermsAutocomplete(request):
 		}
 	}
 
+	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
 	esQueryResponse = esQuery(request, query, jsonFormat)
 	return esQueryResponse
 
 def getCollectionYearsTotal(request):
+	# itemFormat som säger till hur varje object i esQuery resultatet skulle formateras
 	def itemFormat(item):
 		return {
 			'year': item['key_as_string'],
@@ -1244,6 +1267,7 @@ def getCollectionYearsTotal(request):
 			'doc_count': item['doc_count']
 		}
 
+	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
 	def jsonFormat(json):
 		return list(map(itemFormat, json['aggregations']['data']['data']['buckets']))
 
@@ -1307,6 +1331,7 @@ def getCollectionYearsTotal(request):
 	return jsonResponse
 
 def getCollectionYears(request):
+	# itemFormat som säger till hur varje object i esQuery resultatet skulle formateras
 	def itemFormat(item):
 		return {
 			'year': item['key_as_string'],
@@ -1314,6 +1339,7 @@ def getCollectionYears(request):
 			'doc_count': item['doc_count']
 		}
 
+	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
 	def jsonFormat(json):
 		return list(map(itemFormat, json['aggregations']['data']['data']['buckets']))
 
@@ -1342,10 +1368,12 @@ def getCollectionYears(request):
 		}
 	}
 
+	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
 	esQueryResponse = esQuery(request, query, jsonFormat)
 	return esQueryResponse
 
 def getBirthYearsTotal(request):
+	# itemFormat som säger till hur varje object i esQuery resultatet skulle formateras
 	def itemFormat(item):
 		return {
 			'year': item['key_as_string'],
@@ -1354,6 +1382,7 @@ def getBirthYearsTotal(request):
 			'person_count': item['person_count']['value']
 		}
 
+	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
 	def jsonFormat(json):
 		ret = {}
 
@@ -1467,6 +1496,7 @@ def getBirthYearsTotal(request):
 	return jsonResponse
 
 def getBirthYears(request):
+	# itemFormat som säger till hur varje object i esQuery resultatet skulle formateras
 	def itemFormat(item):
 		return {
 			'year': item['key_as_string'],
@@ -1475,6 +1505,7 @@ def getBirthYears(request):
 			'person_count': item['person_count']['value']
 		}
 
+	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
 	def jsonFormat(json):
 		ret = {}
 
@@ -1553,10 +1584,12 @@ def getBirthYears(request):
 		'aggs': createAggregations(roles)
 	}
 
+	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
 	esQueryResponse = esQuery(request, query, jsonFormat)
 	return esQueryResponse
 
 def getCategories(request):
+	# itemFormat som säger till hur varje object i esQuery resultatet skulle formateras
 	def itemFormat(item):
 		retObj = {
 			'key': item['key'],
@@ -1571,6 +1604,7 @@ def getCategories(request):
 
 		return retObj
 
+	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
 	def jsonFormat(json):
 		return list(map(itemFormat, json['aggregations']['data']['buckets']))
 
@@ -1602,10 +1636,12 @@ def getCategories(request):
 		}
 	}
 
+	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
 	esQueryResponse = esQuery(request, query, jsonFormat)
 	return esQueryResponse
 
 def getCategoryTypes(request):
+	# itemFormat som säger till hur varje object i esQuery resultatet skulle formateras
 	def itemFormat(item):
 		retObj = {
 			'key': item['key'],
@@ -1614,6 +1650,7 @@ def getCategoryTypes(request):
 
 		return retObj
 
+	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
 	def jsonFormat(json):
 		return list(map(itemFormat, json['aggregations']['data']['buckets']))
 
@@ -1630,16 +1667,19 @@ def getCategoryTypes(request):
 		}
 	}
 
+	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
 	esQueryResponse = esQuery(request, query, jsonFormat)
 	return esQueryResponse
 
 def getTypes(request):
+	# itemFormat som säger till hur varje object i esQuery resultatet skulle formateras
 	def itemFormat(item):
 		return {
 			'type': item['key'],
 			'doc_count': item['doc_count']
 		}
 
+	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
 	def jsonFormat(json):
 		return list(map(itemFormat, json['aggregations']['data']['buckets']))
 
@@ -1659,10 +1699,12 @@ def getTypes(request):
 		}
 	}
 
+	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
 	esQueryResponse = esQuery(request, query, jsonFormat)
 	return esQueryResponse
 
 def getSockenTotal(request):
+	# itemFormat som säger till hur varje object i esQuery resultatet skulle formateras
 	def itemFormat(item):
 		return {
 			'id': item['key'],
@@ -1675,6 +1717,7 @@ def getSockenTotal(request):
 			'doc_count': item['data']['buckets'][0]['doc_count']
 		}
 
+	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
 	def jsonFormat(json):
 		return list(map(itemFormat, json['aggregations']['data']['data']['buckets']))
 
@@ -1786,6 +1829,7 @@ def getSockenTotal(request):
 	return jsonResponse
 
 def getSocken(request, sockenId = None):
+	# itemFormat som säger till hur varje object i esQuery resultatet skulle formateras
 	def itemFormat(item):
 		return {
 			'id': item['key'],
@@ -1800,6 +1844,7 @@ def getSocken(request, sockenId = None):
 			'relation_type': [relation_type['key'] for relation_type in item['relation_type']['buckets'] if len(item['relation_type']['buckets']) > 0]
 		}
 
+	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
 	def jsonFormat(json):
 		if sockenId is not None:
 			socken = [item for item in map(itemFormat, json['aggregations']['data']['data']['buckets']) if item['id'] == sockenId]
@@ -1928,6 +1973,7 @@ def getSocken(request, sockenId = None):
 		}
 	}
 
+	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
 	esQueryResponse = esQuery(request, query, jsonFormat, None, True)
 
 	if ('mark_metadata' in request.GET):
@@ -1955,6 +2001,7 @@ def getSocken(request, sockenId = None):
 	return jsonResponse
 
 def getLetters(request, sockenId = None):
+	# itemFormat som säger till hur varje object i esQuery resultatet skulle formateras
 	def itemFormat(item):
 		ret = {
 			'id': item['key'],
@@ -1974,6 +2021,7 @@ def getLetters(request, sockenId = None):
 	def subItemListFormat(subItem):
 		return [item for item in map(itemFormat, subItem['destination_places']['sub']['places']['places']['buckets'])]
 
+	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
 	def jsonFormat(json):
 		if sockenId is not None:
 			socken = [item for item in map(itemFormat, json['aggregations']['data']['data']['buckets']) if item['id'] == sockenId]
@@ -2169,6 +2217,7 @@ def getLetters(request, sockenId = None):
 		}
 	}
 
+	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
 	esQueryResponse = esQuery(request, query, jsonFormat, None, True)
 
 	if ('mark_metadata' in request.GET):
@@ -2197,6 +2246,7 @@ def getLetters(request, sockenId = None):
 
 
 def getSockenAutocomplete(request):
+	# itemFormat som säger till hur varje object i esQuery resultatet skulle formateras
 	def itemFormat(item):
 		return {
 			'id': item['key'],
@@ -2209,6 +2259,7 @@ def getSockenAutocomplete(request):
 			'doc_count': item['data']['buckets'][0]['doc_count']
 		}
 
+	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
 	def jsonFormat(json):
 		return list(map(itemFormat, json['aggregations']['data']['data']['data']['buckets']))
 
@@ -2299,11 +2350,13 @@ def getSockenAutocomplete(request):
 		}
 	}
 
+	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
 	esQueryResponse = esQuery(request, query, jsonFormat)
 	return esQueryResponse
 
 
 def getHarad(request):
+	# itemFormat som säger till hur varje object i esQuery resultatet skulle formateras
 	def itemFormat(item):
 		return {
 			'id': item['key'],
@@ -2313,6 +2366,7 @@ def getHarad(request):
 			'doc_count': item['data']['buckets'][0]['doc_count']
 		}
 
+	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
 	def jsonFormat(json):
 		return list(map(itemFormat, json['aggregations']['data']['data']['buckets']))
 
@@ -2368,16 +2422,19 @@ def getHarad(request):
 		}
 	}
 
+	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
 	esQueryResponse = esQuery(request, query, jsonFormat)
 	return esQueryResponse
 
 def getLandskap(request):
+	# itemFormat som säger till hur varje object i esQuery resultatet skulle formateras
 	def itemFormat(item):
 		return {
 			'name': item['key'],
 			'doc_count': item['doc_count']
 		}
 
+	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
 	def jsonFormat(json):
 		return list(map(itemFormat, json['aggregations']['data']['data']['buckets']))
 
@@ -2401,16 +2458,19 @@ def getLandskap(request):
 		}
 	}
 
+	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
 	esQueryResponse = esQuery(request, query, jsonFormat)
 	return esQueryResponse
 
 def getCounty(request):
+	# itemFormat som säger till hur varje object i esQuery resultatet skulle formateras
 	def itemFormat(item):
 		return {
 			'name': item['key'],
 			'doc_count': item['doc_count']
 		}
 
+	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
 	def jsonFormat(json):
 		return list(map(itemFormat, json['aggregations']['data']['data']['buckets']))
 
@@ -2434,10 +2494,12 @@ def getCounty(request):
 		}
 	}
 
+	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
 	esQueryResponse = esQuery(request, query, jsonFormat)
 	return esQueryResponse
 
 def getPersons(request, personId = None):
+	# itemFormat som säger till hur varje object i esQuery resultatet skulle formateras
 	def itemFormat(item):
 		retObj = {
 			'id': item['key'],
@@ -2456,6 +2518,7 @@ def getPersons(request, personId = None):
 
 		return retObj
 
+	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
 	def jsonFormat(json):
 		if personId is not None:
 			person = [item for item in map(itemFormat, json['aggregations']['data']['data']['buckets']) if item['id'] == personId]
@@ -2558,6 +2621,7 @@ def getPersons(request, personId = None):
 		}
 	}
 
+	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
 	esQueryResponse = esQuery(request, query, jsonFormat)
 	return esQueryResponse
 
@@ -2573,10 +2637,12 @@ def _getPerson(request, personId):
 		}
 	}
 
+	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
 	esQueryResponse = esQuery(request, query)
 	return esQueryResponse
 
 def getPersonsAutocomplete(request):
+	# itemFormat som säger till hur varje object i esQuery resultatet skulle formateras
 	def itemFormat(item):
 		retObj = {
 			'id': item['key'],
@@ -2595,6 +2661,7 @@ def getPersonsAutocomplete(request):
 
 		return retObj
 
+	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
 	def jsonFormat(json):
 		return list(map(itemFormat, json['aggregations']['data']['data']['data']['buckets']))
 
@@ -2691,11 +2758,13 @@ def getPersonsAutocomplete(request):
 		}
 		query['aggs']['data']['aggs']['data']['filter']['bool']['must'].append(relationObj)
 
+	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
 	esQueryResponse = esQuery(request, query, jsonFormat)
 	return esQueryResponse
 
 
 def getRelatedPersons(request, relation):
+	# itemFormat som säger till hur varje object i esQuery resultatet skulle formateras
 	def itemFormat(item):
 		retObj = {
 			'id': item['key'],
@@ -2715,6 +2784,7 @@ def getRelatedPersons(request, relation):
 
 		return retObj
 
+	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
 	def jsonFormat(json):
 		return list(map(itemFormat, json['aggregations']['data']['data']['data']['buckets']))
 
@@ -2796,6 +2866,7 @@ def getRelatedPersons(request, relation):
 		}
 	}
 
+	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
 	esQueryResponse = esQuery(request, query, jsonFormat)
 	return esQueryResponse
 
@@ -2808,9 +2879,11 @@ def getCollectors(request):
 	return getRelatedPersons(request, 'c')
 
 def getPersonRoles(request):
+	# itemFormat som säger till hur varje object i esQuery resultatet skulle formateras
 	def itemFormat(item):
 		return item['key']
 
+	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
 	def jsonFormat(json):
 		return list(map(itemFormat, json['aggregations']['data']['data']['buckets']))
 
@@ -2839,6 +2912,7 @@ def getPersonRoles(request):
 	return list(filter(None, roles['data']))
 
 def getGenderTotal(request):
+	# itemFormat som säger till hur varje object i esQuery resultatet skulle formateras
 	def itemFormat(item):
 		return {
 			'gender': item['key'],
@@ -2846,6 +2920,7 @@ def getGenderTotal(request):
 			'person_count': item['person_count']['value']
 		}
 
+	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
 	def jsonFormat(json):
 		ret = {}
 
@@ -2963,6 +3038,7 @@ def getGenderTotal(request):
 	return jsonResponse
 
 def getGender(request):
+	# itemFormat som säger till hur varje object i esQuery resultatet skulle formateras
 	def itemFormat(item):
 		return {
 			'gender': item['key'],
@@ -2970,6 +3046,7 @@ def getGender(request):
 			'person_count': item['person_count']['value']
 		}
 
+	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
 	def jsonFormat(json):
 		ret = {}
 
@@ -3052,6 +3129,7 @@ def getGender(request):
 		'aggs': createAggregations(roles)
 	}
 
+	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
 	esQueryResponse = esQuery(request, query, jsonFormat)
 	return esQueryResponse
 
@@ -3087,11 +3165,13 @@ def getSimilar(request, documentId):
 		}
 	}
 
+	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
 	esQueryResponse = esQuery(request, query)
 	return esQueryResponse
 
 
 def getDocuments(request):
+	# itemFormat som säger till hur varje object i esQuery resultatet skulle formateras
 	def itemFormat(item):
 		if '_source' in item:
 			returnItem = dict(item)
@@ -3106,6 +3186,7 @@ def getDocuments(request):
 		else:
 			return item
 
+	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
 	def jsonFormat(json):
 		return list(map(itemFormat, json['hits']['hits']))
 
@@ -3150,11 +3231,13 @@ def getDocuments(request):
 
 		query['sort'] = sort
 
+	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
 	esQueryResponse = esQuery(request, query, jsonFormat)
 	return esQueryResponse
 
 
 def getTexts(request):
+	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
 	def jsonFormat(json):
 		retList = []
 
@@ -3226,12 +3309,14 @@ def getTexts(request):
 
 		query['sort'] = sort
 
+	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
 	esQueryResponse = esQuery(request, query, jsonFormat)
 
 	return esQueryResponse
 
 
 def getTermsGraph(request):
+	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
 	def jsonFormat(json):
 		return json
 
@@ -3279,11 +3364,13 @@ def getTermsGraph(request):
 		}
 	}
 
+	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
 	esQueryResponse = esQuery(request, query, jsonFormat, '/_xpack/_graph/_explore')
 	return esQueryResponse
 
 
 def getPersonsGraph(request):
+	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
 	def jsonFormat(json):
 		return json
 
@@ -3318,5 +3405,6 @@ def getPersonsGraph(request):
 		}
 	}
 
+	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
 	esQueryResponse = esQuery(request, query, jsonFormat, '/_xpack/_graph/_explore')
 	return esQueryResponse
