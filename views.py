@@ -3216,8 +3216,14 @@ def getDocuments(request):
 				'match': {
 					'metadata.type': {
 						'query': request.GET['mark_metadata'],
-						'boost': 10
+						'boost': 5
 					}
+				}
+			},
+			{
+				'exists': {
+					'field': 'text',
+					'boost': 10
 				}
 			}
 		]
@@ -3316,6 +3322,8 @@ def getTexts(request):
 
 
 def getTermsGraph(request):
+	# Hämtar graphs data för visualisering i terms network graph delen av Digitalt Kulturarv
+
 	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
 	def jsonFormat(json):
 		return json
