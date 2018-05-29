@@ -1,9 +1,0 @@
-host = 'ingestnode100.uu.se:9200'
-protocol = 'https://'
-index_name = 'isof-taledb-sagendatabas'
-user = 'isof-taledb'
-password = 'just4testing'
-#cert_file = './ITS-CA-cacert.pem'
-cert_file = False
-restApiRecordUrl = 'http://frigg-test.sprakochfolkminnen.se/sagendatabas/api/records/'
-feedbackEmail = 'fredrik.skott@sprakochfolkminnen.se'
