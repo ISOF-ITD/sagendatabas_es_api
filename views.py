@@ -910,7 +910,7 @@ def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False)
 	esResponse = requests.get(es_config.protocol+(es_config.user+':'+es_config.password+'@' if hasattr(es_config, 'user') else '')+es_config.host+'/'+es_config.index_name+(apiUrl if apiUrl else '/legend/_search'), 
 		data=json.dumps(query), 
 		verify=hasattr(es_config, 'cert_file'), 
-		cert=[es_config.cert_file] if hasattr(es_config, 'cert_file') else None)
+		cert=es_config.cert_file if hasattr(es_config, 'cert_file') else None)
 
 	# Tar emot svaret som json
 	responseData = esResponse.json()
@@ -946,7 +946,7 @@ def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False)
 
 def getDocument(request, documentId):
 	# Hämtar enda dokument, använder inte esQuery för den anropar ES direkt
-	esResponse = requests.get(es_config.protocol+(es_config.user+':'+es_config.password+'@' if hasattr(es_config, 'user') else '')+es_config.host+'/'+es_config.index_name+'/legend/'+documentId, verify=hasattr(es_config, 'cert_file'), cert=[es_config.cert_file] if hasattr(es_config, 'cert_file') else None)
+	esResponse = requests.get(es_config.protocol+(es_config.user+':'+es_config.password+'@' if hasattr(es_config, 'user') else '')+es_config.host+'/'+es_config.index_name+'/legend/'+documentId, verify=hasattr(es_config, 'cert_file'), cert=es_config.cert_file if hasattr(es_config, 'cert_file') else None)
 
 	jsonResponse = JsonResponse(esResponse.json())
 	jsonResponse['Access-Control-Allow-Origin'] = '*'
