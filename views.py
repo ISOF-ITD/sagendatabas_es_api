@@ -910,8 +910,7 @@ def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False)
 	esUrl = es_config.protocol+(es_config.user+':'+es_config.password+'@' if hasattr(es_config, 'user') else '')+es_config.host+'/'+es_config.index_name+(apiUrl if apiUrl else '/legend/_search')
 	esResponse = requests.get(esUrl, 
 		data=json.dumps(query), 
-		verify=hasattr(es_config, 'cert_file'), 
-		cert=es_config.cert_file if hasattr(es_config, 'cert_file') else None)
+		verify=False)
 
 	# Tar emot svaret som json
 	responseData = esResponse.json()
