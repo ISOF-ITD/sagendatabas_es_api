@@ -907,7 +907,8 @@ def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False)
 	# returnRaw: levererar raw outputData som python objekt, om returnRaw är inte 'true' levereras outputData som json
 
 	# Anropar ES, bygger upp url från es_config och skickar data som json (query)
-	esResponse = requests.get(es_config.protocol+(es_config.user+':'+es_config.password+'@' if hasattr(es_config, 'user') else '')+es_config.host+'/'+es_config.index_name+(apiUrl if apiUrl else '/legend/_search'), 
+	esUrl = es_config.protocol+(es_config.user+':'+es_config.password+'@' if hasattr(es_config, 'user') else '')+es_config.host+'/'+es_config.index_name+(apiUrl if apiUrl else '/legend/_search')
+	esResponse = requests.get(esUrl, 
 		data=json.dumps(query), 
 		verify=hasattr(es_config, 'cert_file'), 
 		cert=es_config.cert_file if hasattr(es_config, 'cert_file') else None)
