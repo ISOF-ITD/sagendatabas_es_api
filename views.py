@@ -4,7 +4,7 @@ from requests.auth import HTTPBasicAuth
 from random import randint
 
 from . import es_config
-import geohash
+#import geohash
 
 def createQuery(request):
 	# Function som tar in request object och bygger upp Elasticsearch JSON query som skickas till es_config
@@ -908,9 +908,14 @@ def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False)
 
 	# Anropar ES, bygger upp url från es_config och skickar data som json (query)
 	esUrl = es_config.protocol+(es_config.user+':'+es_config.password+'@' if hasattr(es_config, 'user') else '')+es_config.host+'/'+es_config.index_name+(apiUrl if apiUrl else '/legend/_search')
-	esResponse = requests.get(esUrl, 
-		data=json.dumps(query), 
-		verify=False)
+
+	headers = {'Accept': 'application/json', 'content-type': 'application/json'}
+
+	esResponse = requests.get(esUrl,
+							  data=json.dumps(query),
+							  verify=False,
+							  headers=headers)
+
 
 	# Tar emot svaret som json
 	responseData = esResponse.json()
