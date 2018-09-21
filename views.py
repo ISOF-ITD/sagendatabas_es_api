@@ -4,7 +4,7 @@ from requests.auth import HTTPBasicAuth
 from random import randint
 
 from . import es_config
-#import geohash
+import geohash
 
 def createQuery(request):
 	# Function som tar in request object och bygger upp Elasticsearch JSON query som skickas till es_config
