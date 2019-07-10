@@ -6,6 +6,9 @@ from random import randint
 from . import es_config
 import geohash
 
+import logging
+logger = logging.getLogger(__name__)
+
 def createQuery(request):
 	# Function som tar in request object och bygger upp Elasticsearch JSON query som skickas till es_config
 
@@ -911,6 +914,7 @@ def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False)
 
 	headers = {'Accept': 'application/json', 'content-type': 'application/json'}
 
+	logger.debug("url, query %s %s", esUrl, query)
 	esResponse = requests.get(esUrl,
 							  data=json.dumps(query),
 							  verify=False,
