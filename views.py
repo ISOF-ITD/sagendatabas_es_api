@@ -1888,7 +1888,7 @@ def getSocken(request, sockenId = None):
 		queryObject = createQuery(request)
 
 	query = {
-		'query': queryObject,
+		#'query': queryObject,
 		'size': 0,
 		'aggs': {
 			'data': {
@@ -1981,6 +1981,10 @@ def getSocken(request, sockenId = None):
 			}
 		}
 	}
+
+	#Add queryObject if it is not empty (Elasticsearch 7 seems to not like empty query object)
+	if queryObject:
+		query['query'] = queryObject
 
 	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
 	esQueryResponse = esQuery(request, query, jsonFormat, None, True)
