@@ -914,6 +914,13 @@ def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False)
 
 	headers = {'Accept': 'application/json', 'content-type': 'application/json'}
 
+    # Remove queryObject if it is empty (Elasticsearch 7 seems to not like empty query object)
+	if 'query' in query:
+		if not query['query']:
+#			logger.debug(query['query'])
+#		else:
+			query.pop('query', None)
+
 	logger.debug("url, query %s %s", esUrl, query)
 	esResponse = requests.get(esUrl,
 							  data=json.dumps(query),
@@ -1888,7 +1895,7 @@ def getSocken(request, sockenId = None):
 		queryObject = createQuery(request)
 
 	query = {
-		#'query': queryObject,
+		'query': queryObject,
 		'size': 0,
 		'aggs': {
 			'data': {
@@ -1981,10 +1988,6 @@ def getSocken(request, sockenId = None):
 			}
 		}
 	}
-
-	#Add queryObject if it is not empty (Elasticsearch 7 seems to not like empty query object)
-	if queryObject:
-		query['query'] = queryObject
 
 	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
 	esQueryResponse = esQuery(request, query, jsonFormat, None, True)
