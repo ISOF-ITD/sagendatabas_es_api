@@ -6,6 +6,8 @@ from random import randint
 from . import es_config
 import geohash
 
+from django.db.models.functions import Now
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -27,6 +29,32 @@ def createQuery(request):
 		query = {}
 
 
+	# Hämtar document efter transcriptionstatus
+	if ('transcriptionstatus' in request.GET):
+		#transcription_status = request.GET['transcriptionstatus'].split(',')
+		transcription_status = request.GET['transcriptionstatus']
+
+# TODO Many transcriptionstatus?
+#		for status in transcription_status:
+#			transcription_statusQuery = {
+#				'bool': {
+#					'transcriptionstatus': status#
+#				}
+#			}
+
+		query['bool']['must'].append({
+			'match': {
+				'transcriptionstatus': transcription_status
+			}
+		})
+
+# TODO transcriptiondate
+#		query['bool']['must']['match'].append({
+#			'transcriptiondate': {
+#				'lt': Now() - 1,
+#			}
+#		})
+
 	# Hämtar documenter var `year` är mellan från och till. Exempel: `collection_year=1900,1910`
 	if ('collection_years' in request.GET):
 		collectionYears = request.GET['collection_years'].split(',')
@@ -39,7 +67,6 @@ def createQuery(request):
 				}
 			}
 		})
-
 
 	# Hämtar documenter var ett eller flera eller alla ord förekommer i titel eller text. Exempel: (ett eller flera ord) `search=svart hund`, (alla ord) `search=svart,hund`, (fras sökning, endast i `text` fältet `search="svart hund"`
 	if ('search' in request.GET):
