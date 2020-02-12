@@ -939,8 +939,6 @@ def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False)
 	# Anropar ES, bygger upp url från es_config och skickar data som json (query)
 	esUrl = es_config.protocol+(es_config.user+':'+es_config.password+'@' if hasattr(es_config, 'user') else '')+es_config.host+'/'+es_config.index_name+(apiUrl if apiUrl else '/legend/_search')
 
-	headers = {'Accept': 'application/json', 'content-type': 'application/json'}
-
     # Remove queryObject if it is empty (Elasticsearch 7 seems to not like empty query object)
 	if 'query' in query:
 		if not query['query']:
@@ -948,6 +946,9 @@ def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False)
 #		else:
 			query.pop('query', None)
 
+	headers = {'Accept': 'application/json', 'content-type': 'application/json'}
+
+	#print("url, query %s %s", esUrl, query)
 	logger.debug("url, query %s %s", esUrl, query)
 	esResponse = requests.get(esUrl,
 							  data=json.dumps(query),
@@ -957,6 +958,10 @@ def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False)
 
 	# Tar emot svaret som json
 	responseData = esResponse.json()
+	message = esResponse.status_code
+	#if 'error' in responseData:
+		#message = message + responseData.get('error')
+	logger.debug("response status_code %s %s ", message, responseData)
 
 	if (formatFunc):
 		# Om det finns formatFunc formatterar vi svaret och lägger i outputData.data
