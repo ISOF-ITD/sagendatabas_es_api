@@ -29,24 +29,23 @@ def createQuery(request):
 		query = {}
 
 
-	# Hämtar document efter transcriptionstatus
+	# Hämtar document av angiven transcriptionstatus (en eller flera). Exempel: `transcriptionstatus=readytotranscribe,transcribed`
 	if ('transcriptionstatus' in request.GET):
-		#transcription_status = request.GET['transcriptionstatus'].split(',')
-		transcription_status = request.GET['transcriptionstatus']
-
-# TODO Many transcriptionstatus?
-#		for status in transcription_status:
-#			transcription_statusQuery = {
-#				'bool': {
-#					'transcriptionstatus': status#
-#				}
-#			}
-
-		query['bool']['must'].append({
-			'match': {
-				'transcriptionstatus': transcription_status
+		transcriptionstatus_should_bool = {
+			'bool': {
+				'should': []
 			}
-		})
+		}
+
+		transcriptionstatus_strings = request.GET['transcriptionstatus'].split(',')
+
+		for transcriptionstatus in transcriptionstatus_strings:
+			transcriptionstatus_should_bool['bool']['should'].append({
+				'match': {
+					'transcriptionstatus': transcriptionstatus
+				}
+			})
+		query['bool']['must'].append(transcriptionstatus_should_bool)
 
 # TODO transcriptiondate
 #		query['bool']['must']['match'].append({
