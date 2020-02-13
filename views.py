@@ -2022,6 +2022,7 @@ def getSocken(request, sockenId = None):
 
 	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
 	esQueryResponse = esQuery(request, query, jsonFormat, None, True)
+	logger.debug("url, query %s %s", request, query)
 
 	if ('mark_metadata' in request.GET):
 		if not 'bool' in query['query']:
@@ -2030,12 +2031,21 @@ def getSocken(request, sockenId = None):
 					'must': []
 				}
 			}
-		query['query']['bool']['must'].append({
-			'match_phrase': {
-				'metadata.type': request.GET['mark_metadata']
-			}
-		})
+		# Get data to calculate flag on socken for quick map selection and different map symbol, currently using  value 'has_metadata"
+		if request.GET['mark_metadata'] == 'transcriptionstatus':
+			query['query']['bool']['must'].append({
+				'match': {
+					'transcriptionstatus': 'readytotranscribe'
+				}
+			})
+		else:
+			query['query']['bool']['must'].append({
+				'match_phrase': {
+					'metadata.type': request.GET['mark_metadata']
+				}
+			})
 		metadataSockenResponse = esQuery(request, query, jsonFormat, None, True)
+		logger.debug("url, query %s %s", request, query)
 
 		sockenJson = esQueryResponse
 
