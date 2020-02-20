@@ -904,6 +904,24 @@ def createQuery(request):
 			}
 		})
 
+	# Hämtar dokument som har kategorityp(er):
+	if ('categorytypes' in request.GET):
+		categorytypes_should_bool = {
+			'bool': {
+				'should': []
+			}
+		}
+
+		categorytypes_strings = request.GET['categorytypes'].split(',')
+
+		for categorytype in categorytypes_strings:
+			categorytypes_should_bool['bool']['should'].append({
+				'match': {
+					'taxonomy.type': categorytype
+				}
+			})
+		query['bool']['must'].append(categorytypes_should_bool)
+
 	# Hämtar dokument från angivet land
 	if ('country' in request.GET):
 		query['bool']['must'].append({
