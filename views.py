@@ -3,8 +3,8 @@ import requests, json, sys, os
 from requests.auth import HTTPBasicAuth
 from random import randint
 
-from . import es_config
-import geohash
+import es_config
+#import geohash
 
 from django.db.models.functions import Now
 
