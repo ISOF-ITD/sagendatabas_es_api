@@ -74,7 +74,7 @@ Hämtar documenter av angiven typ (en eller flera). Exempel: `type=arkiv,tryckt`
 - **documents=[type]**
 Hämtar documenter som har speciella ID.
 
-- **soken_id=[id]**
+- **socken_id=[id]**
 Hämtar documenter samlat in i angiven socken (en eller flera). Exempel: (sägner från Göteborgs stad och Partille) `socken_id=202,243`
 
 - **socken=[socken namn]**
