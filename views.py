@@ -194,6 +194,23 @@ def createQuery(request):
 			})
 		query['bool']['must'].append(typeShouldBool)
 
+	if ('recordtype' in request.GET):
+		typeShouldBool = {
+			'bool': {
+				'should': []
+			}
+		}
+
+		typeStrings = request.GET['recordtype'].split(',')
+
+		for recordtype in typeStrings:
+			typeShouldBool['bool']['should'].append({
+				'match': {
+					'recordtype': recordtype
+				}
+			})
+		query['bool']['must'].append(typeShouldBool)
+
 
 	# Hämtar documenter som har speciella ID.
 	if ('documents' in request.GET):
