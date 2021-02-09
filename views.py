@@ -4,7 +4,7 @@ from requests.auth import HTTPBasicAuth
 from random import randint
 
 import es_config
-#import geohash
+import geohash
 
 from django.db.models.functions import Now
 
