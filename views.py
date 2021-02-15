@@ -77,6 +77,7 @@ def createQuery(request):
 				'query': term.replace('"', ''),
 				'type': 'phrase' if (term.startswith('"') and term.endswith('"')) else 'best_fields',
 				'fields': [
+					id,
 					textField+'^2',
 					'search_other',
 					'metadata.value',
