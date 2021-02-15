@@ -77,12 +77,12 @@ def createQuery(request):
 				'query': term.replace('"', ''),
 				'type': 'phrase' if (term.startswith('"') and term.endswith('"')) else 'best_fields',
 				'fields': [
-					'id',
 					textField+'^2',
 					'search_other',
 					'metadata.value',
 					'title',
 					'archive.archive',
+					'archive.archive_id',
 					'places.name',
 					'places.landskap',
 					'places.county',
