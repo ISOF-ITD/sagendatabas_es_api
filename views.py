@@ -142,6 +142,15 @@ def createQuery(request):
 			}
 		})
 
+	if ('mediafiles_are_public' in request.GET and request.GET['mediafiles_are_public'] == 'true'):
+		query['bool']['must'].append({
+			'match': {
+				'metadata.type': 'mediafiles_are_public',
+			},
+			'match': {
+				'metadata.value': 'True',
+			}
+		})
 
 	# Hämtar documenter som finns i angiven kategori (en eller flera). Exempel: `category=L,H`
 	if ('category' in request.GET):
