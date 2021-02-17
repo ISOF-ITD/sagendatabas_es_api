@@ -146,7 +146,9 @@ def createQuery(request):
 		query['bool']['must'].append({
 			'match': {
 				'metadata.type': 'mediafiles_are_public',
-			},
+			}
+		})
+		query['bool']['must'].append({
 			'match': {
 				'metadata.value': 'True',
 			}
