@@ -2087,7 +2087,7 @@ def getSocken(request, sockenId = None):
 			})
 		else:
 			query['query']['bool']['must'].append({
-				'match_phrase': {
+				'match': {
 					'metadata.type': request.GET['mark_metadata']
 				}
 			})
@@ -2332,7 +2332,7 @@ def getLetters(request, sockenId = None):
 				}
 			}
 		query['query']['bool']['must'].append({
-			'match_phrase': {
+			'match': {
 				'metadata.type': request.GET['mark_metadata']
 			}
 		})
