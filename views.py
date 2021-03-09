@@ -224,7 +224,7 @@ def createQuery(request):
 		query['bool']['must'].append(typeShouldBool)
 
 	# Hämtar dokument som har minst en mediafil (t.ex. pdf)
-	if ('has_material' in request.GET and request.GET['has_material'].lower() == 'true'):
+	if ('has_media' in request.GET and request.GET['has_media'].lower() == 'true'):
 		query['bool']['must'].append({
 			'exists' : {
 				'field': 'media.source'
