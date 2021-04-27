@@ -1,12 +1,11 @@
 from django.http import JsonResponse
 import requests, json, sys, os
-from requests.auth import HTTPBasicAuth
+#from requests.auth import HTTPBasicAuth
 from random import randint
+#from django.conf.urls import url, include
 
 import es_config
-import geohash
-
-from django.db.models.functions import Now
+from . import geohash
 
 import logging
 logger = logging.getLogger(__name__)
@@ -105,6 +104,18 @@ def createQuery(request):
 					matchObj['multi_match']['slop'] = 3
 			else:
 				matchObj['multi_match']['slop'] = 50
+
+		# Används för sök i data av typ ortnamn för test att söka på börjar på och slutar på med basic wildcard
+		# Vid problem: Kan aktiveras med annat mycket sällan använt tecken som pipe |i		if (term.startswith('*') or term.endswith('*')):
+			matchObj = {
+				'wildcard': {
+					'title': {
+						'value': term,
+						'boost': 1.0,
+						'rewrite': 'constant_score'
+					}
+				}
+			}
 
 		query['bool']['must'].append(matchObj)
 
@@ -990,10 +1001,22 @@ def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False)
 
 	# returnRaw: levererar raw outputData som python objekt, om returnRaw är inte 'true' levereras outputData som json
 
-	# Anropar ES, bygger upp url från es_config och skickar data som json (query)
-	esUrl = es_config.protocol+(es_config.user+':'+es_config.password+'@' if hasattr(es_config, 'user') else '')+es_config.host+'/'+es_config.index_name+(apiUrl if apiUrl else '/legend/_search')
+	host = es_config.host
+	protocol = es_config.protocol
+	index_name = es_config.index_name
+	user = None
+	password = None
+	if hasattr(es_config, 'user'):
+		user = es_config.user
+		password = es_config.password
+	#Check if application has extra index configuration
+	host, index_name, password, protocol, user = getExtraIndexConfiguration(host, index_name, password, protocol,
+																			request, user)
 
-    # Remove queryObject if it is empty (Elasticsearch 7 seems to not like empty query object)
+	# Anropar ES, bygger upp url från es_config och skickar data som json (query)
+	esUrl = protocol+(user+':'+password+'@' if (user is not None) else '')+host+'/'+index_name+(apiUrl if apiUrl else '/legend/_search')
+
+	# Remove queryObject if it is empty (Elasticsearch 7 seems to not like empty query object)
 	if 'query' in query:
 		if not query['query']:
 #			logger.debug(query['query'])
@@ -1046,9 +1069,41 @@ def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False)
 
 		return jsonResponse
 
+
+def getExtraIndexConfiguration(host, index_name, password, protocol, request, user):
+	if (hasattr(es_config, 'index_list')):
+		if ('index' in request.GET):
+			# Get index from request
+			index = request.GET['index']
+			index_config = es_config.index_list[index]
+			# Get index configuration for this request
+			if index_config is not None:
+				if ('index' in index_config):
+					index_name = index_config['index']
+				if ('host' in index_config):
+					host = index_config['host']
+				if ('protocol' in index_config):
+					protocol = index_config['protocol']
+				if ('user' in index_config):
+					user = index_config['user']
+				if ('password' in index_config):
+					password = index_config['password']
+	return host, index_name, password, protocol, user
+
+
+
 def getDocument(request, documentId):
+	host = es_config.host
+	protocol = es_config.protocol
+	index_name = es_config.index_name
+	user = None
+	password = None
+
+	#Check if application has extra index configuration
+	host, index_name, password, protocol, user = getExtraIndexConfiguration(host, index_name, password, protocol,
+																			request, user)
 	# Hämtar enda dokument, använder inte esQuery för den anropar ES direkt
-	esResponse = requests.get(es_config.protocol+(es_config.user+':'+es_config.password+'@' if hasattr(es_config, 'user') else '')+es_config.host+'/'+es_config.index_name+'/legend/'+documentId, verify=False)
+	esResponse = requests.get(protocol+(user+':'+password+'@' if (user is not None) else '')+host+'/'+index_name+'/legend/'+documentId, verify=False)
 
 	jsonResponse = JsonResponse(esResponse.json())
 	jsonResponse['Access-Control-Allow-Origin'] = '*'
@@ -2753,7 +2808,21 @@ def _getPerson(request, personId):
 	esQueryResponse = esQuery(request, query)
 	return esQueryResponse
 
+
 def getPersonsAutocomplete(request):
+	""" Get list of persons for autocomplete
+
+	Get list of persons for automcomplete
+
+    :param request:
+	Arguments for formatting response data in json
+	 -relation:
+
+    :return: documents: Fromat json.
+			  May return None if no hit.
+
+	"""
+
 	# itemFormat som säger till hur varje object i esQuery resultatet skulle formateras
 	def itemFormat(item):
 		retObj = {
@@ -3283,6 +3352,18 @@ def getSimilar(request, documentId):
 
 
 def getDocuments(request):
+	""" Get documents with filter
+
+	Get documents of data in json using suitable standard filter parameters.
+
+	Arguments for formatting response data in json
+	 -mark_metadata: adds boolean mark_metadata.
+	 -sort: Sort principle.
+
+	Returns
+		documents: Fromat json.
+			  May return None if no hit.
+	"""
 	# itemFormat som säger till hur varje object i esQuery resultatet skulle formateras
 	def itemFormat(item):
 		if '_source' in item:
