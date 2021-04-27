@@ -888,7 +888,7 @@ def createQuery(request):
 				'like' : [
 					{
 						'_index' : es_config.index_name,
-						'_type' : 'legend',
+						#'_type' : 'legend',
 						'_id' : request.GET['similar']
 					}
 				],
@@ -1014,7 +1014,7 @@ def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False)
 																			request, user)
 
 	# Anropar ES, bygger upp url från es_config och skickar data som json (query)
-	esUrl = protocol+(user+':'+password+'@' if (user is not None) else '')+host+'/'+index_name+(apiUrl if apiUrl else '/legend/_search')
+	esUrl = protocol+(user+':'+password+'@' if (user is not None) else '')+host+'/'+index_name+(apiUrl if apiUrl else '/_search')
 
 	# Remove queryObject if it is empty (Elasticsearch 7 seems to not like empty query object)
 	if 'query' in query:
@@ -1103,7 +1103,7 @@ def getDocument(request, documentId):
 	host, index_name, password, protocol, user = getExtraIndexConfiguration(host, index_name, password, protocol,
 																			request, user)
 	# Hämtar enda dokument, använder inte esQuery för den anropar ES direkt
-	esResponse = requests.get(protocol+(user+':'+password+'@' if (user is not None) else '')+host+'/'+index_name+'/legend/'+documentId, verify=False)
+	esResponse = requests.get(protocol+(user+':'+password+'@' if (user is not None) else '')+host+'/'+index_name+'/_doc/'+documentId, verify=False)
 
 	jsonResponse = JsonResponse(esResponse.json())
 	jsonResponse['Access-Control-Allow-Origin'] = '*'
@@ -2142,6 +2142,7 @@ def getSocken(request, sockenId = None):
 				}
 			}
 		# Get data to calculate flag on socken for quick map selection and different map symbol, currently using  value 'has_metadata"
+		# For ES7?: Use match_phrase instead of match when else?
 		if request.GET['mark_metadata'] == 'transcriptionstatus':
 			query['query']['bool']['must'].append({
 				'match': {
@@ -2388,6 +2389,7 @@ def getLetters(request, sockenId = None):
 	esQueryResponse = esQuery(request, query, jsonFormat, None, True)
 
 	if ('mark_metadata' in request.GET):
+		# For ES7?: Use match_phrase instead of match when else?
 		if not 'bool' in query['query']:
 			query['query'] = {
 				'bool': {
@@ -3323,7 +3325,7 @@ def getSimilar(request, documentId):
 				'like' : [
 					{
 						'_index' : 'sagenkarta_v3',
-						'_type' : 'legend',
+						#'_type' : 'legend',
 						'_id' : documentId
 					}
 				],
