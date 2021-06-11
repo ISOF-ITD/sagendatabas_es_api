@@ -1016,19 +1016,23 @@ def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False)
 	# Anropar ES, bygger upp url från es_config och skickar data som json (query)
 	esUrl = protocol+(user+':'+password+'@' if (user is not None) else '')+host+'/'+index_name+(apiUrl if apiUrl else '/_search')
 
-	# Remove queryObject if it is empty (Elasticsearch 7 seems to not like empty query object)
+	query_request = {}
 	if 'query' in query:
-		if not query['query']:
+		if query['query']:
+			# From ES7 add track_total_hits for total value to count above 10000:
+			query_request['query'] = query['query']
+			query_request['track_total_hits'] = 100000
 #			logger.debug(query['query'])
-#		else:
+		else:
+			# Remove queryObject if it is empty (Elasticsearch 7 seems to not like empty query object)
 			query.pop('query', None)
 
 	headers = {'Accept': 'application/json', 'content-type': 'application/json'}
 
 	#print("url, query %s %s", esUrl, query)
-	logger.debug("url, query %s %s", esUrl, query)
+	logger.debug("url-es, query %s %s", esUrl, query_request)
 	esResponse = requests.get(esUrl,
-							  data=json.dumps(query),
+							  data=json.dumps(query_request),
 							  verify=False,
 							  headers=headers)
 
