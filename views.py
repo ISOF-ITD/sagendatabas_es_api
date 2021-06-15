@@ -1020,7 +1020,7 @@ def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False)
 	if 'query' in query:
 		if query['query']:
 			# From ES7 add track_total_hits for total value to count above 10000:
-			query_request['query'] = query['query']
+			query_request = query
 			query_request['track_total_hits'] = 100000
 #			logger.debug(query['query'])
 		else:
@@ -2142,7 +2142,7 @@ def getSocken(request, sockenId = None):
 
 	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
 	# logger.debug("prequery: request, query %s %s", request, query)
-	print("prequery: request, query", request, query)
+	# print("print-prequery: request, query", request, query)
 	esQueryResponse = esQuery(request, query, jsonFormat, None, True)
 	logger.debug("postquery: request, query, esQueryResponse %s %s", request, query, esQueryResponse)
 
