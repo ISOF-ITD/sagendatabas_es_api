@@ -2142,6 +2142,7 @@ def getSocken(request, sockenId = None):
 
 	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
 	# logger.debug("prequery: request, query %s %s", request, query)
+	print("prequery: request, query", request, query)
 	esQueryResponse = esQuery(request, query, jsonFormat, None, True)
 	logger.debug("postquery: request, query, esQueryResponse %s %s", request, query, esQueryResponse)
 
