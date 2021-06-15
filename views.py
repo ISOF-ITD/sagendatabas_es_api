@@ -1030,7 +1030,7 @@ def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False)
 	headers = {'Accept': 'application/json', 'content-type': 'application/json'}
 
 	#print("url, query %s %s", esUrl, query)
-	logger.debug("url-es, query %s %s", esUrl, query_request)
+	logger.debug("prerequest: request, url-es, query %s %s", request, esUrl, query_request)
 	esResponse = requests.get(esUrl,
 							  data=json.dumps(query_request),
 							  verify=False,
@@ -1042,7 +1042,7 @@ def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False)
 	message = esResponse.status_code
 	#if 'error' in responseData:
 		#message = message + responseData.get('error')
-	logger.debug("response status_code %s %s ", message, responseData)
+	logger.debug("response: request, es-url, status_code, data %s %s ", request, esUrl, message, responseData)
 
 	if (formatFunc):
 		# Om det finns formatFunc formatterar vi svaret och lägger i outputData.data
@@ -2008,10 +2008,16 @@ def getSocken(request, sockenId = None):
 	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
 	def jsonFormat(json):
 		if sockenId is not None:
+			#ES5-6:
 			socken = [item for item in map(itemFormat, json['aggregations']['data']['data']['buckets']) if item['id'] == sockenId]
+			#ES7 changes or?:
+			#socken = [item for item in map(itemFormat, json['aggregations']['data']['data']['buckets']) if item['id'] == sockenId]
 			return socken[0]
 		else:
+			#ES5-6:
 			return list(map(itemFormat, json['aggregations']['data']['data']['buckets']))
+			#ES7 changes or?:
+			#return list(map(itemFormat, json['hits']['hits']))
 
 	if sockenId is not None:
 		queryObject = {
@@ -2135,8 +2141,9 @@ def getSocken(request, sockenId = None):
 	}
 
 	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
+	# logger.debug("prequery: request, query %s %s", request, query)
 	esQueryResponse = esQuery(request, query, jsonFormat, None, True)
-	logger.debug("url, query %s %s", request, query)
+	logger.debug("postquery: request, query, esQueryResponse %s %s", request, query, esQueryResponse)
 
 	if ('mark_metadata' in request.GET):
 		if not 'bool' in query['query']:
