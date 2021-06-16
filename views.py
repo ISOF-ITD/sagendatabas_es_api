@@ -1019,9 +1019,10 @@ def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False)
 	query_request = {}
 	if 'query' in query:
 		if query['query']:
-			# From ES7 add track_total_hits for total value to count above 10000:
 			query_request = query
-			query_request['track_total_hits'] = 100000
+			# From ES7: add track_total_hits to query without aggregation to get total value to count above 10000:
+			if not 'aggs' in query:
+				query_request['track_total_hits'] = 100000
 #			logger.debug(query['query'])
 		else:
 			# Remove queryObject if it is empty (Elasticsearch 7 seems to not like empty query object)
@@ -2008,16 +2009,12 @@ def getSocken(request, sockenId = None):
 	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
 	def jsonFormat(json):
 		if sockenId is not None:
-			#ES5-6:
+			#For aggregations (aggs-object in json query object):
 			socken = [item for item in map(itemFormat, json['aggregations']['data']['data']['buckets']) if item['id'] == sockenId]
-			#ES7 changes or?:
-			#socken = [item for item in map(itemFormat, json['aggregations']['data']['data']['buckets']) if item['id'] == sockenId]
 			return socken[0]
 		else:
-			#ES5-6:
+			#For aggregations (aggs-object in json query object):
 			return list(map(itemFormat, json['aggregations']['data']['data']['buckets']))
-			#ES7 changes or?:
-			#return list(map(itemFormat, json['hits']['hits']))
 
 	if sockenId is not None:
 		queryObject = {
