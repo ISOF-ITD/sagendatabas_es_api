@@ -1022,7 +1022,13 @@ def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False)
 			query_request = query
 			# From ES7: add track_total_hits to query without aggregation to get total value to count above 10000:
 			if not 'aggs' in query:
-				query_request['track_total_hits'] = 100000
+				#query_request['track_total_hits'] = 100000
+				query_request['track_total_hits'] = True
+				track_total_hits = {
+					"track_total_hits": True,
+					}
+				#track_total_hits.append(query_request)
+				#query_request[].append(track_total_hits)
 #			logger.debug(query['query'])
 		else:
 			# Remove queryObject if it is empty (Elasticsearch 7 seems to not like empty query object)
@@ -1031,7 +1037,8 @@ def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False)
 	headers = {'Accept': 'application/json', 'content-type': 'application/json'}
 
 	#print("url, query %s %s", esUrl, query)
-	logger.debug("prerequest: request, url-es, query %s %s %s ", request, esUrl, query_request)
+	#print(json.dumps(query_request)
+	logger.debug("prerequest: request, url-es, query %s %s %s %s ", request, esUrl, query_request, json.dumps(query_request))
 	esResponse = requests.get(esUrl,
 							  data=json.dumps(query_request),
 							  verify=False,
