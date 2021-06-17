@@ -4,7 +4,7 @@ import requests, json, sys, os
 from random import randint
 #from django.conf.urls import url, include
 
-import es_config
+from . import es_config
 from . import geohash
 
 import logging
@@ -996,7 +996,7 @@ def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False)
 	# formatFunc:
 	# function som formaterar resultatet som kom kommer från ES och skickar vidare (return JsonResponse(outputData))
 	# formatFunc är definerad av metoder (enpoints) som anropar ES (se t.ex. getDocuments)
-	
+
 	# apiUrl: override url i config
 
 	# returnRaw: levererar raw outputData som python objekt, om returnRaw är inte 'true' levereras outputData som json
