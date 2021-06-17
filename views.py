@@ -1016,19 +1016,31 @@ def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False)
 	# Anropar ES, bygger upp url från es_config och skickar data som json (query)
 	esUrl = protocol+(user+':'+password+'@' if (user is not None) else '')+host+'/'+index_name+(apiUrl if apiUrl else '/_search')
 
-	# Remove queryObject if it is empty (Elasticsearch 7 seems to not like empty query object)
+	query_request = {}
 	if 'query' in query:
-		if not query['query']:
+		if query['query']:
+			query_request = query
+			# From ES7: add track_total_hits to query without aggregation to get total value to count above 10000:
+			if not 'aggs' in query:
+				#query_request['track_total_hits'] = 100000
+				query_request['track_total_hits'] = True
+				track_total_hits = {
+					"track_total_hits": True,
+					}
+				#track_total_hits.append(query_request)
+				#query_request[].append(track_total_hits)
 #			logger.debug(query['query'])
-#		else:
+		else:
+			# Remove queryObject if it is empty (Elasticsearch 7 seems to not like empty query object)
 			query.pop('query', None)
 
 	headers = {'Accept': 'application/json', 'content-type': 'application/json'}
 
 	#print("url, query %s %s", esUrl, query)
-	logger.debug("url, query %s %s", esUrl, query)
+	#print(json.dumps(query_request)
+	logger.debug("prerequest: request, url-es, query %s %s %s %s ", request, esUrl, query_request, json.dumps(query_request))
 	esResponse = requests.get(esUrl,
-							  data=json.dumps(query),
+							  data=json.dumps(query_request),
 							  verify=False,
 							  headers=headers)
 
@@ -1038,7 +1050,7 @@ def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False)
 	message = esResponse.status_code
 	#if 'error' in responseData:
 		#message = message + responseData.get('error')
-	logger.debug("response status_code %s %s ", message, responseData)
+	logger.debug("response: request, es-url, status_code, data %s %s %s %s ", request, esUrl, message, responseData)
 
 	if (formatFunc):
 		# Om det finns formatFunc formatterar vi svaret och lägger i outputData.data
@@ -2004,9 +2016,11 @@ def getSocken(request, sockenId = None):
 	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
 	def jsonFormat(json):
 		if sockenId is not None:
+			#For aggregations (aggs-object in json query object):
 			socken = [item for item in map(itemFormat, json['aggregations']['data']['data']['buckets']) if item['id'] == sockenId]
 			return socken[0]
 		else:
+			#For aggregations (aggs-object in json query object):
 			return list(map(itemFormat, json['aggregations']['data']['data']['buckets']))
 
 	if sockenId is not None:
@@ -2131,8 +2145,10 @@ def getSocken(request, sockenId = None):
 	}
 
 	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
+	# logger.debug("prequery: request, query %s %s", request, query)
+	# print("print-prequery: request, query", request, query)
 	esQueryResponse = esQuery(request, query, jsonFormat, None, True)
-	logger.debug("url, query %s %s", request, query)
+	logger.debug("postquery: request, query, esQueryResponse %s %s %s ", request, query, esQueryResponse)
 
 	if ('mark_metadata' in request.GET):
 		if not 'bool' in query['query']:
