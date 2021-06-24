@@ -4,7 +4,7 @@ import requests, json, sys, os
 from random import randint
 #from django.conf.urls import url, include
 
-import es_config
+from . import es_config
 from . import geohash
 
 import logging
