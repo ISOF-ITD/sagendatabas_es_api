@@ -1,14 +1,41 @@
 from django.http import JsonResponse
 import requests, json, sys, os
-#from requests.auth import HTTPBasicAuth
 from random import randint
-#from django.conf.urls import url, include
 
 from . import es_config
 from . import geohash
 
 import logging
 logger = logging.getLogger(__name__)
+
+from rest_framework.response import Response
+from rest_framework import viewsets, permissions, mixins, status
+from rest_framework.views import APIView
+from rest_framework import authentication, permissions
+
+def checkAuthentication(request):
+	#if request.environ.get('REMOTE_USER') is None:
+	if not request.user.is_authenticated:
+		jsonResponse = Response({
+			'authenticated': False,
+			'error': 'not logged in'
+		})
+		jsonResponse['Access-Control-Allow-Origin'] = '*'
+
+		return jsonResponse
+
+class CheckAuthenticationViewSet(APIView):
+	authentication_classes = [authentication.TokenAuthentication]
+	permission_classes = [permissions.IsAuthenticated]
+
+	def get(self, request):
+		jsonResponse = Response({
+			'authenticated': True,
+			'user': request.user.username
+		})
+		jsonResponse['Access-Control-Allow-Origin'] = '*'
+
+		return jsonResponse
 
 def createQuery(request):
 	# Function som tar in request object och bygger upp Elasticsearch JSON query som skickas till es_config
@@ -72,38 +99,81 @@ def createQuery(request):
 		textField = 'text.raw' if 'search_raw' in request.GET and request.GET['search_raw'] != 'false' else 'text'
 
 		matchObj = {
-			'multi_match': {
-				'query': term.replace('"', ''),
-				'type': 'phrase' if (term.startswith('"') and term.endswith('"')) else 'best_fields',
-				'fields': [
-					textField+'^2',
-					'search_other',
-					'metadata.value',
-					'title',
-					'archive.archive',
-					'archive.archive_id',
-					'places.name',
-					'places.landskap',
-					'places.county',
-					'places.harad',
-					'persons.name'
-				],
-				'minimum_should_match': '100%'
+			'bool': {
+				'should': [
+					{
+						'multi_match': {
+							'query': term.replace('"', ''),
+							'type': 'phrase' if (term.startswith('"') and term.endswith('"')) else 'best_fields',
+							'fields': [
+								textField+'^2',
+								'search_other',
+								'metadata.value',
+								'title',
+								'archive.archive',
+								'archive.archive_id',
+								'places.name',
+								'places.landskap',
+								'places.county',
+								'places.harad',
+								'persons.name'
+							],
+							'minimum_should_match': '100%'
+						}
+					},
+					{
+						'nested': {
+							'path': 'media',
+							'inner_hits': {
+							},
+							'query': {
+								'nested': {
+									'path': 'media.timeslots',
+									'query': {
+										'multi_match': {
+											'query': term.replace('"', ''),
+											'type': 'phrase' if (term.startswith('"') and term.endswith('"')) else 'best_fields',
+											'fields': [
+												'media.timeslots.text'
+											],
+											'minimum_should_match': '100%'
+										}
+									},
+									'inner_hits': {
+										'highlight': {
+											'fields': {
+												'media.timeslots.text': {
+													'number_of_fragments': 0
+												}
+											},
+											'pre_tags': [
+												'<span class="highlight">'
+											],
+											'post_tags': [
+												'</span>'
+											]
+										}
+									}
+								}
+							}
+						}
+					}
+				]
 			}
 		}
 
 		# search_exclude_title = true, sök inte i titel fältet
 		if (not 'search_exclude_title' in request.GET or request.GET['search_exclude_title'] == 'false') and (not 'search_raw' in request.GET or request.GET['search_raw'] != 'true'):
-			matchObj['multi_match']['fields'].append('title')
+			matchObj['bool']['should'][0]['multi_match']['fields'].append('title')
 
 		if term.startswith('"') and term.endswith('"'):
 			if ('phrase_options' in request.GET):
 				if (request.GET['phrase_options'] == 'nearer'):
-					matchObj['multi_match']['slop'] = 1
+					matchObj['bool']['should'][0]['multi_match']['slop'] = 1
 				if (request.GET['phrase_options'] == 'near'):
-					matchObj['multi_match']['slop'] = 3
+					matchObj['bool']['should'][0]['multi_match']['slop'] = 3
 			else:
-				matchObj['multi_match']['slop'] = 50
+				matchObj['bool']['should'][0]['multi_match']['slop'] = 50
 
 		# Används för sök i data av typ ortnamn för test att söka på börjar på och slutar på med basic wildcard
 		# Vid problem: Kan aktiveras med annat mycket sällan använt tecken som pipe |i		if (term.startswith('*') or term.endswith('*')):
@@ -1104,23 +1174,27 @@ def getExtraIndexConfiguration(host, index_name, password, protocol, request, us
 
 
 
-def getDocument(request, documentId):
-	host = es_config.host
-	protocol = es_config.protocol
-	index_name = es_config.index_name
-	user = None
-	password = None
+class getDocument(APIView):
+	authentication_classes = [authentication.TokenAuthentication]
+	permission_classes = [permissions.IsAuthenticated]
 
-	#Check if application has extra index configuration
-	host, index_name, password, protocol, user = getExtraIndexConfiguration(host, index_name, password, protocol,
-																			request, user)
-	# Hämtar enda dokument, använder inte esQuery för den anropar ES direkt
-	esResponse = requests.get(protocol+(user+':'+password+'@' if (user is not None) else '')+host+'/'+index_name+'/_doc/'+documentId, verify=False)
+	def get(self, request, documentId):
+		host = es_config.host
+		protocol = es_config.protocol
+		index_name = es_config.index_name
+		user = None
+		password = None
 
-	jsonResponse = JsonResponse(esResponse.json())
-	jsonResponse['Access-Control-Allow-Origin'] = '*'
+		#Check if application has extra index configuration
+		host, index_name, password, protocol, user = getExtraIndexConfiguration(host, index_name, password, protocol,
+																				request, user)
+		# Hämtar enda dokument, använder inte esQuery för den anropar ES direkt
+		esResponse = requests.get(protocol+(user+':'+password+'@' if (user is not None) else '')+host+'/'+index_name+'/_doc/'+documentId, verify=False)
 
-	return jsonResponse
+		jsonResponse = JsonResponse(esResponse.json())
+		jsonResponse['Access-Control-Allow-Origin'] = '*'
+
+		return jsonResponse
 
 
 def getRandomDocument(request):
@@ -3367,7 +3441,6 @@ def getSimilar(request, documentId):
 	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
 	esQueryResponse = esQuery(request, query)
 	return esQueryResponse
-
 
 def getDocuments(request):
 	""" Get documents with filter
