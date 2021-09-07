@@ -1,6 +1,8 @@
 from django.http import JsonResponse
 import requests, json, sys, os
+#from requests.auth import HTTPBasicAuth
 from random import randint
+#from django.conf.urls import url, include
 
 from . import es_config
 from . import geohash
@@ -958,7 +960,7 @@ def createQuery(request):
 				'like' : [
 					{
 						'_index' : es_config.index_name,
-						#'_type' : 'legend',
+						'_type' : 'legend',
 						'_id' : request.GET['similar']
 					}
 				],
@@ -1086,31 +1088,19 @@ def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False)
 	# Anropar ES, bygger upp url från es_config och skickar data som json (query)
 	esUrl = protocol+(user+':'+password+'@' if (user is not None) else '')+host+'/'+index_name+(apiUrl if apiUrl else '/_search')
 
-	query_request = {}
+	# Remove queryObject if it is empty (Elasticsearch 7 seems to not like empty query object)
 	if 'query' in query:
-		if query['query']:
-			query_request = query
-			# From ES7: add track_total_hits to query without aggregation to get total value to count above 10000:
-			if not 'aggs' in query:
-				#query_request['track_total_hits'] = 100000
-				query_request['track_total_hits'] = True
-				track_total_hits = {
-					"track_total_hits": True,
-					}
-				#track_total_hits.append(query_request)
-				#query_request[].append(track_total_hits)
+		if not query['query']:
 #			logger.debug(query['query'])
-		else:
-			# Remove queryObject if it is empty (Elasticsearch 7 seems to not like empty query object)
+#		else:
 			query.pop('query', None)
 
 	headers = {'Accept': 'application/json', 'content-type': 'application/json'}
 
 	#print("url, query %s %s", esUrl, query)
-	#print(json.dumps(query_request)
-	logger.debug("prerequest: request, url-es, query %s %s %s %s ", request, esUrl, query_request, json.dumps(query_request))
+	logger.debug("url, query %s %s", esUrl, query)
 	esResponse = requests.get(esUrl,
-							  data=json.dumps(query_request),
+							  data=json.dumps(query),
 							  verify=False,
 							  headers=headers)
 
@@ -1120,7 +1110,7 @@ def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False)
 	message = esResponse.status_code
 	#if 'error' in responseData:
 		#message = message + responseData.get('error')
-	logger.debug("response: request, es-url, status_code, data %s %s %s %s ", request, esUrl, message, responseData)
+	logger.debug("response status_code %s %s ", message, responseData)
 
 	if (formatFunc):
 		# Om det finns formatFunc formatterar vi svaret och lägger i outputData.data
@@ -2090,11 +2080,9 @@ def getSocken(request, sockenId = None):
 	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
 	def jsonFormat(json):
 		if sockenId is not None:
-			#For aggregations (aggs-object in json query object):
 			socken = [item for item in map(itemFormat, json['aggregations']['data']['data']['buckets']) if item['id'] == sockenId]
 			return socken[0]
 		else:
-			#For aggregations (aggs-object in json query object):
 			return list(map(itemFormat, json['aggregations']['data']['data']['buckets']))
 
 	if sockenId is not None:
@@ -2219,10 +2207,8 @@ def getSocken(request, sockenId = None):
 	}
 
 	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
-	# logger.debug("prequery: request, query %s %s", request, query)
-	# print("print-prequery: request, query", request, query)
 	esQueryResponse = esQuery(request, query, jsonFormat, None, True)
-	logger.debug("postquery: request, query, esQueryResponse %s %s %s ", request, query, esQueryResponse)
+	logger.debug("url, query %s %s", request, query)
 
 	if ('mark_metadata' in request.GET):
 		if not 'bool' in query['query']:
@@ -2232,7 +2218,6 @@ def getSocken(request, sockenId = None):
 				}
 			}
 		# Get data to calculate flag on socken for quick map selection and different map symbol, currently using  value 'has_metadata"
-		# For ES7?: Use match_phrase instead of match when else?
 		if request.GET['mark_metadata'] == 'transcriptionstatus':
 			query['query']['bool']['must'].append({
 				'match': {
@@ -2479,7 +2464,6 @@ def getLetters(request, sockenId = None):
 	esQueryResponse = esQuery(request, query, jsonFormat, None, True)
 
 	if ('mark_metadata' in request.GET):
-		# For ES7?: Use match_phrase instead of match when else?
 		if not 'bool' in query['query']:
 			query['query'] = {
 				'bool': {
@@ -3415,7 +3399,7 @@ def getSimilar(request, documentId):
 				'like' : [
 					{
 						'_index' : 'sagenkarta_v3',
-						#'_type' : 'legend',
+						'_type' : 'legend',
 						'_id' : documentId
 					}
 				],
@@ -3442,88 +3426,93 @@ def getSimilar(request, documentId):
 	esQueryResponse = esQuery(request, query)
 	return esQueryResponse
 
-def getDocuments(request):
-	""" Get documents with filter
 
-	Get documents of data in json using suitable standard filter parameters.
+class getDocuments(APIView):
+	authentication_classes = [authentication.TokenAuthentication]
+	permission_classes = [permissions.IsAuthenticated]
 
-	Arguments for formatting response data in json
-	 -mark_metadata: adds boolean mark_metadata.
-	 -sort: Sort principle.
+	def get(self, request):
+		""" Get documents with filter
 
-	Returns
-		documents: Fromat json.
-			  May return None if no hit.
-	"""
-	# itemFormat som säger till hur varje object i esQuery resultatet skulle formateras
-	def itemFormat(item):
-		if '_source' in item:
-			returnItem = dict(item)
-			returnItem['_source'] = {}
+		Get documents of data in json using suitable standard filter parameters.
 
-			for key in item['_source']:
-				if not 'topics' in key:
-					#item['_source'].pop(key)
-					returnItem['_source'][key] = item['_source'][key]
+		Arguments for formatting response data in json
+		 -mark_metadata: adds boolean mark_metadata.
+		 -sort: Sort principle.
 
-			return returnItem
-		else:
-			return item
+		Returns
+			documents: Fromat json.
+				  May return None if no hit.
+		"""
+		# itemFormat som säger till hur varje object i esQuery resultatet skulle formateras
+		def itemFormat(item):
+			if '_source' in item:
+				returnItem = dict(item)
+				returnItem['_source'] = {}
 
-	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
-	def jsonFormat(json):
-		return list(map(itemFormat, json['hits']['hits']))
+				for key in item['_source']:
+					if not 'topics' in key:
+						#item['_source'].pop(key)
+						returnItem['_source'][key] = item['_source'][key]
 
-	textField = 'text.raw' if 'search_raw' in request.GET and request.GET['search_raw'] != 'false' else 'text'
-	query = {
-		'query': createQuery(request),
-		'size': request.GET['size'] if 'size' in request.GET else 100,
-		'from': request.GET['from'] if 'from' in request.GET else 0,
-		'highlight' : {
-			'pre_tags': [
-				'<span class="highlight">'
-			],
-			'post_tags': [
-				'</span>'
-			],
-			'fields' : {
-				textField : {
-					'number_of_fragments': 0
+				return returnItem
+			else:
+				return item
+
+		# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
+		def jsonFormat(json):
+			return list(map(itemFormat, json['hits']['hits']))
+
+		textField = 'text.raw' if 'search_raw' in request.GET and request.GET['search_raw'] != 'false' else 'text'
+		query = {
+			'query': createQuery(request),
+			'size': request.GET['size'] if 'size' in request.GET else 100,
+			'from': request.GET['from'] if 'from' in request.GET else 0,
+			'highlight' : {
+				'pre_tags': [
+					'<span class="highlight">'
+				],
+				'post_tags': [
+					'</span>'
+				],
+				'fields' : {
+					textField : {
+						'number_of_fragments': 0
+					}
 				}
 			}
 		}
-	}
 
-	if ('mark_metadata' in request.GET):
-		query['query']['bool']['should'] = [
-			{
-				'match': {
-					'metadata.type': {
-						'query': request.GET['mark_metadata'],
-						'boost': 5
+		if ('mark_metadata' in request.GET):
+			query['query']['bool']['should'] = [
+				{
+					'match': {
+						'metadata.type': {
+							'query': request.GET['mark_metadata'],
+							'boost': 5
+						}
+					}
+				},
+				{
+					'exists': {
+						'field': 'text',
+						'boost': 10
 					}
 				}
-			},
-			{
-				'exists': {
-					'field': 'text',
-					'boost': 10
-				}
-			}
-		]
+			]
 
-	if ('sort' in request.GET):
-		sort = []
-		sortObj = {}
-		sortObj[request.GET['sort']] = request.GET['order'] if 'order' in request.GET else 'asc'
+		if ('sort' in request.GET):
+			sort = []
+			sortObj = {}
+			sortObj[request.GET['sort']] = request.GET['order'] if 'order' in request.GET else 'asc'
 
-		sort.append(sortObj)
+			sort.append(sortObj)
 
-		query['sort'] = sort
+			query['sort'] = sort
 
-	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
-	esQueryResponse = esQuery(request, query, jsonFormat)
-	return esQueryResponse
+		# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
+		esQueryResponse = esQuery(request, query, jsonFormat)
+		return esQueryResponse
 
 
 def getTexts(request):

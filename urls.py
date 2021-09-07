@@ -27,7 +27,7 @@ urlpatterns = [
 	url(r'^check_authentication/', views.CheckAuthenticationViewSet.as_view(), name='check_authentication'),
 
 	#	documents: list
-	url(r'^documents/', views.getDocuments, name='getDocuments'),
+	url(r'^documents/', views.getDocuments.as_view(), name='getDocuments'),
 
 	# aggregate terms
 	url(r'^terms/', views.getTerms, name='getTerms'),
