@@ -1,10 +1,13 @@
-from django.conf.urls import url
+from django.conf.urls import url, include
 # from rest_framework.schemas import get_schema_view
 # from rest_framework_swagger.views import get_swagger_view
 # from rest_framework_swagger.renderers import SwaggerUIRenderer, OpenAPIRenderer
 from . import views
 
 # schema_view = get_schema_view(title='Users API', renderer_classes=[OpenAPIRenderer, SwaggerUIRenderer])
+
+from rest_framework.authtoken import views as authviews
+
 
 urlpatterns = [
 	#	url(r'^$', schema_view),
@@ -16,6 +19,12 @@ urlpatterns = [
 	#	insamlingsar: agg
 	#	fodelsear: agg
 	#	personer: agg
+
+	#url(r'^', include(router.urls)),
+
+    url('api-token-auth/', authviews.obtain_auth_token),
+
+	url(r'^check_authentication/', views.CheckAuthenticationViewSet.as_view(), name='check_authentication'),
 
 	#	documents: list
 	url(r'^documents/', views.getDocuments, name='getDocuments'),
