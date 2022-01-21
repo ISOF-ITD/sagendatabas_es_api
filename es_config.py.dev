@@ -5,11 +5,7 @@ index_list = {"advanced": {"host": 'ingestnode100.uu.se:9200',
                            "index": 'isof-taledb-sagendatabas',
                            "user": 'isof-taledb',
                            "password": 'X', },
-              "alternative": {"host": 'X.uu.se:9200',
-                           "protocol": 'https://',
-                           "index": 'isof-publik', },
-              "placenames": {"index": 'ortnamn', },
-              }
+              "placenames": {"index": 'ortnamn', },}
 protocol = 'http://'
 restApiRecordUrl = 'http://frigg.isof.se/sagendatabas/api/records/'
 feedbackEmail = 'per.laas@isof.se'

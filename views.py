@@ -75,24 +75,6 @@ def createQuery(request):
 			})
 		query['bool']['must'].append(transcriptionstatus_should_bool)
 
-	# Hämtar document av angiven publishstatus (en eller flera). Exempel: `publishstatus=readytopublish,published`
-	if ('publishstatus' in request.GET):
-		publishstatus_should_bool = {
-			'bool': {
-				'should': []
-			}
-		}
-
-		publishstatus_strings = request.GET['publishstatus'].split(',')
-
-		for publishstatus in publishstatus_strings:
-			publishstatus_should_bool['bool']['should'].append({
-				'match': {
-					'publishstatus': publishstatus
-				}
-			})
-		query['bool']['must'].append(publishstatus_should_bool)
-
 # TODO transcriptiondate
 #		query['bool']['must']['match'].append({
 #			'transcriptiondate': {
