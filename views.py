@@ -122,43 +122,6 @@ def createQuery(request):
 							],
 							'minimum_should_match': '100%'
 						}
-					},
-					{
-						'nested': {
-							'path': 'media',
-							'inner_hits': {
-							},
-							'query': {
-								'nested': {
-									'path': 'media.timeslots',
-									'query': {
-										'multi_match': {
-											'query': term.replace('"', ''),
-											'type': 'phrase' if (term.startswith('"') and term.endswith('"')) else 'best_fields',
-											'fields': [
-												'media.timeslots.text'
-											],
-											'minimum_should_match': '100%'
-										}
-									},
-									'inner_hits': {
-										'highlight': {
-											'fields': {
-												'media.timeslots.text': {
-													'number_of_fragments': 0
-												}
-											},
-											'pre_tags': [
-												'<span class="highlight">'
-											],
-											'post_tags': [
-												'</span>'
-											]
-										}
-									}
-								}
-							}
-						}
 					}
 				]
 			}
@@ -3426,93 +3389,85 @@ def getSimilar(request, documentId):
 	esQueryResponse = esQuery(request, query)
 	return esQueryResponse
 
+def getDocuments(request):
+	""" Get documents with filter
+	Get documents of data in json using suitable standard filter parameters.
+	Arguments for formatting response data in json
+	 -mark_metadata: adds boolean mark_metadata.
+	 -sort: Sort principle.
+	Returns
+		documents: Fromat json.
+			  May return None if no hit.
+	"""
+	# itemFormat som säger till hur varje object i esQuery resultatet skulle formateras
+	def itemFormat(item):
+		if '_source' in item:
+			returnItem = dict(item)
+			returnItem['_source'] = {}
 
-class getDocuments(APIView):
-	authentication_classes = [authentication.TokenAuthentication]
-	permission_classes = [permissions.IsAuthenticated]
+			for key in item['_source']:
+				if not 'topics' in key:
+					#item['_source'].pop(key)
+					returnItem['_source'][key] = item['_source'][key]
 
-	def get(self, request):
-		""" Get documents with filter
+			return returnItem
+		else:
+			return item
 
-		Get documents of data in json using suitable standard filter parameters.
+	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
+	def jsonFormat(json):
+		return list(map(itemFormat, json['hits']['hits']))
 
-		Arguments for formatting response data in json
-		 -mark_metadata: adds boolean mark_metadata.
-		 -sort: Sort principle.
-
-		Returns
-			documents: Fromat json.
-				  May return None if no hit.
-		"""
-		# itemFormat som säger till hur varje object i esQuery resultatet skulle formateras
-		def itemFormat(item):
-			if '_source' in item:
-				returnItem = dict(item)
-				returnItem['_source'] = {}
-
-				for key in item['_source']:
-					if not 'topics' in key:
-						#item['_source'].pop(key)
-						returnItem['_source'][key] = item['_source'][key]
-
-				return returnItem
-			else:
-				return item
-
-		# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
-		def jsonFormat(json):
-			return list(map(itemFormat, json['hits']['hits']))
-
-		textField = 'text.raw' if 'search_raw' in request.GET and request.GET['search_raw'] != 'false' else 'text'
-		query = {
-			'query': createQuery(request),
-			'size': request.GET['size'] if 'size' in request.GET else 100,
-			'from': request.GET['from'] if 'from' in request.GET else 0,
-			'highlight' : {
-				'pre_tags': [
-					'<span class="highlight">'
-				],
-				'post_tags': [
-					'</span>'
-				],
-				'fields' : {
-					textField : {
-						'number_of_fragments': 0
-					}
+	textField = 'text.raw' if 'search_raw' in request.GET and request.GET['search_raw'] != 'false' else 'text'
+	query = {
+		'query': createQuery(request),
+		'size': request.GET['size'] if 'size' in request.GET else 100,
+		'from': request.GET['from'] if 'from' in request.GET else 0,
+		'highlight' : {
+			'pre_tags': [
+				'<span class="highlight">'
+			],
+			'post_tags': [
+				'</span>'
+			],
+			'fields' : {
+				textField : {
+					'number_of_fragments': 0
 				}
 			}
 		}
+	}
 
-		if ('mark_metadata' in request.GET):
-			query['query']['bool']['should'] = [
-				{
-					'match': {
-						'metadata.type': {
-							'query': request.GET['mark_metadata'],
-							'boost': 5
-						}
-					}
-				},
-				{
-					'exists': {
-						'field': 'text',
-						'boost': 10
+	if ('mark_metadata' in request.GET):
+		query['query']['bool']['should'] = [
+			{
+				'match': {
+					'metadata.type': {
+						'query': request.GET['mark_metadata'],
+						'boost': 5
 					}
 				}
-			]
+			},
+			{
+				'exists': {
+					'field': 'text',
+					'boost': 10
+				}
+			}
+		]
 
-		if ('sort' in request.GET):
-			sort = []
-			sortObj = {}
-			sortObj[request.GET['sort']] = request.GET['order'] if 'order' in request.GET else 'asc'
+	if ('sort' in request.GET):
+		sort = []
+		sortObj = {}
+		sortObj[request.GET['sort']] = request.GET['order'] if 'order' in request.GET else 'asc'
 
-			sort.append(sortObj)
+		sort.append(sortObj)
 
-			query['sort'] = sort
+		query['sort'] = sort
 
-		# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
-		esQueryResponse = esQuery(request, query, jsonFormat)
-		return esQueryResponse
+	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
+	esQueryResponse = esQuery(request, query, jsonFormat)
+	return esQueryResponse
 
 
 def getTexts(request):

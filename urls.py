@@ -27,7 +27,7 @@ urlpatterns = [
 	url(r'^check_authentication/', views.CheckAuthenticationViewSet.as_view(), name='check_authentication'),
 
 	#	documents: list
-	url(r'^documents/', views.getDocuments.as_view(), name='getDocuments'),
+	url(r'^documents/', views.getDocuments, name='getDocuments'),
 
 	# aggregate terms
 	url(r'^terms/', views.getTerms, name='getTerms'),
@@ -107,5 +107,5 @@ urlpatterns = [
 	url(r'^get_socken/(?P<sockenId>[^/]+)/$', views.getSocken, name='getSocken'),
 	url(r'^get_person/(?P<personId>[^/]+)/$', views.getPersons, name='getPersons'),
 	url(r'^random_document', views.getRandomDocument, name='getRandomDocument'),
-	url(r'^document/(?P<documentId>[^/]+)/$', views.getDocument.as_view(), name='getDocument'),
+	url(r'^document/(?P<documentId>[^/]+)/$', views.getDocument, name='getDocument'),
 ]
