@@ -104,7 +104,8 @@ def createQuery(request):
 					'places.landskap',
 					'places.county',
 					'places.harad',
-					'persons.name'
+					'persons.name',
+					'id',
 				],
 				'minimum_should_match': '100%'
 			}
