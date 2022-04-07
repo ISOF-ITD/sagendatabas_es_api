@@ -100,6 +100,8 @@ def createQuery(request):
 					'title',
 					'archive.archive',
 					'archive.archive_id',
+					'archive.archive_row',
+					'archive.archive_id_row',
 					'places.name',
 					'places.landskap',
 					'places.county',
