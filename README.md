@@ -177,6 +177,6 @@ def getTypes(request):
   
   | GUI-adress                            | ES-API                           | mapp på server                        | branch  | ES-index                |
   |---------------------------------------|----------------------------------|---------------------------------------|---------|-------------------------|
-  | frigg-test: digitalt-kulturarv-publik | frigg-test: /es                  | frigg-test: /ES-API                   | ES7     | saga-test: isof-publik  |
+  | frigg-test: digitalt-kulturarv-publik | frigg-test: /es                  | frigg-test: /ES-API                   | master  | saga-test: isof-publik  |
   | frigg-test: digitalt-kulturarv        | frigg-test: /es-advanced         | frigg-test: /ES-API-advanced          | master  | ingestnode              |
   | ingen                                 | frigg-test: /es-advanced-tilltal | frigg-test: /ES7-API-advanced-tilltal | ES7-new | saga-test: tilltal-test |
