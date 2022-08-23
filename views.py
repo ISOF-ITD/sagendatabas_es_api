@@ -1070,11 +1070,22 @@ def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False)
 	# Anropar ES, bygger upp url från es_config och skickar data som json (query)
 	esUrl = protocol+(user+':'+password+'@' if (user is not None) else '')+host+'/'+index_name+(apiUrl if apiUrl else '/_search')
 
-	# Remove queryObject if it is empty (Elasticsearch 7 seems to not like empty query object)
+	query_request = {}
 	if 'query' in query:
-		if not query['query']:
+		if query['query']:
+			query_request = query
+			# From ES7: add track_total_hits to query without aggregation to get total value to count above 10000:
+			if not 'aggs' in query:
+				#query_request['track_total_hits'] = 100000
+				query_request['track_total_hits'] = True
+				track_total_hits = {
+					"track_total_hits": True,
+					}
+				#track_total_hits.append(query_request)
+				#query_request[].append(track_total_hits)
 #			logger.debug(query['query'])
-#		else:
+		else:
+			# Remove queryObject if it is empty (Elasticsearch 7 seems to not like empty query object)
 			query.pop('query', None)
 
 	headers = {'Accept': 'application/json', 'content-type': 'application/json'}
@@ -1084,8 +1095,8 @@ def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False)
 	esResponse = requests.get(esUrl,
 							  data=json.dumps(query),
 							  verify=False,
-							  headers=headers)
-
+							  headers=headers,
+							  timeout=60)
 
 	# Tar emot svaret som json
 	responseData = esResponse.json()
