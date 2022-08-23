@@ -1157,27 +1157,23 @@ def getExtraIndexConfiguration(host, index_name, password, protocol, request, us
 
 
 
-class getDocument(APIView):
-	authentication_classes = [authentication.TokenAuthentication]
-	permission_classes = [permissions.IsAuthenticated]
+def getDocument(request, documentId):
+	host = es_config.host
+	protocol = es_config.protocol
+	index_name = es_config.index_name
+	user = None
+	password = None
 
-	def get(self, request, documentId):
-		host = es_config.host
-		protocol = es_config.protocol
-		index_name = es_config.index_name
-		user = None
-		password = None
+	#Check if application has extra index configuration
+	host, index_name, password, protocol, user = getExtraIndexConfiguration(host, index_name, password, protocol,
+																			request, user)
+	# Hämtar enda dokument, använder inte esQuery för den anropar ES direkt
+	esResponse = requests.get(protocol+(user+':'+password+'@' if (user is not None) else '')+host+'/'+index_name+'/_doc/'+documentId, verify=False)
 
-		#Check if application has extra index configuration
-		host, index_name, password, protocol, user = getExtraIndexConfiguration(host, index_name, password, protocol,
-																				request, user)
-		# Hämtar enda dokument, använder inte esQuery för den anropar ES direkt
-		esResponse = requests.get(protocol+(user+':'+password+'@' if (user is not None) else '')+host+'/'+index_name+'/_doc/'+documentId, verify=False)
+	jsonResponse = JsonResponse(esResponse.json())
+	jsonResponse['Access-Control-Allow-Origin'] = '*'
 
-		jsonResponse = JsonResponse(esResponse.json())
-		jsonResponse['Access-Control-Allow-Origin'] = '*'
-
-		return jsonResponse
+	return jsonResponse
 
 
 def getRandomDocument(request):
