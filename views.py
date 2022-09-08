@@ -131,13 +131,16 @@ def createQuery(request):
 								'search_other',
 								'metadata.value',
 								'title',
+								'contents',
 								'archive.archive',
 								'archive.archive_id',
+								'archive.archive_id_row',
 								'places.name',
 								'places.landskap',
 								'places.county',
 								'places.harad',
-								'persons.name'
+								'persons.name',
+								'id',
 							],
 							'minimum_should_match': '100%'
 						}
