@@ -1101,6 +1101,10 @@ def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False)
 							  headers=headers,
 							  timeout=60)
 
+	# Skriv ut själva API-anropet för debugging med Kibana
+	# print(esUrl)
+	# print(json.dumps(query))
+
 	# Tar emot svaret som json
 	responseData = esResponse.json()
 	message = esResponse.status_code
@@ -2734,7 +2738,7 @@ def getCounty(request):
 	return esQueryResponse
 
 def getPersons(request, personId = None):
-	# itemFormat som säger till hur varje object i esQuery resultatet skulle formateras
+	# itemFormat definerar hur varje object i esQuery-resultatet ska formateras
 	def itemFormat(item):
 		retObj = {
 			'id': item['key'],
@@ -2753,7 +2757,7 @@ def getPersons(request, personId = None):
 
 		return retObj
 
-	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
+	# jsonFormat, definerar hur esQuery-resultatet ska formateras och vilkan del som ska användas (hits eller aggregation buckets)
 	def jsonFormat(json):
 		if personId is not None:
 			person = [item for item in map(itemFormat, json['aggregations']['data']['data']['buckets']) if item['id'] == personId]
@@ -2804,7 +2808,8 @@ def getPersons(request, personId = None):
 						'aggs': {
 							'data': {
 								'terms': {
-									'field': 'persons.name.raw',
+									# 'field': 'persons.name.raw',
+									'field': 'persons.name_analysed.keyword',
 									'size': 1,
 									'order': {
 										'_term': 'asc'
