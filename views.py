@@ -3066,7 +3066,8 @@ def getRelatedPersons(request, relation):
 								'aggs': {
 									'data': {
 										'terms': {
-											'field': 'persons.name.raw',
+											# 'field': 'persons.name.raw'
+											'field': 'persons.name_analysed.keyword',
 											'size': 1,
 											'order': {
 												'_term': 'asc'
