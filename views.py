@@ -2938,6 +2938,12 @@ def getPersonsAutocomplete(request):
 											# 'persons.name.raw': '(.+?)'+request.GET['search']+'(.+?)'
 											'persons.name_analysed.keyword': '(.+?)'+request.GET['search']+'(.+?)'
 										}
+									},
+									{
+										# e.g. idprefix=acc,crwd
+										'regexp': {
+											'persons.id': ('(' + ('|'.join(request.GET['idprefix'].split(',')) + ')') if 'idprefix' in request.GET else '') + '(.+?)'
+										}
 									}
 								]
 							}
