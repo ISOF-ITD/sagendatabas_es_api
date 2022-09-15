@@ -2518,7 +2518,10 @@ def getSockenAutocomplete(request):
 								'must': [
 									{
 										'regexp': {
-											'places.name': '(.+?)'+request.GET['search']+'(.+?)'
+											'places.name': { 
+												'value': '(.+?)'+request.GET['search']+'(.+?)',
+												'case_insensitive': True,
+											}
 										}
 									}
 								]
@@ -2936,13 +2939,19 @@ def getPersonsAutocomplete(request):
 									{
 										'regexp': {
 											# 'persons.name.raw': '(.+?)'+request.GET['search']+'(.+?)'
-											'persons.name_analysed.keyword': '(.+?)'+request.GET['search']+'(.+?)'
+											'persons.name_analysed.keyword': {
+												'value': '(.+?)'+request.GET['search']+'(.+?)',
+												'case_insensitive': True,
+											}
 										}
 									},
 									{
 										# e.g. idprefix=acc,crwd
 										'regexp': {
-											'persons.id': ('(' + ('|'.join(request.GET['idprefix'].split(',')) + ')') if 'idprefix' in request.GET else '') + '(.+?)'
+											'persons.id': {
+												'value': ('(' + ('|'.join(request.GET['idprefix'].split(',')) + ')') if 'idprefix' in request.GET else '') + '(.+?)',
+												'case_insensitive': True,
+											}
 										}
 									}
 								]
