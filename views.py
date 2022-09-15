@@ -484,7 +484,7 @@ def createQuery(request):
 							'must': [
 								{
 									'match': {
-										'persons.name.raw': personNameQuery[1] if len(personNameQuery) > 1 else personNameQuery[0]
+										'persons.name_analysed.keyword': personNameQuery[1] if len(personNameQuery) > 1 else personNameQuery[0]
 									}
 								}
 							]
@@ -598,7 +598,8 @@ def createQuery(request):
 						'must': [
 							{
 								'match': {
-									'persons.name.raw': request.GET['collector']
+									# 'persons.name.raw': request.GET['collector']
+									'persons.name_analysed.keyword': request.GET['collector']
 								}
 							},
 							{
@@ -624,7 +625,8 @@ def createQuery(request):
 						'must': [
 							{
 								'match': {
-									'persons.name.raw': request.GET['informant']
+									# 'persons.name.raw': request.GET['informant']
+									'persons.name_analysed.keyword': request.GET['informant']
 								}
 							},
 							{
@@ -1102,8 +1104,8 @@ def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False)
 							  timeout=60)
 
 	# Skriv ut själva API-anropet för debugging med Kibana
-	# print(esUrl)
-	# print(json.dumps(query))
+	print(esUrl)
+	print(json.dumps(query))
 
 	# Tar emot svaret som json
 	responseData = esResponse.json()
@@ -2933,7 +2935,8 @@ def getPersonsAutocomplete(request):
 								'must': [
 									{
 										'regexp': {
-											'persons.name.raw': '(.+?)'+request.GET['search']+'(.+?)'
+											# 'persons.name.raw': '(.+?)'+request.GET['search']+'(.+?)'
+											'persons.name_analysed.keyword': '(.+?)'+request.GET['search']+'(.+?)'
 										}
 									}
 								]
@@ -2949,7 +2952,7 @@ def getPersonsAutocomplete(request):
 								'aggs': {
 									'data': {
 										'terms': {
-											'field': 'persons.name.raw',
+											'field': 'persons.name_analysed.keyword',
 											'size': 1,
 											'order': {
 												'_term': 'asc'
