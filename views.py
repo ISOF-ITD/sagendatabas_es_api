@@ -141,6 +141,7 @@ def createQuery(request):
 								'places.harad',
 								'persons.name',
 								'id',
+								'headwords',
 							],
 							'minimum_should_match': '100%'
 						}
