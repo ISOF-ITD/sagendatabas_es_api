@@ -294,6 +294,16 @@ def createQuery(request):
 			}
 		})
 
+	# Hämtar accessioner som har minst en transkriberad record
+	if('has_transcribed_records' in request.GET and request.GET['has_transcribed_records'].lower() == 'true'):
+		query['bool']['must'].append({
+			'range' : {
+				'numberoftranscribedonerecord' : {
+					'gte' : 1
+				}
+			}
+		})
+
 
 	# Hämtar documenter som har speciella ID.
 	if ('documents' in request.GET):
