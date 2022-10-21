@@ -116,33 +116,41 @@ def createQuery(request):
 
 	# Hämtar documenter var ett eller flera eller alla ord förekommer i titel eller text. Exempel: (ett eller flera ord) `search=svart hund`, (alla ord) `search=svart,hund`, (fras sökning, endast i `text` fältet `search="svart hund"`
 	if ('search' in request.GET):
-		term = request.GET['search']
-		textField = 'text.raw' if 'search_raw' in request.GET and request.GET['search_raw'] != 'false' else 'text'
+		term = request.GET['search'].replace('"', '')
+		raw = True if 'search_raw' in request.GET and request.GET['search_raw'] != 'false' else False
+		matchType = 'phrase' if raw else 'best_fields'
+		standardFields = [
+			'text^2',
+			'search_other',
+			'metadata.value',
+			'title',
+			'contents',
+			'archive.archive',
+			'archive.archive_id',
+			'archive.archive_id_row',
+			'places.name',
+			'places.landskap',
+			'places.county',
+			'places.harad',
+			'persons.name',
+			'id',
+			'headwords',
+		]
+		rawFields = [
+			'text.raw^2',
+			'title.raw',
+			'headwords.raw',
+			'contents.raw'
+		]
 
 		matchObj = {
 			'bool': {
 				'should': [
 					{
 						'multi_match': {
-							'query': term.replace('"', ''),
-							'type': 'phrase' if (term.startswith('"') and term.endswith('"')) else 'best_fields',
-							'fields': [
-								textField+'^2',
-								'search_other',
-								'metadata.value',
-								'title',
-								'contents',
-								'archive.archive',
-								'archive.archive_id',
-								'archive.archive_id_row',
-								'places.name',
-								'places.landskap',
-								'places.county',
-								'places.harad',
-								'persons.name',
-								'id',
-								'headwords',
-							],
+							'query': term,
+							'type': matchType,
+							'fields': rawFields if raw else standardFields,
 							'minimum_should_match': '100%'
 						}
 					}
@@ -154,26 +162,26 @@ def createQuery(request):
 		if (not 'search_exclude_title' in request.GET or request.GET['search_exclude_title'] == 'false') and (not 'search_raw' in request.GET or request.GET['search_raw'] != 'true'):
 			matchObj['bool']['should'][0]['multi_match']['fields'].append('title')
 
-		if term.startswith('"') and term.endswith('"'):
-			if ('phrase_options' in request.GET):
-				if (request.GET['phrase_options'] == 'nearer'):
-					matchObj['bool']['should'][0]['multi_match']['slop'] = 1
-				if (request.GET['phrase_options'] == 'near'):
-					matchObj['bool']['should'][0]['multi_match']['slop'] = 3
-			else:
-				matchObj['bool']['should'][0]['multi_match']['slop'] = 50
+		# if term.startswith('"') and term.endswith('"'):
+		# 	if ('phrase_options' in request.GET):
+		# 		if (request.GET['phrase_options'] == 'nearer'):
+		# 			matchObj['bool']['should'][0]['multi_match']['slop'] = 1
+		# 		if (request.GET['phrase_options'] == 'near'):
+		# 			matchObj['bool']['should'][0]['multi_match']['slop'] = 3
+		# 	else:
+		# 		matchObj['bool']['should'][0]['multi_match']['slop'] = 50
 
-		# Används för sök i data av typ ortnamn för test att söka på börjar på och slutar på med basic wildcard
-		# Vid problem: Kan aktiveras med annat mycket sällan använt tecken som pipe |i		if (term.startswith('*') or term.endswith('*')):
-			matchObj = {
-				'wildcard': {
-					'title': {
-						'value': term,
-						'boost': 1.0,
-						'rewrite': 'constant_score'
-					}
-				}
-			}
+		# # Används för sök i data av typ ortnamn för test att söka på börjar på och slutar på med basic wildcard
+		# # Vid problem: Kan aktiveras med annat mycket sällan använt tecken som pipe |i		if (term.startswith('*') or term.endswith('*')):
+		# 	matchObj = {
+		# 		'wildcard': {
+		# 			'title': {
+		# 				'value': term,
+		# 				'boost': 1.0,
+		# 				'rewrite': 'constant_score'
+		# 			}
+		# 		}
+		# 	}
 
 		query['bool']['must'].append(matchObj)
 
@@ -1110,7 +1118,7 @@ def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False)
 
 	# Skriv ut själva API-anropet för debugging med Kibana
 	print(esUrl)
-	print(json.dumps(query))
+	print(json.dumps(query, indent=2))
 
 	# Tar emot svaret som json
 	responseData = esResponse.json()
@@ -3477,6 +3485,9 @@ def getDocuments(request):
 		return list(map(itemFormat, json['hits']['hits']))
 
 	textField = 'text.raw' if 'search_raw' in request.GET and request.GET['search_raw'] != 'false' else 'text'
+	titleField = 'title.raw' if 'search_raw' in request.GET and request.GET['search_raw'] != 'false' else 'title'
+	contentsField = 'contents.raw' if 'search_raw' in request.GET and request.GET['search_raw'] != 'false' else 'contents'
+	headwordsField = 'headwords.raw' if 'search_raw' in request.GET and request.GET['search_raw'] != 'false' else 'headwords'
 	query = {
 		'query': createQuery(request),
 		'size': request.GET['size'] if 'size' in request.GET else 100,
@@ -3488,11 +3499,33 @@ def getDocuments(request):
 			'post_tags': [
 				'</span>'
 			],
-			'fields' : {
-				textField : {
-					'number_of_fragments': 0
+			'fields' : [
+				{
+					textField : {
+						# The maximum number of fragments to return. If the number
+						# of fragments is set to 0, no fragments are returned. Instead,
+						# the entire field contents are highlighted and returned. 
+						# https://www.elastic.co/guide/en/elasticsearch/reference/current/highlighting.html
+						'number_of_fragments': 0
+					} 
+				}, 
+				{
+					titleField : {
+						'number_of_fragments': 0
+					}
+				},
+				{
+					contentsField : {
+						'number_of_fragments': 0
+					}
+				},
+				{
+					headwordsField : {
+						'number_of_fragments': 0
+					}
 				}
-			}
+			]
+			
 		}
 	}
 
@@ -3532,48 +3565,31 @@ def getTexts(request):
 	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
 	def jsonFormat(json):
 		retList = []
+		analyzedFieldList = ['title', 'text', 'contents', 'headwords']
+		rawFieldList = ['title.raw', 'text.raw', 'contents.raw', 'headwords.raw']
+		fieldList = rawFieldList if 'search_raw' in request.GET and request.GET['search_raw'] != 'false' else analyzedFieldList
 
 		for hit in json['hits']['hits']:
 			if 'highlight' in hit:
-				if 'title' in hit['highlight']:
-					for highlight in hit['highlight']['title']:
-						retList.append({
-							'_id': hit['_id'],
-							'title': hit['_source']['title'],
-							'materialtype': hit['_source']['materialtype'],
-							'taxonomy': hit['_source']['taxonomy'],
-							'archive': hit['_source']['archive'],
-							'year': hit['_source']['year'] if 'year' in hit['_source'] else '',
-							'source': hit['_source']['source'],
-							'highlight': '<td>'+highlight+'</td>'
-						})
-				if 'text' in hit['highlight']:
-					for highlight in hit['highlight']['text']:
-						retList.append({
-							'_id': hit['_id'],
-							'title': hit['_source']['title'],
-							'materialtype': hit['_source']['materialtype'],
-							'taxonomy': hit['_source']['taxonomy'],
-							'archive': hit['_source']['archive'],
-							'year': hit['_source']['year'] if 'year' in hit['_source'] else '',
-							'source': hit['_source']['source'],
-							'highlight': '<td>'+highlight+'</td>'
-						})
-				if 'text.raw' in hit['highlight']:
-					for highlight in hit['highlight']['text.raw']:
-						retList.append({
-							'_id': hit['_id'],
-							'title': hit['_source']['title'],
-							'materialtype': hit['_source']['materialtype'],
-							'taxonomy': hit['_source']['taxonomy'],
-							'archive': hit['_source']['archive'],
-							'year': hit['_source']['year'] if 'year' in hit['_source'] else '',
-							'source': hit['_source']['source'],
-							'highlight': '<td>'+highlight+'</td>'
-						})
+				for field in fieldList:
+					if field in hit['highlight']:
+						for highlight in hit['highlight'][field]:
+							retList.append({
+								'_id': hit['_id'],
+								'title': hit['_source']['title'],
+								'materialtype': hit['_source']['materialtype'],
+								'taxonomy': hit['_source']['taxonomy'],
+								'archive': hit['_source']['archive'],
+								'year': hit['_source']['year'] if 'year' in hit['_source'] else '',
+								'source': hit['_source']['source'],
+								'highlight': '<td>'+highlight+'</td>'
+							})
 		return retList
 
 	textField = 'text.raw' if 'search_raw' in request.GET and request.GET['search_raw'] != 'false' else 'text'
+	titleField = 'title.raw' if 'search_raw' in request.GET and request.GET['search_raw'] != 'false' else 'title'
+	contentsField = 'contents.raw' if 'search.raw' in request.GET and request.GET['search_raw'] != 'false' else 'contents'
+	headwordsField = 'headwords.raw' if 'search.raw' in request.GET and request.GET['search_raw'] != 'false' else 'headwords'
 	query = {
 		'query': createQuery(request),
 		'size': request.GET['size'] if 'size' in request.GET else 100,
@@ -3586,8 +3602,10 @@ def getTexts(request):
 				'</span></td><td>'
 			],
 			'fields' : {
-				'title': {},
-				textField : {}
+				titleField: {},
+				textField : {},
+				contentsField: {},
+				headwordsField: {}
 			}
 		}
 	}
