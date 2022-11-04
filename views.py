@@ -142,6 +142,34 @@ def createQuery(request):
 			'headwords.raw',
 			'contents.raw'
 		]
+		titleFields = [
+			'title'
+		]
+		contentFields = [
+			'text^2',
+			'contents',
+			'headwords'
+		]
+		titleRawFields = [
+			'title.raw'
+		]
+		contentRawFields = [
+			'text.raw^2',
+			'contents.raw',
+			'headwords.raw'
+		]
+		
+		fields = standardFields
+		if raw:
+			fields = rawFields
+		if 'search_title' in request.GET and request.GET['search_title'] != 'false':
+			fields = titleFields
+			if raw:
+				fields = titleRawFields
+		elif 'search_content' in request.GET and request.GET['search_content'] != 'false':
+			fields = contentFields
+			if raw:
+				fields = contentRawFields
 
 		matchObj = {
 			'bool': {
@@ -150,7 +178,7 @@ def createQuery(request):
 						'multi_match': {
 							'query': term,
 							'type': matchType,
-							'fields': rawFields if raw else standardFields,
+							'fields': fields,
 							'minimum_should_match': '100%'
 						}
 					}
