@@ -119,6 +119,8 @@ def createQuery(request):
 		term = request.GET['search'].replace('"', '')
 		raw = True if 'search_raw' in request.GET and request.GET['search_raw'] != 'false' else False
 		matchType = 'phrase' if raw else 'best_fields'
+		# vi viktar text dubbelt så mycket som de andra fälten
+		# utan att vara säker på att det är bästa lösningen
 		standardFields = [
 			'text^2',
 			'search_other',
@@ -142,21 +144,23 @@ def createQuery(request):
 			'headwords.raw',
 			'contents.raw'
 		]
+		# contents är en sammanfattning av innehållet, 
+		# och när titeln saknas använder vi contents som
+		# en titel i gränssnittet istället.
+		# därför är contents med i titleFields
 		titleFields = [
-			'title'
+			'title',
+			'contents',
 		]
 		contentFields = [
-			'text^2',
-			'contents',
-			'headwords'
+			'text',
 		]
 		titleRawFields = [
-			'title.raw'
+			'title.raw',
+			'contents.raw',
 		]
 		contentRawFields = [
-			'text.raw^2',
-			'contents.raw',
-			'headwords.raw'
+			'text.raw',
 		]
 		
 		fields = standardFields
