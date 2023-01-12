@@ -404,25 +404,29 @@ def createQuery(request):
 
 		placeShouldBool['nested']['query']['bool']['should'].append({
 			'wildcard': {
-				'places.name': request.GET['place']+'*'
+				# capitalize() gör första bokstaven stor: "göteborg" -> "Göteborg"
+				'places.name': request.GET['place'].capitalize()+'*'
 			}
 		})
 
 		placeShouldBool['nested']['query']['bool']['should'].append({
 			'wildcard': {
-				'places.harad': request.GET['place']+'*'
+				# capitalize() gör första bokstaven stor: "göteborg" -> "Göteborg"
+				'places.harad': request.GET['place'].capitalize()+'*'
 			}
 		})
 
 		placeShouldBool['nested']['query']['bool']['should'].append({
 			'wildcard': {
-				'places.landskap': request.GET['place']+'*'
+				# capitalize() gör första bokstaven stor: "göteborg" -> "Göteborg"
+				'places.landskap': request.GET['place'].capitalize()+'*'
 			}
 		})
 
 		placeShouldBool['nested']['query']['bool']['should'].append({
 			'wildcard': {
-				'places.county': request.GET['place']+'*'
+				# capitalize() gör första bokstaven stor: "göteborg" -> "Göteborg"
+				'places.county': request.GET['place'].capitalize()+'*'
 			}
 		})
 
