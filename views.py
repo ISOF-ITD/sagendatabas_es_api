@@ -2796,7 +2796,7 @@ def getPersons(request, personId = None):
 	def itemFormat(item):
 		retObj = {
 			'id': item['key'],
-			'name': item['data']['buckets'][0]['key'],
+			'name': item['data']['buckets'][0]['key'] if 0 < len(item['data']['buckets']) else 'kunde inte ladda namnet',
 			'doc_count': item['doc_count']
 		}
 
