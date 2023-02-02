@@ -1,0 +1,605 @@
+{
+  "mappings": {
+    "properties": {
+      "archive": {
+        "properties": {
+          "archive": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "archive_id": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "archive_id_row": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "archive_row": {
+            "type": "long"
+          },
+          "country": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "page": {
+            "type": "text"
+          },
+          "total_pages": {
+            "type": "long"
+          }
+        }
+      },
+      "comment": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "contents": {
+        "type": "text",
+        "fields": {
+          "raw": {
+            "type": "text",
+            "analyzer": "simple"
+          }
+        },
+        "analyzer": "swedish"
+      },
+      "copyrightlicense": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "headwords": {
+        "type": "text",
+        "fields": {
+          "raw": {
+            "type": "text",
+            "analyzer": "simple"
+          }
+        },
+        "analyzer": "swedish"
+      },
+      "id": {
+        "type": "text",
+        "fielddata": true
+      },
+      "language": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "materialtype": {
+        "type": "text",
+        "fielddata": true
+      },
+      "media": {
+        "properties": {
+          "source": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "store": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "timeslots": {
+            "type": "nested",
+            "properties": {
+              "text": {
+                "type": "text",
+                "fields": {
+                  "raw": {
+                    "type": "keyword",
+                    "ignore_above": 32760
+                  }
+                },
+                "term_vector": "with_positions_offsets",
+                "analyzer": "swedish"
+              }
+            }
+          },
+          "title": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "type": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          }
+        }
+      },
+      "metadata": {
+        "properties": {
+          "type": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "value": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          }
+        }
+      },
+      "numberofonerecord": {
+        "type": "long"
+      },
+      "numberoftranscribedonerecord": {
+        "type": "long"
+      },
+      "persons": {
+        "type": "nested",
+        "include_in_root": true,
+        "properties": {
+          "birth_year": {
+            "type": "date"
+          },
+          "birthplace": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "gender": {
+            "type": "keyword"
+          },
+          "home": {
+            "type": "nested",
+            "include_in_root": true,
+            "properties": {
+              "county": {
+                "type": "keyword",
+                "copy_to": ["search_other"]
+              },
+              "fylke": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
+              },
+              "harad": {
+                "type": "keyword",
+                "copy_to": ["search_other"]
+              },
+              "harad_id": {
+                "type": "keyword"
+              },
+              "id": {
+                "type": "keyword"
+              },
+              "landskap": {
+                "type": "keyword",
+                "copy_to": ["search_other"]
+              },
+              "lm_id": {
+                "type": "text",
+                "fielddata": true
+              },
+              "location": {
+                "type": "geo_point"
+              },
+              "name": {
+                "type": "keyword",
+                "copy_to": ["search_other"]
+              },
+              "type": {
+                "type": "keyword"
+              }
+            }
+          },
+          "id": {
+            "type": "keyword"
+          },
+          "name": {
+            "type": "text",
+            "fields": {
+              "raw": {
+                "type": "text",
+                "analyzer": "simple",
+                "fielddata": true
+              }
+            },
+            "copy_to": ["search_other"],
+            "analyzer": "swedish"
+          },
+          "name_analysed": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "relation": {
+            "type": "keyword"
+          }
+        }
+      },
+      "persons_graph": {
+        "properties": {
+          "home": {
+            "properties": {
+              "county": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
+              },
+              "harad": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
+              },
+              "id": {
+                "type": "long"
+              },
+              "landskap": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
+              },
+              "name": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
+              }
+            }
+          },
+          "home_name": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "id": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "name": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "name_id": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          }
+        }
+      },
+      "persons_graph_flat": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "places": {
+        "type": "nested",
+        "properties": {
+          "county": {
+            "type": "keyword",
+            "copy_to": ["search_other"]
+          },
+          "fylke": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "harad": {
+            "type": "keyword",
+            "copy_to": ["search_other"]
+          },
+          "harad_id": {
+            "type": "keyword"
+          },
+          "id": {
+            "type": "keyword"
+          },
+          "landskap": {
+            "type": "keyword",
+            "copy_to": ["search_other"]
+          },
+          "lm_id": {
+            "type": "text",
+            "fielddata": true
+          },
+          "location": {
+            "type": "geo_point"
+          },
+          "name": {
+            "type": "keyword",
+            "copy_to": ["search_other"]
+          },
+          "type": {
+            "type": "text",
+            "fielddata": true
+          }
+        }
+      },
+      "publishstatus": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "recordtype": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "search_other": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "source": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "taxonomy": {
+        "properties": {
+          "category": {
+            "type": "keyword"
+          },
+          "name": {
+            "type": "keyword"
+          },
+          "type": {
+            "type": "keyword"
+          }
+        }
+      },
+      "text": {
+        "type": "text",
+        "fields": {
+          "raw": {
+            "type": "text",
+            "analyzer": "simple"
+          }
+        },
+        "term_vector": "with_positions_offsets",
+        "analyzer": "swedish"
+      },
+      "title": {
+        "type": "text",
+        "fields": {
+          "raw": {
+            "type": "text",
+            "analyzer": "simple"
+          }
+        },
+        "analyzer": "swedish"
+      },
+      "title_topics_10_10": {
+        "type": "nested",
+        "properties": {
+          "terms": {
+            "type": "nested",
+            "properties": {
+              "term": {
+                "type": "keyword"
+              }
+            }
+          }
+        }
+      },
+      "title_topics_10_10_graph": {
+        "type": "text",
+        "fielddata": true
+      },
+      "title_topics_2_5": {
+        "type": "nested",
+        "properties": {
+          "terms": {
+            "type": "nested",
+            "properties": {
+              "term": {
+                "type": "keyword"
+              }
+            }
+          }
+        }
+      },
+      "title_topics_2_5_graph": {
+        "type": "text",
+        "fielddata": true
+      },
+      "topics_10_10": {
+        "type": "nested",
+        "properties": {
+          "terms": {
+            "type": "nested",
+            "properties": {
+              "term": {
+                "type": "keyword"
+              }
+            }
+          }
+        }
+      },
+      "topics_10_10_graph": {
+        "type": "text",
+        "fielddata": true
+      },
+      "topics_2_5": {
+        "type": "nested",
+        "properties": {
+          "terms": {
+            "type": "nested",
+            "properties": {
+              "term": {
+                "type": "keyword"
+              }
+            }
+          }
+        }
+      },
+      "topics_2_5_graph": {
+        "type": "text",
+        "fielddata": true
+      },
+      "transcribedby": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "transcriptionstatus": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "transcriptiontype": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "update_status": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "year": {
+        "type": "date"
+      }
+    }
+  }
+}

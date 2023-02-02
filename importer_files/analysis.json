@@ -1,0 +1,37 @@
+{
+  "analysis": {
+    "filter": {
+      "swedish_stop": {
+        "type": "stop",
+        "stopwords": "_swedish_"
+      },
+      "swedish_stemmer": {
+        "type": "stemmer",
+        "language": "swedish"
+      }
+    },
+    "char_filter": {
+      "add_whitespace_next_to_three_hashes": {
+        "pattern": "###",
+        "type": "pattern_replace",
+        "replacement": " ### "
+      },
+      "punctuation_removal": {
+        "pattern": "[^åöäüëïÅÖÄÜËÏáéíóúÁÉÍÓÚàèìòùâêîôûÀÈÌÒÙÂÊÎÔÛẞßa-zA-Z0-9# ]",
+        "type": "pattern_replace",
+        "replacement": ""
+      }
+    },
+    "analyzer": {
+      "swedish": {
+        "filter": ["lowercase", "swedish_stop", "swedish_stemmer"],
+        "char_filter": [
+          "add_whitespace_next_to_three_hashes",
+          "punctuation_removal"
+        ],
+        "type": "custom",
+        "tokenizer": "whitespace"
+      }
+    }
+  }
+}
