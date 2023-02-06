@@ -1152,10 +1152,6 @@ def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False)
 							  headers=headers,
 							  timeout=60)
 
-	# Skriv ut själva API-anropet för debugging med Kibana
-	print(esUrl)
-	print(json.dumps(query, indent=2))
-
 	# Tar emot svaret som json
 	responseData = esResponse.json()
 	message = esResponse.status_code
@@ -3756,3 +3752,32 @@ def getPersonsGraph(request):
 	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
 	esQueryResponse = esQuery(request, query, jsonFormat, '/_xpack/_graph/_explore')
 	return esQueryResponse
+
+
+# import mappings file from importer_files/mappings.json and create a new index with that mapping and the settings from
+# import_files/analysis.json
+
+def createIndex(request):
+	# import Elasticsearch
+	from elasticsearch import Elasticsearch
+
+	# create es variable
+	es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+
+	# Skapar nytt index med mappings och settings från importer_files mappen
+
+	# Hämtar settings från analysis.json
+	with open('importer_files/analysis.json') as analysisFile:
+		analysis = json.load(analysisFile)
+
+	# Hämtar mappings från mappings.json
+	with open('importer_files/mappings.json') as mappingsFile:
+		mappings = json.load(mappingsFile)
+
+	# Skapar index med settings och mappings
+	es.indices.create(index='digitalt_kulturarv', body={
+		'settings': analysis,
+		'mappings': mappings
+	})
+
+	return HttpResponse('Index created')
