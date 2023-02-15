@@ -108,4 +108,5 @@ urlpatterns = [
 	url(r'^get_person/(?P<personId>[^/]+)/$', views.getPersons, name='getPersons'),
 	url(r'^random_document', views.getRandomDocument, name='getRandomDocument'),
 	url(r'^document/(?P<documentId>[^/]+)/$', views.getDocument, name='getDocument'),
+	url(r'^count', views.getCount, name='getCount'),
 ]

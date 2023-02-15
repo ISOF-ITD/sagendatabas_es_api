@@ -1094,6 +1094,18 @@ def createQuery(request):
 			}
 		})
 
+	# Hämtar dokument med angiven range på angivet fält
+	if ('range' in request.GET):
+		range = request.GET['range'].split(',')
+		query['bool']['must'].append({
+			'range': {
+				range[0]: {
+					'gte': range[1],
+					'lt': range[2]
+				}
+			}
+		})
+
 	return query
 
 def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False):
@@ -3781,3 +3793,19 @@ def createIndex(request):
 	})
 
 	return HttpResponse('Index created')
+
+# räkna antal träffar för en sökning
+def getCount(requests):
+	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
+	def jsonFormat(json):
+		return json['hits']['total']
+
+	query = {
+		'query': createQuery(requests),
+		'size': 0
+	}
+
+	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
+	esQueryResponse = esQuery(requests, query, jsonFormat)
+
+	return esQueryResponse
