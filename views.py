@@ -3799,12 +3799,26 @@ def createIndex(request):
 def getCount(requests):
 	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
 	def jsonFormat(json):
-		return json['hits']['total']
+		if('aggregation' in requests.GET):
+			return json['aggregations']['aggresult']
+		else:
+			return json['hits']['total']
 
 	query = {
 		'query': createQuery(requests),
 		'size': 0
 	}
+
+	if('aggregation' in requests.GET):
+		aggregation = requests.GET['aggregation'].split(',')
+		query['aggs'] = {
+			'aggresult': {
+				aggregation[0]: {
+					'field': aggregation[1]
+				}
+			}
+		}
+
 
 	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
 	esQueryResponse = esQuery(requests, query, jsonFormat)
