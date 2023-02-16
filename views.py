@@ -1100,12 +1100,13 @@ def createQuery(request):
 		query['bool']['must'].append({
 			'range': {
 				range[0]: {
-					'gte': range[1],
-					'lt': range[2]
+					'from': range[1],
+					'to': range[2]
 				}
 			}
 		})
 
+	print(json.dumps(query, indent=4, sort_keys=True))
 	return query
 
 def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False):
