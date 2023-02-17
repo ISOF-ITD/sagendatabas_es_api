@@ -1106,7 +1106,6 @@ def createQuery(request):
 			}
 		})
 
-	print(json.dumps(query, indent=4, sort_keys=True))
 	return query
 
 def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False):
