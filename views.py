@@ -2576,9 +2576,9 @@ def getSockenAutocomplete(request):
 		return {
 			'id': item['key'],
 			'name': item['data']['buckets'][0]['key'],
-			'harad': item['harad']['buckets'][0]['key'],
-			'landskap': item['landskap']['buckets'][0]['key'],
-			'lan': item['lan']['buckets'][0]['key'],
+			'harad': item['harad']['buckets'][0]['key'] if len(item['harad']['buckets']) > 0 else '',
+			'landskap': item['landskap']['buckets'][0]['key'] if len(item['landskap']['buckets']) > 0 else '',
+			'lan': item['lan']['buckets'][0]['key'] if len(item['lan']['buckets']) > 0 else '',
 			'lm_id': item['lm_id']['buckets'][0]['key'] if len(item['lm_id']['buckets']) > 0 else '',
 			'location': geohash.decode(item['location']['buckets'][0]['key']),
 			'doc_count': item['data']['buckets'][0]['doc_count']
