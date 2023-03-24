@@ -492,7 +492,7 @@ def createQuery(request):
 		query['bool']['must'].append(landskapShouldBool)
 
 
-	# Hämtar documenter var uppteckare eller informant matchar angivet namn. Exempel: (alla som heter Ragnar eller Nilsson) `person=Ragnar Nilsson`
+	# Hämtar documenter var uppteckare eller informant matchar angivet namn eller id. Exempel: (alla som heter Ragnar eller Nilsson) `person=Ragnar Nilsson` eller `person=acc1`
 	if ('person' in request.GET):
 		personNameQueries = request.GET['person'].split(',')
 
@@ -506,8 +506,19 @@ def createQuery(request):
 						'bool': {
 							'must': [
 								{
-									'match': {
-										'persons.name': personNameQuery[1] if len(personNameQuery) > 1 else personNameQuery[0]
+									'bool': {
+										'should': [
+											{
+												'match': {
+													'persons.name': personNameQuery[1] if len(personNameQuery) > 1 else personNameQuery[0]
+												}
+											},
+											{
+												'match': {
+													'persons.id': personNameQueryStr
+												}
+											}
+										]
 									}
 								}
 							]
