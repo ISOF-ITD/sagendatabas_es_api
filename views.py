@@ -439,6 +439,13 @@ def createQuery(request):
 			}
 		})
 
+		# also match the id of the place
+		placeShouldBool['nested']['query']['bool']['should'].append({
+			'match': {
+				'places.id': request.GET['place']
+			}
+		})
+
 		query['bool']['must'].append(placeShouldBool)
 
 
