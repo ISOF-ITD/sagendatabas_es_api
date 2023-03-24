@@ -2587,6 +2587,15 @@ def getSockenAutocomplete(request):
 	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
 	def jsonFormat(json):
 		return list(map(itemFormat, json['aggregations']['data']['data']['data']['buckets']))
+	
+	# Skapar en ny string som är en regex som matchar alla bokstäver i söksträngen oavsett om de är stora eller små
+	# Detta behövs för att case_insensitive inte fungerar med åäö och andra icke-ASCII tecken
+	newRegExString = ''
+	for char in request.GET['search']:
+		if char == '[' or char == ']':
+			newRegExString += '\\' + char
+		else:
+			newRegExString += '[' + char.lower() + char.upper() + ']'
 
 	query = {
 		'size': 0,
@@ -2603,7 +2612,7 @@ def getSockenAutocomplete(request):
 									{
 										'regexp': {
 											'places.name': { 
-												'value': '(.+?)'+request.GET['search']+'(.+?)',
+												'value': '(.+?)'+newRegExString+'(.+?)',
 												'case_insensitive': True,
 											}
 										}
@@ -3008,6 +3017,22 @@ def getPersonsAutocomplete(request):
 	def jsonFormat(json):
 		return list(map(itemFormat, json['aggregations']['data']['data']['data']['buckets']))
 
+	# Skapar en ny string som är en regex som matchar alla bokstäver i söksträngen oavsett om de är stora eller små
+	# Detta behövs för att case_insensitive inte fungerar med åäö och andra icke-ASCII tecken
+	# --------------------
+	# create a new string, for every character in request.GET['search'], create a character class to match both the upper
+	# and lower case version of the character
+	# characters in request.get['search'] can be upper or lowercase
+	# e.g. search=abc will match Abc, aBc, abC, ABC, AbC, aBC, ABc, abc
+	# and search=AbC will match Abc, aBc, abC, ABC, AbC, aBC, ABc, abc
+	# escape the characters [ and ]
+	newRegExString = ''
+	for char in request.GET['search']:
+		if char == '[' or char == ']':
+			newRegExString += '\\' + char
+		else:
+			newRegExString += '[' + char.lower() + char.upper() + ']'
+
 	query = {
 		'size': 0,
 		'aggs': {
@@ -3024,7 +3049,7 @@ def getPersonsAutocomplete(request):
 										'regexp': {
 											# 'persons.name.raw': '(.+?)'+request.GET['search']+'(.+?)'
 											'persons.name_analysed.keyword': {
-												'value': '(.+?)'+request.GET['search']+'(.+?)',
+												'value': '(.+?)'+newRegExString+'(.+?)',
 												'case_insensitive': True,
 											}
 										}
