@@ -344,6 +344,15 @@ def createQuery(request):
 			}
 		})
 
+	# Hämtar accessioner där numberoftranscribedonerecord är mindre än numberofonerecord
+	if ('has_untranscribed_records' in request.GET and request.GET['has_untranscribed_records'].lower() == 'true'):
+		query['bool']['filter'] = {
+				"script": {
+					"script": {
+						"source": "doc['numberoftranscribedonerecord'].value < doc['numberofonerecord'].value"
+					}
+				}
+			}
 
 	# Hämtar documenter som har speciella ID.
 	if ('documents' in request.GET):
