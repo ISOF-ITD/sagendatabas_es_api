@@ -98,6 +98,7 @@ urlpatterns = [
 	url(r'^autocomplete/title_terms/', views.getTitleTermsAutocomplete, name='getTitleTermsAutocomplete'),
 	url(r'^autocomplete/persons/', views.getPersonsAutocomplete, name='getPersonsAutocomplete'),
 	url(r'^autocomplete/socken/', views.getSockenAutocomplete, name='getSockenAutocomplete'),
+    url(r'^autocomplete/landskap/', views.getLandskapAutocomplete, name='getLandskapAutocomplete'),
 
 	url(r'^total_by_type/socken/', views.getSockenTotal, name='getSockenTotal'),
 	url(r'^total_by_type/collection_years/', views.getCollectionYearsTotal, name='getCollectionYearsTotal'),

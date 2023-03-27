@@ -2569,6 +2569,73 @@ def getLetters(request, sockenId = None):
 
 	return jsonResponse
 
+def getLandskapAutocomplete(request):
+	# itemFormat som säger till hur varje object i esQuery resultatet skulle formateras
+	def itemFormat(item):
+		return {
+			'id': item['key'],
+			'name': item['key'],
+			'doc_count': item['doc_count']
+		}
+	
+	def jsonFormat(response):
+		return list(map(itemFormat, response['aggregations']['data']['data']['data']['buckets']))
+	
+	newRegExString = ''
+	for char in request.GET['search']:
+		if char == '[' or char == ']':
+			newRegExString += '\\' + char
+		else:
+			newRegExString += '[' + char.lower() + char.upper() + ']'
+
+	
+	# query objekt som skickas till esQuery
+	query = {
+		'size': 0,
+		'aggs': {
+			'data': {
+				'nested': {
+					'path': 'places'
+			},
+			'aggs': {
+				'data': {
+					'filter': {
+						'bool': {
+							'must': [
+								{
+									'regexp': {
+										'places.landskap': {
+											'value': '(.+)?' + newRegExString + '(.+)?',
+											'case_insensitive': True
+										}
+									}
+								}
+							]
+						}
+					},
+					'aggs': {
+						'data': {
+							'terms': {
+								'field': 'places.landskap',
+								'size': 1000
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	}
+
+	print(
+		json.dumps(query, indent=4, sort_keys=True)
+	)
+		
+	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
+	esQueryResponse = esQuery(request, query, jsonFormat)
+	return esQueryResponse
+
+
 
 def getSockenAutocomplete(request):
 	# itemFormat som säger till hur varje object i esQuery resultatet skulle formateras
