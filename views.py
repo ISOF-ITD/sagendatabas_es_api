@@ -2626,10 +2626,6 @@ def getLandskapAutocomplete(request):
 		}
 	}
 	}
-
-	print(
-		json.dumps(query, indent=4, sort_keys=True)
-	)
 		
 	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
 	esQueryResponse = esQuery(request, query, jsonFormat)
