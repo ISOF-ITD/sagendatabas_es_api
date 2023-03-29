@@ -2644,7 +2644,8 @@ def getSockenAutocomplete(request):
 			'lan': item['lan']['buckets'][0]['key'] if len(item['lan']['buckets']) > 0 else '',
 			'lm_id': item['lm_id']['buckets'][0]['key'] if len(item['lm_id']['buckets']) > 0 else '',
 			'location': geohash.decode(item['location']['buckets'][0]['key']),
-			'doc_count': item['data']['buckets'][0]['doc_count']
+			'comment': item['comment']['buckets'][0]['key'] if ('comment' in item and len(item['comment']['buckets']) > 0) else '',
+			'doc_count': item['data']['buckets'][0]['doc_count'],
 		}
 
 	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
@@ -2673,11 +2674,26 @@ def getSockenAutocomplete(request):
 							'bool': {
 								'must': [
 									{
-										'regexp': {
-											'places.name': { 
-												'value': '(.+?)'+newRegExString+'(.+?)',
-												'case_insensitive': True,
-											}
+										'bool': 
+										{
+											'should': [
+												{
+													'regexp': {
+														'places.name': { 
+															'value': '(.+?)'+newRegExString+'(.+?)',
+															'case_insensitive': True,
+														}
+													}
+												},
+												{
+													'regexp': {
+														'places.comment': {
+															'value': '(.+?)'+newRegExString+'(.+?)',
+															'case_insensitive': True,
+														}
+													}
+												}
+											]
 										}
 									}
 								]
@@ -2730,6 +2746,15 @@ def getSockenAutocomplete(request):
 										'geohash_grid': {
 											'field': 'places.location',
 											'precision': 12
+										}
+									},
+									'comment': {
+										'terms': {
+											'field': 'places.comment',
+											'size': 1,
+											'order': {
+												'_term': 'asc'
+											}
 										}
 									},
 									'lm_id': {
