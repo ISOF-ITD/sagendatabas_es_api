@@ -2617,7 +2617,10 @@ def getLandskapAutocomplete(request):
 						'data': {
 							'terms': {
 								'field': 'places.landskap',
-								'size': 1000
+								'size': 1000,
+								'order': {
+									'_term': 'asc'
+								}
 							}
 						}
 					}
@@ -2702,8 +2705,11 @@ def getSockenAutocomplete(request):
 						'aggs': {
 							'data': {
 								'terms': {
-									'field': 'places.id',
-									'size': 10000
+									'field': 'places.name',
+									'size': 10000,
+									'order': {
+										'_term': 'asc',
+									}
 								},
 								'aggs': {
 									'data': {
