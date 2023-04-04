@@ -3969,3 +3969,29 @@ def getCount(requests):
 	esQueryResponse = esQuery(requests, query, jsonFormat)
 
 	return esQueryResponse
+
+def getCurrentTime(request):
+	# returnerar ES-serverns nuvarande tid
+	# anropet i konsolen ser ut såhär:
+	# 	GET /_search
+	# {
+	#   "size": 1, 
+	#   "script_fields": {
+	#     "now": {
+	#       "script": "new Date().getTime()"
+	#     }
+	#   }
+	# }
+	# only return the current timestamp from result['hits']['hits'][0]['fields']['now'][0]
+	return esQuery(request, {
+		'size': 1,
+		'script_fields': {
+			'now': {
+				'script': 'new Date().getTime()'
+			}
+		}
+	}, 
+		lambda json: json['hits']['hits'][0]['fields']['now'][0]
+	)
+
+

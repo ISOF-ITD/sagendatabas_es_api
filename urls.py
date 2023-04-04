@@ -110,4 +110,6 @@ urlpatterns = [
 	url(r'^random_document', views.getRandomDocument, name='getRandomDocument'),
 	url(r'^document/(?P<documentId>[^/]+)/$', views.getDocument, name='getDocument'),
 	url(r'^count', views.getCount, name='getCount'),
+    
+	url(r'^current_time', views.getCurrentTime, name='getCurrentTime')
 ]
