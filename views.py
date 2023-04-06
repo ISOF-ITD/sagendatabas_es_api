@@ -3671,8 +3671,8 @@ def getDocuments(request):
 			return item
 
 	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
-	def jsonFormat(jsonR):
-		return list(map(itemFormat, jsonR['hits']['hits']))
+	def jsonFormat(json):
+		return list(map(itemFormat, json['hits']['hits']))
 
 	textField = 'text.raw' if 'search_raw' in request.GET and request.GET['search_raw'] != 'false' else 'text'
 	titleField = 'title.raw' if 'search_raw' in request.GET and request.GET['search_raw'] != 'false' else 'title'
@@ -3739,13 +3739,10 @@ def getDocuments(request):
 
 	if ('sort' in request.GET):
 		sort = []
+		sortObj = {}
+		sortObj[request.GET['sort']] = request.GET['order'] if 'order' in request.GET else 'asc'
 
-		# if sorting by archive.archive_id_row.keyword, sort first by archive.archive_row, and then py archive.page
-		# if request.GET['sort'] == 'archive.archive_id_row.keyword':
-		# 	sort.append({'archive.archive_id_row.keyword': request.GET['order'] if 'order' in request.GET else 'asc'})
-		# 	sort.append({'archive.page': request.GET['order'] if 'order' in request.GET else 'asc'})
-		# else:
-		sort.append({request.GET['sort']: request.GET['order'] if 'order' in request.GET else 'asc'})
+		sort.append(sortObj)
 
 		query['sort'] = sort
 
@@ -3975,17 +3972,7 @@ def getCount(requests):
 
 def getCurrentTime(request):
 	# returnerar ES-serverns nuvarande tid
-	# anropet i konsolen ser ut såhär:
-	# 	GET /_search
-	# {
-	#   "size": 1, 
-	#   "script_fields": {
-	#     "now": {
-	#       "script": "new Date().getTime()"
-	#     }
-	#   }
-	# }
-	# only return the current timestamp from result['hits']['hits'][0]['fields']['now'][0]
+	# returnera bara nuvarande timestamp från result['hits']['hits'][0]['fields']['now'][0]
 	return esQuery(request, {
 		'size': 1,
 		'script_fields': {
