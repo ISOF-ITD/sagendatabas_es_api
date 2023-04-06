@@ -3672,8 +3672,6 @@ def getDocuments(request):
 
 	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
 	def jsonFormat(jsonR):
-		# pretty print json
-		print(json.dumps(jsonR, indent=4, sort_keys=True))
 		return list(map(itemFormat, jsonR['hits']['hits']))
 
 	textField = 'text.raw' if 'search_raw' in request.GET and request.GET['search_raw'] != 'false' else 'text'
@@ -3743,11 +3741,11 @@ def getDocuments(request):
 		sort = []
 
 		# if sorting by archive.archive_id_row.keyword, sort first by archive.archive_row, and then py archive.page
-		if request.GET['sort'] == 'archive.archive_id_row.keyword':
-			sort.append({'archive.archive_id_row.keyword': request.GET['order'] if 'order' in request.GET else 'asc'})
-			sort.append({'archive.page': request.GET['order'] if 'order' in request.GET else 'asc'})
-		else:
-			sort.append({request.GET['sort']: request.GET['order'] if 'order' in request.GET else 'asc'})
+		# if request.GET['sort'] == 'archive.archive_id_row.keyword':
+		# 	sort.append({'archive.archive_id_row.keyword': request.GET['order'] if 'order' in request.GET else 'asc'})
+		# 	sort.append({'archive.page': request.GET['order'] if 'order' in request.GET else 'asc'})
+		# else:
+		sort.append({request.GET['sort']: request.GET['order'] if 'order' in request.GET else 'asc'})
 
 		query['sort'] = sort
 
