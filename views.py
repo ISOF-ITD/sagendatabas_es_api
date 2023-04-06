@@ -3746,7 +3746,8 @@ def getDocuments(request):
 			# sort.append({'archive.page': request.GET['order'] if 'order' in request.GET else 'asc'})
 			sortObj[request.GET['sort']] = request.GET['order'] if 'order' in request.GET else 'asc'
 			# add secondary sort
-			sortObj['archive.page'] = request.GET['order'] if 'order' in request.GET else 'asc'
+			# the following is not working in frigg-test:
+			# sortObj['archive.page'] = request.GET['order'] if 'order' in request.GET else 'asc'
 		else:
 			sortObj[request.GET['sort']] = request.GET['order'] if 'order' in request.GET else 'asc'
 
