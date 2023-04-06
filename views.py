@@ -3739,10 +3739,13 @@ def getDocuments(request):
 
 	if ('sort' in request.GET):
 		sort = []
-		sortObj = {}
-		sortObj[request.GET['sort']] = request.GET['order'] if 'order' in request.GET else 'asc'
 
-		sort.append(sortObj)
+		# if sorting by archive.archive_id_row.keyword, sort first by archive.archive_row, and then py archive.page
+		if request.GET['sort'] == 'archive.archive_id_row.keyword':
+			sort.append({'archive.archive_row': request.GET['order'] if 'order' in request.GET else 'asc'})
+			sort.append({'archive.page': request.GET['order'] if 'order' in request.GET else 'asc'})
+		else:
+			sort.append({request.GET['sort']: request.GET['order'] if 'order' in request.GET else 'asc'})
 
 		query['sort'] = sort
 
