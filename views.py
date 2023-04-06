@@ -3671,8 +3671,10 @@ def getDocuments(request):
 			return item
 
 	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
-	def jsonFormat(json):
-		return list(map(itemFormat, json['hits']['hits']))
+	def jsonFormat(jsonR):
+		# pretty print json
+		print(json.dumps(jsonR, indent=4, sort_keys=True))
+		return list(map(itemFormat, jsonR['hits']['hits']))
 
 	textField = 'text.raw' if 'search_raw' in request.GET and request.GET['search_raw'] != 'false' else 'text'
 	titleField = 'title.raw' if 'search_raw' in request.GET and request.GET['search_raw'] != 'false' else 'title'
