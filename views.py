@@ -3742,7 +3742,7 @@ def getDocuments(request):
 
 		# if sorting by archive.archive_id_row.keyword, sort first by archive.archive_row, and then py archive.page
 		if request.GET['sort'] == 'archive.archive_id_row.keyword':
-			sort.append({'archive.archive_row': request.GET['order'] if 'order' in request.GET else 'asc'})
+			sort.append({'archive.archive_id_row.keyword': request.GET['order'] if 'order' in request.GET else 'asc'})
 			sort.append({'archive.page': request.GET['order'] if 'order' in request.GET else 'asc'})
 		else:
 			sort.append({request.GET['sort']: request.GET['order'] if 'order' in request.GET else 'asc'})
