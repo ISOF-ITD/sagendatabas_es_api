@@ -2690,7 +2690,7 @@ def getSockenAutocomplete(request):
 												},
 												{
 													'regexp': {
-														'places.comment': {
+														'places.comment.keyword': {
 															'value': '(.+?)'+newRegExString+'(.+?)',
 															'case_insensitive': True,
 														}
@@ -2782,7 +2782,6 @@ def getSockenAutocomplete(request):
 	}
 
 	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
-	print(query)
 	esQueryResponse = esQuery(request, query, jsonFormat)
 	return esQueryResponse
 
