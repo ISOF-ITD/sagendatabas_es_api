@@ -2756,7 +2756,7 @@ def getSockenAutocomplete(request):
 									},
 									'comment': {
 										'terms': {
-											'field': 'places.comment',
+											'field': 'places.comment.keyword',
 											'size': 1,
 											'order': {
 												'_term': 'asc'
