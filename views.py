@@ -2782,6 +2782,7 @@ def getSockenAutocomplete(request):
 	}
 
 	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
+	print(query)
 	esQueryResponse = esQuery(request, query, jsonFormat)
 	return esQueryResponse
 
@@ -3746,7 +3747,8 @@ def getDocuments(request):
 			# sort.append({'archive.page': request.GET['order'] if 'order' in request.GET else 'asc'})
 			sortObj[request.GET['sort']] = request.GET['order'] if 'order' in request.GET else 'asc'
 			# add secondary sort
-			# the following is not working in frigg-test:
+			# the following is not working in frigg-test, because there field "page" is indexed as text, not as long.
+			# it will, however, work in frigg, where the field is indexed as long.
 			# sortObj['archive.page'] = request.GET['order'] if 'order' in request.GET else 'asc'
 		else:
 			sortObj[request.GET['sort']] = request.GET['order'] if 'order' in request.GET else 'asc'
