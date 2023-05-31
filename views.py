@@ -345,14 +345,54 @@ def createQuery(request):
 		})
 
 	# Hämtar accessioner där numberoftranscribedonerecord är mindre än numberofonerecord
+	# Check if 'has_untranscribed_records' parameter is present in the GET request
+	# and its value is 'true' (case-insensitive)
 	if ('has_untranscribed_records' in request.GET and request.GET['has_untranscribed_records'].lower() == 'true'):
+
+		# Modify the Elasticsearch query
 		query['bool']['filter'] = {
-				"script": {
-					"script": {
-						"source": "doc['numberoftranscribedonerecord'].value < doc['numberofonerecord'].value"
+
+			# Use a 'bool' query to combine two conditions
+			"bool": {
+				"should": [
+
+					# First condition: 'recordtype' is not 'one_accession_row'
+					{
+						"bool": {
+							"must_not": {
+								"term": {"recordtype": "one_accession_row"}
+							}
+						}
+					},
+
+					# Second condition: 'recordtype' is 'one_accession_row' and
+					# 'numberoftranscribedonerecord' is less than 'numberofonerecord'
+					{
+						"bool": {
+							"must": [
+
+								# Check if 'recordtype' is 'one_accession_row'
+								{
+									"term": {"recordtype": "one_accession_row"}
+								},
+
+								# Check if 'numberoftranscribedonerecord' is less than 'numberofonerecord'
+								{
+									"script": {
+										"script": {
+											"source": "doc['numberoftranscribedonerecord'].value < doc['numberofonerecord'].value"
+										}
+									}
+								}
+
+							]
+						}
 					}
-				}
+
+				]
 			}
+		}
+
 
 	# Hämtar documenter som har speciella ID.
 	if ('documents' in request.GET):
