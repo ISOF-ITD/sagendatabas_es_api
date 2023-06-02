@@ -3777,6 +3777,18 @@ def getDocuments(request):
 			}
 		]
 
+	if('id' in request.GET):
+		# match the id for the document exactly
+		# do not mess up the existing query structure
+		# add the id match as a must clause, but keep the existing must clauses if there are any
+		# also, make sure that only the document is returned, not a list with one document
+		query['query']['bool']['must'] = query['query']['bool']['must'] if 'must' in query['query']['bool'] else []
+		query['query']['bool']['must'].append({
+			'match': {
+				'id': request.GET['id']
+			}
+		})
+
 	if ('sort' in request.GET):
 		sort = []
 		sortObj = {}
