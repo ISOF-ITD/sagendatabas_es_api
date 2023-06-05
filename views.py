@@ -3800,7 +3800,10 @@ def getDocuments(request):
 			# add secondary sort
 			# the following is not working in frigg-test, because there field "page" is indexed as text, not as long.
 			# it will, however, work in frigg, where the field is indexed as long.
-			sortObj['archive.page'] = request.GET['order'] if 'order' in request.GET else 'asc'
+			# only do the following if es_config.host does not include "test"
+			if not 'test' in es_config.host:
+				sortObj['archive.page'] = request.GET['order'] if 'order' in request.GET else 'asc'
+				
 		else:
 			sortObj[request.GET['sort']] = request.GET['order'] if 'order' in request.GET else 'asc'
 
