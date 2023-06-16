@@ -1253,6 +1253,8 @@ def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False)
 		'took': responseData['took'] if 'took' in responseData else 0
 	}
 
+	outputData['aggregations'] = responseData['aggregations'] if 'aggregations' in responseData else None
+
 	# Om vi har lagt till 'showQuery=true' till url:et lägger vi hela querien till outputData.metadata
 	if request is not None and ('showQuery' in request.GET) and request.GET['showQuery']:
 		outputData['metadata']['query'] = query
@@ -3758,6 +3760,19 @@ def getDocuments(request):
 			
 		}
 	}
+
+	if('aggregation' in request.GET):
+		query['size'] = 0
+		aggregation = request.GET['aggregation'].split(',')
+		query['aggs'] = {
+			'aggresult': {
+				aggregation[0]: {
+					'field': aggregation[1],
+					'size': aggregation[2] if len(aggregation) >= 3 else "50"
+				}
+			}
+		}
+	
 
 	if ('mark_metadata' in request.GET):
 		query['query']['bool']['should'] = [
