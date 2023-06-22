@@ -4049,6 +4049,54 @@ def getCount(requests):
 
 	return esQueryResponse
 
+def getTopTranscribersByPagesStatistics(requests):
+	"""
+    Returns top transcribers by page statistics.
+    """
+	
+	def jsonFormatFunction(json):
+		"""
+		Formats json to required format.
+		"""
+		try:
+			data = json['aggregations']['aggresult']['buckets']
+		except KeyError:
+			print("Invalid JSON format.")
+			return []
+		# Using list comprehension for more pythonic code
+		return [{"key": x["key"], "value": x["total_pages"]["value"]} for x in data]
+
+	query = {
+		'query': createQuery(requests),
+		'size': 0,
+		'aggs': {
+			"aggresult": {
+				"terms": {
+					"field": "transcribedby.keyword",
+					"size": 10,
+					"order": {
+						"total_pages": "desc"
+					}
+				},
+				"aggs": {
+					"total_pages": {
+						"sum": {
+							"field": "archive.total_pages"
+						}
+					}
+				}
+			}
+		},
+	}
+    
+	try:
+		esQueryResponse = esQuery(requests, query, jsonFormatFunction)
+	except Exception as e:
+		print(f"Error in Elasticsearch query: {e}")
+		return []
+
+	return esQueryResponse
+
 def getCurrentTime(request):
 	# returnerar ES-serverns nuvarande tid
 	# returnera bara nuvarande timestamp från result['hits']['hits'][0]['fields']['now'][0]
