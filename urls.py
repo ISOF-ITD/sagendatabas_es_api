@@ -111,5 +111,7 @@ urlpatterns = [
 	url(r'^document/(?P<documentId>[^/]+)/$', views.getDocument, name='getDocument'),
 	url(r'^count', views.getCount, name='getCount'),
     
+	url(r'^statistics/get_top_transcribers_by_pages/', views.getTopTranscribersByPagesStatistics, name="getTopTranscribersByPageStatistics"),
+    
 	url(r'^current_time', views.getCurrentTime, name='getCurrentTime')
 ]
