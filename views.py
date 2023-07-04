@@ -2870,6 +2870,7 @@ def getArchiveIdsAutocomplete(request):
 						"terms": {
 							"field": "archive.archive_id.keyword",
 							"size": 30,
+							"order": {"_key": "asc"},
 						}
 					}
 				}
