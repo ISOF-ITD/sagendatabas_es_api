@@ -2850,30 +2850,30 @@ def getArchiveIdsAutocomplete(request):
 	query = {
 		"size": 10,
 		"aggs": {
-		"data": {
-			"filter": {
-				"bool": {
-					"should": [
-					{
-						"regexp": {
-						"archive.archive_id.keyword": {
-							"value": '(.+?)'+newRegExString+'(.+?)',
-							"case_insensitive": True
-						}
+			"data": {
+				"filter": {
+					"bool": {
+						"filter": [
+							{
+								"regexp": {
+									"archive.archive_id.keyword": {
+										"value": '(.+?)'+newRegExString+'(.+?)',
+										"case_insensitive": True
+									}
+								}
+							}
+						]
+					}
+				},
+				"aggs": {
+					"distinct_ids": {
+						"terms": {
+							"field": "archive.archive_id.keyword",
+							"size": 10000
 						}
 					}
-					]
-				}
-			},
-			"aggs": {
-			"distinct_ids": {
-				"terms": {
-					"field": "archive.archive_id.keyword",
-					"size": 10000
 				}
 			}
-			}
-		}
 		}
 	}
 
