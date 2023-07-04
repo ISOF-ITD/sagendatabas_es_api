@@ -2869,7 +2869,7 @@ def getArchiveIdsAutocomplete(request):
 					"distinct_ids": {
 						"terms": {
 							"field": "archive.archive_id.keyword",
-							"size": 10,
+							"size": 30,
 						}
 					}
 				}
