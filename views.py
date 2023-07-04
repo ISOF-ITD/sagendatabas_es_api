@@ -3855,8 +3855,6 @@ def getDocuments(request):
 				'id': request.GET['id']
 			}
 		})
-		# add the "_source"-value for the given document id to the result
-		# query['_source'] = True
 
 
 	if ('sort' in request.GET):
