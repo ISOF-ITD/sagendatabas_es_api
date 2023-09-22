@@ -2827,6 +2827,59 @@ def getSockenAutocomplete(request):
 	esQueryResponse = esQuery(request, query, jsonFormat)
 	return esQueryResponse
 
+def getArchiveIdsAutocomplete(request):
+	# från request.GET['search'] skapar en ny regEx string som används i query. ersätt mellanslag med [0 ]{0,3}
+	newRegExString = ''
+	for char in request.GET['search']:
+		if char == ' ':
+			# [0 ]{0,3} betyder att det kan vara en 0 eller ett mellanslag, och det kan vara 0-3 av dem
+			newRegExString += '[0 ]{0,3}'
+		else:
+			newRegExString += '[' + char.lower() + char.upper() + ']'
+	
+	# itemFormat som säger till hur varje object i esQuery resultatet skulle formateras
+	def itemFormat(item):
+		return {
+			'id': item['key'],
+		}
+
+	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
+	def jsonFormat(json):
+		return list(map(itemFormat, json['aggregations']['data']['distinct_ids']['buckets']))
+
+	query = {
+		"size": 10,
+		"aggs": {
+			"data": {
+				"filter": {
+					"bool": {
+						"filter": [
+							{
+								"regexp": {
+									"archive.archive_id.keyword": {
+										"value": '(.+?)'+newRegExString+'(.+?)',
+										"case_insensitive": True
+									}
+								}
+							}
+						]
+					}
+				},
+				"aggs": {
+					"distinct_ids": {
+						"terms": {
+							"field": "archive.archive_id.keyword",
+							"size": 30,
+							"order": {"_key": "asc"},
+						}
+					}
+				}
+			}
+		}
+	}
+
+	esQueryResponse = esQuery(request, query, jsonFormat)
+	return esQueryResponse
 
 def getHarad(request):
 	# itemFormat som säger till hur varje object i esQuery resultatet skulle formateras
@@ -3803,6 +3856,7 @@ def getDocuments(request):
 				'id': request.GET['id']
 			}
 		})
+
 
 	if ('sort' in request.GET):
 		sort = []
