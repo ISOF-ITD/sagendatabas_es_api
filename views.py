@@ -109,7 +109,7 @@ def createQuery(request):
 			'range': {
 				'year': {
 					'gte': collectionYears[0],
-					'lt': collectionYears[1]
+					'lte': collectionYears[1]
 				}
 			}
 		})
