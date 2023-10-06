@@ -653,6 +653,8 @@ def createQuery(request):
 			query['bool']['must'].append(personShouldBool)
 
 
+	# We mean "collector" as the person who has all possible roles that can be considered as a collector:
+	# collector, interviewer, recorder
 	if ('collector_id' in request.GET):
 		personShouldBool = {
 			'nested': {
@@ -666,10 +668,32 @@ def createQuery(request):
 								}
 							},
 							{
-								'match': {
-									'persons.relation': 'c'
+								'bool': {
+									'should': [
+										{
+											'match': {
+												'persons.relation': 'c'
+											}
+										},
+										{
+											'match': {
+												'persons.relation': 'collector'
+											}
+										},
+										{
+											'match': {
+												'persons.relation': 'interviewer'
+											}
+										},
+										{
+											'match': {
+												'persons.relation': 'recorder'
+											}
+										}
+									],
+									'minimum_should_match': 1
 								}
-							}
+						   }
 						]
 					}
 				}
@@ -679,6 +703,8 @@ def createQuery(request):
 		query['bool']['must'].append(personShouldBool)
 
 
+	# We mean "informant" as the person who has all possible roles that can be considered as an informant:
+	# informant, i
 	if ('informant_id' in request.GET):
 		personShouldBool = {
 			'nested': {
@@ -692,10 +718,22 @@ def createQuery(request):
 								}
 							},
 							{
-								'match': {
-									'persons.relation': 'i'
+								'bool': {
+									'should': [
+										{
+											'match': {
+												'persons.relation': 'i'
+											}
+										},
+										{
+											'match': {
+												'persons.relation': 'informant'
+											}
+										}
+									],
+									'minimum_should_match': 1
 								}
-							}
+						   }							
 						]
 					}
 				}
@@ -705,6 +743,8 @@ def createQuery(request):
 		query['bool']['must'].append(personShouldBool)
 
 
+	# We mean "collector" as the person who has all possible roles that can be considered as a collector:
+	# c, collector, interviewer, recorder
 	if ('collector' in request.GET):
 		personShouldBool = {
 			'nested': {
@@ -719,10 +759,32 @@ def createQuery(request):
 								}
 							},
 							{
-								'match': {
-									'persons.relation': 'c'
+								'bool': {
+									'should': [
+										{
+											'match': {
+												'persons.relation': 'c'
+											}
+										},
+										{
+											'match': {
+												'persons.relation': 'collector'
+											}
+										},
+										{
+											'match': {
+												'persons.relation': 'interviewer'
+											}
+										},
+										{
+											'match': {
+												'persons.relation': 'recorder'
+											}
+										}
+									],
+									'minimum_should_match': 1
 								}
-							}
+						   }
 						]
 					}
 				}
@@ -731,7 +793,8 @@ def createQuery(request):
 
 		query['bool']['must'].append(personShouldBool)
 
-
+	# We mean "informant" as the person who has all possible roles that can be considered as an informant:
+	# informant, i
 	if ('informant' in request.GET):
 		personShouldBool = {
 			'nested': {
@@ -746,8 +809,20 @@ def createQuery(request):
 								}
 							},
 							{
-								'match': {
-									'persons.relation': 'i'
+								'bool': {
+									'should': [
+										{
+											'match': {
+												'persons.relation': 'i'
+											}
+										},
+										{
+											'match': {
+												'persons.relation': 'informant'
+											}
+										}
+									],
+									'minimum_should_match': 1
 								}
 							}
 						]
@@ -758,7 +833,8 @@ def createQuery(request):
 
 		query['bool']['must'].append(personShouldBool)
 
-
+	# By "collector" we mean the person who has all possible roles that can be considered as a collector:
+	# c, collector, interviewer, recorder
 	if ('collectors_gender' in request.GET):
 		personShouldBool = {
 			'nested': {
@@ -772,10 +848,32 @@ def createQuery(request):
 								}
 							},
 							{
-								'match': {
-									'persons.relation': 'c'
+								'bool': {
+									'should': [
+										{
+											'match': {
+												'persons.relation': 'c'
+											}
+										},
+										{
+											'match': {
+												'persons.relation': 'collector'
+											}
+										},
+										{
+											'match': {
+												'persons.relation': 'interviewer'
+											}
+										},
+										{
+											'match': {
+												'persons.relation': 'recorder'
+											}
+										}
+									],
+									'minimum_should_match': 1
 								}
-							}
+						   }
 						]
 					}
 				}
@@ -784,7 +882,8 @@ def createQuery(request):
 
 		query['bool']['must'].append(personShouldBool)
 
-
+	# By "informant" we mean the person who has all possible roles that can be considered as an informant:
+	# informant, i
 	if ('informants_gender' in request.GET):
 		personShouldBool = {
 			'nested': {
@@ -798,8 +897,20 @@ def createQuery(request):
 								}
 							},
 							{
-								'match': {
-									'persons.relation': 'i'
+								'bool': {
+									'should': [
+										{
+											'match': {
+												'persons.relation': 'i'
+											}
+										},
+										{
+											'match': {
+												'persons.relation': 'informant'
+											}
+										}
+									],
+									'minimum_should_match': 1
 								}
 							}
 						]
@@ -901,7 +1012,8 @@ def createQuery(request):
 
 			query['bool']['must'].append(personShouldBool)
 
-
+	# We mean "collector" as the person who has all possible roles that can be considered as a collector:
+	# c, collector, interviewer, recorder
 	if ('collectors_birth_years' in request.GET):
 		birthYears = request.GET['collectors_birth_years'].split(',')
 
@@ -920,10 +1032,32 @@ def createQuery(request):
 								}
 							},
 							{
-								'match': {
-									'persons.relation': 'c'
+								'bool': {
+									'should': [
+										{
+											'match': {
+												'persons.relation': 'c'
+											}
+										},
+										{
+											'match': {
+												'persons.relation': 'collector'
+											}
+										},
+										{
+											'match': {
+												'persons.relation': 'interviewer'
+											}
+										},
+										{
+											'match': {
+												'persons.relation': 'recorder'
+											}
+										}
+									],
+									'minimum_should_match': 1
 								}
-							}
+						   }
 						]
 					}
 				}
@@ -932,7 +1066,8 @@ def createQuery(request):
 
 		query['bool']['must'].append(personShouldBool)
 
-
+	# We mean "informant" as the person who has all possible roles that can be considered as an informant:
+	# informant, i
 	if ('informants_birth_years' in request.GET):
 		birthYears = request.GET['informants_birth_years'].split(',')
 
@@ -951,8 +1086,20 @@ def createQuery(request):
 								}
 							},
 							{
-								'match': {
-									'persons.relation': 'i'
+								'bool': {
+									'should': [
+										{
+											'match': {
+												'persons.relation': 'i'
+											}
+										},
+										{
+											'match': {
+												'persons.relation': 'informant'
+											}
+										}
+									],
+									'minimum_should_match': 1
 								}
 							}
 						]
@@ -3333,6 +3480,7 @@ def getPersonsAutocomplete(request):
 	return esQueryResponse
 
 
+# does not work, list index out of range at 'name': item['data']['buckets'][0]['key'],
 def getRelatedPersons(request, relation):
 	# itemFormat som säger till hur varje object i esQuery resultatet skulle formateras
 	def itemFormat(item):
@@ -3441,11 +3589,17 @@ def getRelatedPersons(request, relation):
 	esQueryResponse = esQuery(request, query, jsonFormat)
 	return esQueryResponse
 
-
+# does not work, list index out of range at 'name': item['data']['buckets'][0]['key'],
+# in the future, all roles that can be considered as informants should be added to this list:
+# i, informant
+# idea: the second parameter should be a list of roles
 def getInformants(request):
 	return getRelatedPersons(request, 'i')
 
-
+# does not work, list index out of range at 'name': item['data']['buckets'][0]['key'],
+# in the future, all roles that can be considered as collectors should be added to this list:
+# c, collector, interviewer, recorder
+# idea: the second parameter should be a list of roles
 def getCollectors(request):
 	return getRelatedPersons(request, 'c')
 
