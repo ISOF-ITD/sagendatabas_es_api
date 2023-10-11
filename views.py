@@ -334,23 +334,23 @@ def createQuery(request):
 			}
 		})
 
-	# Hämtar documenter av angiven typ (en eller flera). Exempel: `mediatype=pdf,image,audio`
+	# Hämtar dokument med media av angiven typ (en eller flera). Exempel: `mediatype=pdf,image,audio`
 	if ('mediatype' in request.GET):
-		typeShouldBool = {
+		mediatypeShouldBool = {
 			'bool': {
 				'should': []
 			}
 		}
 
-		typeStrings = request.GET['type'].split(',')
+		mediatypeStrings = request.GET['mediatype'].split(',')
 
-		for type in typeStrings:
-			typeShouldBool['bool']['should'].append({
+		for mediatype in mediatypeStrings:
+			mediatypeShouldBool['bool']['should'].append({
 				'match': {
-					'media.type.keyword': type
+					'media.type.keyword': mediatype
 				}
 			})
-		query['bool']['must'].append(typeShouldBool)
+		query['bool']['must'].append(mediatypeShouldBool)
 
 	# Hämtar accessioner som har minst en transkriberad record
 	if('has_transcribed_records' in request.GET and request.GET['has_transcribed_records'].lower() == 'true'):
@@ -1388,7 +1388,7 @@ def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False)
 
 	headers = {'Accept': 'application/json', 'content-type': 'application/json'}
 
-	#print("url, query %s %s", esUrl, query)
+	print("url, query %s %s", esUrl, query)
 	logger.debug("url, query %s %s", esUrl, query)
 	esResponse = requests.get(esUrl,
 							  data=json.dumps(query),
@@ -3604,6 +3604,7 @@ def getRelatedPersons(request, relation):
 	}
 
 	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
+	print(query)
 	esQueryResponse = esQuery(request, query, jsonFormat)
 	return esQueryResponse
 
