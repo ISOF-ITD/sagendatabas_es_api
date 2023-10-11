@@ -334,6 +334,24 @@ def createQuery(request):
 			}
 		})
 
+	# Hämtar documenter av angiven typ (en eller flera). Exempel: `mediatype=pdf,image,audio`
+	if ('mediatype' in request.GET):
+		typeShouldBool = {
+			'bool': {
+				'should': []
+			}
+		}
+
+		typeStrings = request.GET['type'].split(',')
+
+		for type in typeStrings:
+			typeShouldBool['bool']['should'].append({
+				'match': {
+					'media.type.keyword': type
+				}
+			})
+		query['bool']['must'].append(typeShouldBool)
+
 	# Hämtar accessioner som har minst en transkriberad record
 	if('has_transcribed_records' in request.GET and request.GET['has_transcribed_records'].lower() == 'true'):
 		query['bool']['must'].append({
