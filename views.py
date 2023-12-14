@@ -1389,7 +1389,7 @@ def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False)
 	headers = {'Accept': 'application/json', 'content-type': 'application/json'}
 
 	#print("url, query %s %s", esUrl, query)
-	logger.debug("url, query %s %s", esUrl, query)
+	logger.debug("esQuery url, query %s %s", esUrl, query)
 	esResponse = requests.get(esUrl,
 							  data=json.dumps(query),
 							  verify=False,
