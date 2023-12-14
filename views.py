@@ -1389,7 +1389,7 @@ def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False)
 	headers = {'Accept': 'application/json', 'content-type': 'application/json'}
 
 	#print("url, query %s %s", esUrl, query)
-	logger.debug("url, query %s %s", esUrl, query)
+	logger.debug("esQuery url, query %s %s", esUrl, query)
 	esResponse = requests.get(esUrl,
 							  data=json.dumps(query),
 							  verify=False,
@@ -2497,7 +2497,7 @@ def getSocken(request, sockenId = None):
 
 	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
 	esQueryResponse = esQuery(request, query, jsonFormat, None, True)
-	logger.debug("url, query %s %s", request, query)
+	logger.debug("getSocken url, query %s %s", request, query)
 
 	if ('mark_metadata' in request.GET):
 		if not 'bool' in query['query']:
@@ -2520,7 +2520,7 @@ def getSocken(request, sockenId = None):
 				}
 			})
 		metadataSockenResponse = esQuery(request, query, jsonFormat, None, True)
-		logger.debug("url, query %s %s", request, query)
+		logger.debug("getSocken url, query %s %s", request, query)
 
 		sockenJson = esQueryResponse
 
@@ -4287,7 +4287,8 @@ def getTopTranscribersByPagesStatistics(requests):
 		try:
 			data = json['aggregations']['aggresult']['buckets']
 		except KeyError:
-			print("Invalid JSON format.")
+			logger.error("jsonFormatFunction Invalid JSON format.")
+			# print("Invalid JSON format.")
 			return []
 		# Using list comprehension for more pythonic code
 		return [{"key": x["key"], "value": x["total_pages"]["value"]} for x in data]
@@ -4318,7 +4319,8 @@ def getTopTranscribersByPagesStatistics(requests):
 	try:
 		esQueryResponse = esQuery(requests, query, jsonFormatFunction)
 	except Exception as e:
-		print(f"Error in Elasticsearch query: {e}")
+		# print(f"Error in Elasticsearch query: {e}")
+		logger.error(f"getTopTranscribersByPagesStatistics Error in Elasticsearch query: {e}")
 		return []
 
 	return esQueryResponse
