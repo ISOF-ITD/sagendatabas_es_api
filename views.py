@@ -4023,10 +4023,11 @@ def getDocuments(request):
 		# do not mess up the existing query structure
 		# add the id match as a must clause, but keep the existing must clauses if there are any
 		# also, make sure that only the document is returned, not a list with one document
+		# also, make sure only one document is returned by querying id.keyword (needs mapping id.keyword as type keyword)
 		query['query']['bool']['must'] = query['query']['bool']['must'] if 'must' in query['query']['bool'] else []
 		query['query']['bool']['must'].append({
 			'match': {
-				'id': request.GET['id']
+				'id.keyword': request.GET['id']
 			}
 		})
 
