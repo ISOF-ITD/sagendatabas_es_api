@@ -1,3 +1,6 @@
+from rest_framework.views import APIView
+from rest_framework.response import Response
+
 from sagendatabas_es_api.views import getDocuments, createQuery, esQuery
 
 # urllib3.disable_warnings()
@@ -144,26 +147,11 @@ def documents(request):
 
     return esQueryResponse
 
+"""
+Test DRF API without serializer:
+https://stackoverflow.com/questions/53001034/django-rest-framework-send-data-to-view-without-serializer
 
-#class Documents(generics.RetrieveAPIView):
-class Documents():
-    """ Get place name basis that matches provided filter values.
-
-    Sort order of returned place name basis:
-    1 Sort on place name basis information type in the following order Litteraturhänvisning, Belägg, Uppteckning.
-    2 Sort on evidence year with the oldest first.
-    3 Sort on name in place name basis.
-    """
-
-    #filter_backends = (DocumentsParameters,)
-    queryset = []
-    # serializer_class = PlaceNameBasisSearchResultSerializer
-    name = 'folke-documents-list'
-
-    def get_documents(request):
-        getDocuments(request)
-        # search_criteria = get_place_name_basis_search_criteria(self.request)
-        # place_name_basis_search_result = ElasticsearchManager.get_place_name_basis(search_criteria)
-        # return place_name_basis_search_result
-
-
+"""
+class Documents(APIView):
+    def get(self, request):
+        return Response(documents(request))

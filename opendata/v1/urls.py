@@ -6,6 +6,7 @@ from . import views
 app_name = "folke-opendata-v1"
 
 urlpatterns = [
-    path(r'documents', views.documents, name=views.Documents.name),
+    path(r'documents-def', views.documents, name="views.documents.name"),
+    path(r'documents', views.Documents.as_view(), name="views.Documents.name"),
 
 ]
