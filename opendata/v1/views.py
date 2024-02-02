@@ -191,6 +191,8 @@ class Documents(APIView):
     name = 'documents'
 
     def get(self, request):
-        return Response(documents(request))
+        return documents(request)
+        # Object with type JSONResponse in not json ...:
+        # return Response(documents(request))
 
 
