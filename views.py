@@ -39,15 +39,23 @@ class CheckAuthenticationViewSet(APIView):
 
 		return jsonResponse
 
-def createQuery(request):
-	# Function som tar in request object och bygger upp Elasticsearch JSON query som skickas till es_config
+def createQuery(request, data_restriction=None):
+	"""
+	Function som tar in request object och bygger upp Elasticsearch JSON query som skickas till es_config
 
-	# Den letar efter varje param som skickas via url:et (?search=söksträng&type=arkiv&...) och
-	# lägger till query object till bool.must i hela query:en
+	Den letar efter varje param som skickas via url:et (?search=söksträng&type=arkiv&...) och
+	lägger till query object till bool.must i hela query:en
 
-	# Mer om bool: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-bool-query.html
+	Mer om bool: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-bool-query.html
 
-	if (len(request.GET) > 0):
+	Frivillig parameter:
+	data_restriction:
+		Möjliga värden:
+		opendata: Lägger till alla parametrar som måste finnas för öppen data
+	"""
+
+	# Om restriktion öppna data så läggs tvingande filter parametrar till
+	if (len(request.GET) > 0 or data_restriction == 'opendata'):
 		query = {
 			'bool': {
 				'must': []
@@ -77,14 +85,20 @@ def createQuery(request):
 
 
 	# Hämtar document av angiven publishstatus (en eller flera). Exempel: `publishstatus=readytopublish,published`
-	if ('publishstatus' in request.GET):
+	if ('publishstatus' in request.GET or data_restriction == 'opendata'):
 		publishstatus_should_bool = {
 			'bool': {
 				'should': []
 			}
 		}
+		publishstatus_strings = []
+		if ('publishstatus' in request.GET):
+			publishstatus_strings = request.GET['publishstatus'].split(',')
 
-		publishstatus_strings = request.GET['publishstatus'].split(',')
+		if data_restriction == 'opendata':
+			# For restriction opendata
+			if 'published' not in publishstatus_strings:
+				publishstatus_strings.append('published')
 
 		for publishstatus in publishstatus_strings:
 			publishstatus_should_bool['bool']['should'].append({
@@ -1293,14 +1307,22 @@ def createQuery(request):
 		})
 
 	# Hämtar dokument som har kategorityp(er):
-	if ('categorytypes' in request.GET):
+	if ('categorytypes' in request.GET or data_restriction == 'opendata'):
 		categorytypes_should_bool = {
 			'bool': {
 				'should': []
 			}
 		}
+		categorytypes_strings = []
+		if ('categorytypes' in request.GET):
+			categorytypes_strings = request.GET['categorytypes'].split(',')
 
-		categorytypes_strings = request.GET['categorytypes'].split(',')
+		if data_restriction == 'opendata':
+			# For restriction opendata
+			if 'sägner' not in categorytypes_strings:
+				categorytypes_strings.append('sägner')
+			# if 'tradark' not in categorytypes_strings:
+				# categorytypes_strings.append('tradark')
 
 		for categorytype in categorytypes_strings:
 			categorytypes_should_bool['bool']['should'].append({
@@ -1311,10 +1333,18 @@ def createQuery(request):
 		query['bool']['must'].append(categorytypes_should_bool)
 
 	# Hämtar dokument från angivet land
-	if ('country' in request.GET):
+	if ('country' in request.GET or data_restriction == 'opendata'):
+		country_string = ''
+		if ('country' in request.GET):
+			country_string = request.GET['country'].lower()
+
+		if  data_restriction == 'opendata':
+			# For restriction opendata
+			if 'sweden' not in country_string:
+				country_string = 'sweden'
 		query['bool']['must'].append({
 			'term': {
-				'archive.country': request.GET['country'].lower()
+				'archive.country': country_string.lower()
 			}
 		})
 
