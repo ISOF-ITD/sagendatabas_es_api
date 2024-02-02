@@ -1,5 +1,7 @@
+import coreapi
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.filters import BaseFilterBackend
 
 from sagendatabas_es_api.views import getDocuments, createQuery, esQuery
 
@@ -147,11 +149,48 @@ def documents(request):
 
     return esQueryResponse
 
+
+"""
+Parameters for Documents API
+"""
+class DocumentsParameters(BaseFilterBackend):
+    def get_schema_fields(self, view):
+        return [coreapi.Field(
+            name='country',
+            location='query',
+            required=False,
+            type='string',
+            description=r'Either a single id for one country area filter (example "752") or'
+                        r' an array of ids for country areas filters (example "[246,752]").'
+                        r' Country area filters are the object that are returned by URL .../country-area-filters',
+        ),
+        coreapi.Field(
+            name='type',
+            location='query',
+            required=False,
+            type='string',
+            description='Type of record. Possible values: one_accession_row, one_record.'
+                        ' No error is triggered if parameter sort-order has an unknown value.',
+        ),
+        coreapi.Field(
+            name='order',
+            location='query',
+            required=False,
+            type='string',
+            description='Specifies how records should be sorted. Possible values: asc (default value), desc.'
+                        ' No error is triggered if parameter sort-order has an unknown value.',
+        )]
+
 """
 Test DRF API without serializer:
 https://stackoverflow.com/questions/53001034/django-rest-framework-send-data-to-view-without-serializer
 
 """
 class Documents(APIView):
+    #filter_backends = (DocumentsParameters,)
+    name = 'documents'
+
     def get(self, request):
         return Response(documents(request))
+
+
