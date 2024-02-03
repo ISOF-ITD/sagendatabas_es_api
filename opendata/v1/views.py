@@ -1,7 +1,15 @@
-# import coreapi
+import coreapi
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.filters import BaseFilterBackend
+
+# Swagger API UI
+from django.conf.urls import url, include
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from rest_framework.schemas import SchemaGenerator
+from rest_framework.views import APIView
+from rest_framework_swagger import renderers
 
 from sagendatabas_es_api.views import getDocuments, createQuery, esQuery
 
@@ -160,16 +168,20 @@ class DocumentsParameters(BaseFilterBackend):
             location='query',
             required=False,
             type='string',
-            description=r'Either a single id for one country area filter (example "752") or'
-                        r' an array of ids for country areas filters (example "[246,752]").'
-                        r' Country area filters are the object that are returned by URL .../country-area-filters',
+            description=r'Country of the archive organisation. This is not the country where data is collected.'
+                        r' Possible values: '
+                        r' sweden: Institutet för språk och folkminnen'
+                        ' No error is triggered if parameter sort-order has an unknown value.',
         ),
         coreapi.Field(
             name='type',
             location='query',
             required=False,
             type='string',
-            description='Type of record. Possible values: one_accession_row, one_record.'
+            description='Type of record. '
+                        ' Possible values: '
+                        '   one_accession_row: Container for data when registered. Usually information gathered at one time in one place.'
+                        '   one_record: One "story". One record is always part of one accession row.'
                         ' No error is triggered if parameter sort-order has an unknown value.',
         ),
         coreapi.Field(
@@ -177,7 +189,10 @@ class DocumentsParameters(BaseFilterBackend):
             location='query',
             required=False,
             type='string',
-            description='Specifies how records should be sorted. Possible values: asc (default value), desc.'
+            description='Specifies how records should be sorted. '
+                        ' Possible values: '
+                        '   asc (default value). '
+                        '   desc?'
                         ' No error is triggered if parameter sort-order has an unknown value.',
         )]
 
@@ -187,12 +202,40 @@ https://stackoverflow.com/questions/53001034/django-rest-framework-send-data-to-
 
 """
 class Documents(APIView):
-    #filter_backends = (DocumentsParameters,)
+    filter_backends = (DocumentsParameters,)
     name = 'documents'
 
     def get(self, request):
+        """
+            Get documents. Documents contain the recorded information and registered metadata.
+
+            ---
+            parameters:
+            -
+        """
         return documents(request)
         # Object with type JSONResponse in not json ...:
         # return Response(documents(request))
 
+class Swagger(APIView):
+    """ Provides a Swagger interface in web browsers. """
+
+    name = 'Swagger'
+    permission_classes = [AllowAny]
+    renderer_classes = [
+        renderers.OpenAPIRenderer,
+        renderers.SwaggerUIRenderer
+    ]
+
+    def get(self, request):
+        base_url = ''
+        url_patterns = (
+                        # Seems it must be iterable so add comma if only one url
+                        # url(r'^v1/', include('sagendatabas_es_api.opendata.v1.urls', namespace='folke-opendata-v1')),
+                        url(r'', include('sagendatabas_es_api.opendata.v1.urls', namespace='folke-opendata-v1')),
+                        )
+        generator = SchemaGenerator(title='Folke opendata REST-API', url=base_url, patterns=url_patterns)
+        schema = generator.get_schema(request=request)
+
+        return Response(schema)
 
