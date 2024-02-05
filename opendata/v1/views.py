@@ -158,10 +158,10 @@ def documents(request):
     return esQueryResponse
 
 
-"""
-Parameters for Documents API
-"""
 class DocumentsParameters(BaseFilterBackend):
+    """
+    Parameters for Documents filters
+    """
     def get_schema_fields(self, view):
         return [coreapi.Field(
             name='country',
@@ -183,6 +183,28 @@ class DocumentsParameters(BaseFilterBackend):
                         '   one_accession_row: Container for data when registered. Usually information gathered at one time in one place.'
                         '   one_record: One "story". One record is always part of one accession row.'
                         ' No error is triggered if parameter sort-order has an unknown value.',
+        )]
+
+class FormatParameters(BaseFilterBackend):
+    """
+    Parameters for format of response
+    """
+    def get_schema_fields(self, view):
+        return [coreapi.Field(
+            name='size',
+            location='query',
+            required=False,
+            type='integer',
+            description=r'Number of documents to return. Default is 100?'
+                        ' No error is triggered if parameter sort-order has an unknown value.',
+        ),
+        coreapi.Field(
+            name='offset',
+            location='query',
+            required=False,
+            type='integer',
+            description='Offset for starting document to return. '
+                        ' No error is triggered if parameter sort-order has an unknown value.',
         ),
         coreapi.Field(
             name='order',
@@ -202,7 +224,7 @@ https://stackoverflow.com/questions/53001034/django-rest-framework-send-data-to-
 
 """
 class Documents(APIView):
-    filter_backends = (DocumentsParameters,)
+    filter_backends = (DocumentsParameters,FormatParameters,)
     name = 'documents'
 
     def get(self, request):

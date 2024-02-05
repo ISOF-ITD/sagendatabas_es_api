@@ -3,7 +3,7 @@
 #   'staticfiles' is not a registered tag library.
 # Fix: You have to make this change because {% load staticfiles %} and {% load admin_static %} were deprecated in Django 2.1, and removed in Django 3.0.
 # /home/per/dev/server/folkeservice/venvdj_3/lib/python3.10/site-packages/rest_framework_swagger/templates/rest_framework_swagger/index.html
-find ../../venvdj_3 -name 'index.html' | xargs grep -l 'load staticfiles' | xargs sed -i.bak 's/load staticfiles/load static/g'
+find ../../current_venv -name 'index.html' | xargs grep -l 'load staticfiles' | xargs sed -i.bak 's/load staticfiles/load static/g'
 
 # Tests
 #cp ../../venvdj_3/lib/python3.10/site-packages/rest_framework_swagger/templates/rest_framework_swagger/index.html .
