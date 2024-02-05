@@ -276,7 +276,9 @@ class Swagger(APIView):
     ]
 
     def get(self, request):
-        base_url = '/opendata'
+        base_url = '/folkeservice/opendata'
+        # Local deploy:
+        # base_url = '/opendata'
         url_patterns = (
                         # Seems it must be iterable so add comma if only one url
                         # url(r'^v1/', include('sagendatabas_es_api.opendata.v1.urls', namespace='folke-opendata-v1')),
