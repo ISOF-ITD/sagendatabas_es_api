@@ -191,7 +191,7 @@ class DocumentsParameters(BaseFilterBackend):
     def get_schema_fields(self, view):
         pass
         return [coreapi.Field(
-            name='Type',
+            name='type',
             location='query',
             required=False,
             type='string',
@@ -337,7 +337,7 @@ class Swagger(APIView):
                         # url(r'^v1/', include('sagendatabas_es_api.opendata.v1.urls', namespace='folke-opendata-v1')),
                         url(r'', include('sagendatabas_es_api.opendata.v1.urls', namespace='folke-opendata-v1')),
                         )
-        generator = SchemaGenerator(title='Folke opendata REST-API', description="License CC-BY 3.0? Description of json is found here..", version=1.0, url=base_url, patterns=url_patterns)
+        generator = SchemaGenerator(title='Folke opendata REST-API', description="The response data is returned in the json format. License CC-BY 3.0? Description of response data is found here..", version=1.0, url=base_url, patterns=url_patterns)
         schema = generator.get_schema(request=request)
         logger.debug("Swagger.get: " + str(schema))
 
