@@ -11,10 +11,19 @@ from rest_framework.schemas import SchemaGenerator
 from rest_framework.views import APIView
 from rest_framework_swagger import renderers
 
-from sagendatabas_es_api.views import getDocuments, createQuery, esQuery
+from sagendatabas_es_api.views import createQuery, esQuery, getDocuments
+
+import logging
+logger = logging.getLogger(__name__)
 
 # urllib3.disable_warnings()
-def documents(request):
+
+"""
+Test call query with code copied from def documents
+
+NOT needed anymore?
+"""
+def NOT_USED_documents_to_query(request):
     """ Get documents with filter so always opendata is returned
 
     Get documents of data in json using suitable standard filter parameters.
@@ -158,6 +167,23 @@ def documents(request):
     return esQueryResponse
 
 
+"""
+Call documents directly with data_restriction as opendata
+"""
+def documents(request):
+    """ Get documents with filter so always opendata is returned
+
+    Get documents of data in json using suitable standard filter parameters.
+    Arguments for formatting response data in json
+     -mark_metadata: adds boolean mark_metadata.
+     -sort: Sort principle.
+    Returns
+    	documents: Fromat json.
+    		  May return None if no hit.
+    """
+    return getDocuments(request, data_restriction='opendata')
+
+
 class DocumentsParameters(BaseFilterBackend):
     """
     Parameters for Documents filters
@@ -250,7 +276,7 @@ class Swagger(APIView):
     ]
 
     def get(self, request):
-        base_url = ''
+        base_url = '/opendata'
         url_patterns = (
                         # Seems it must be iterable so add comma if only one url
                         # url(r'^v1/', include('sagendatabas_es_api.opendata.v1.urls', namespace='folke-opendata-v1')),
@@ -258,6 +284,7 @@ class Swagger(APIView):
                         )
         generator = SchemaGenerator(title='Folke opendata REST-API', url=base_url, patterns=url_patterns)
         schema = generator.get_schema(request=request)
+        logger.debug("Swagger.get: " + str(schema))
 
         return Response(schema)
 

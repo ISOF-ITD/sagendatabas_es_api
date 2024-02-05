@@ -8,6 +8,9 @@ from . import views
 
 from rest_framework.authtoken import views as authviews
 
+# App name must be specified,
+# otherwise Django will complain about the URL's.
+app_name = 'api-es'
 
 urlpatterns = [
 	#	url(r'^$', schema_view),

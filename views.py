@@ -3943,7 +3943,7 @@ def getSimilar(request, documentId):
 	esQueryResponse = esQuery(request, query)
 	return esQueryResponse
 
-def getDocuments(request):
+def getDocuments(request, data_restriction=None):
 	""" Get documents with filter
 	Get documents of data in json using suitable standard filter parameters.
 	Arguments for formatting response data in json
@@ -3977,7 +3977,7 @@ def getDocuments(request):
 	contentsField = 'contents.raw' if 'search_raw' in request.GET and request.GET['search_raw'] != 'false' else 'contents'
 	headwordsField = 'headwords.raw' if 'search_raw' in request.GET and request.GET['search_raw'] != 'false' else 'headwords'
 	query = {
-		'query': createQuery(request),
+		'query': createQuery(request, data_restriction),
 		'size': request.GET['size'] if 'size' in request.GET else 100,
 		'from': request.GET['from'] if 'from' in request.GET else 0,
 		'highlight' : {
