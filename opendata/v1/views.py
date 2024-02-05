@@ -189,18 +189,20 @@ class DocumentsParameters(BaseFilterBackend):
     Parameters for Documents filters
     """
     def get_schema_fields(self, view):
+        pass
         return [coreapi.Field(
-            name='country',
+            name='Type',
             location='query',
             required=False,
             type='string',
-            description=r'Country of the archive organisation. This is not the country where data is collected.'
+            description=r'Main type of material.'
                         r' Possible values: '
-                        r' sweden: Institutet för språk och folkminnen'
-                        ' No error is triggered if parameter sort-order has an unknown value.',
-        ),
+                        r' arkiv: Material stored in the archive.'
+                        r' tryckt: Published material registered in the archive.'
+                        ' No error is triggered if the parameter has an unknown value.',
+            ),
         coreapi.Field(
-            name='type',
+            name='recordtype',
             location='query',
             required=False,
             type='string',
@@ -208,7 +210,58 @@ class DocumentsParameters(BaseFilterBackend):
                         ' Possible values: '
                         '   one_accession_row: Container for data when registered. Usually information gathered at one time in one place.'
                         '   one_record: One "story". One record is always part of one accession row.'
-                        ' No error is triggered if parameter sort-order has an unknown value.',
+                        ' No error is triggered if the parameter has an unknown value.',
+        ),
+        coreapi.Field(
+            name='category',
+            location='query',
+            required=False,
+            type='string',
+            description='Category of record. '
+                        ' No error is triggered if the parameter has an unknown value.',
+        ),
+        coreapi.Field(
+            name='has_transcribed_records',
+            location='query',
+            required=False,
+            type='boolean',
+            description='Get only records with transcriptions. '
+                        ' No error is triggered if the parameter has an unknown value.',
+        ),
+        coreapi.Field(
+            name='has_untranscribed_records',
+            location='query',
+            required=False,
+            type='boolean',
+            description='Get only records assigned for transcription. '
+                        ' No error is triggered if the parameter has an unknown value.',
+        ),
+        coreapi.Field(
+            name='socken_id',
+            location='query',
+            required=False,
+            type='integer',
+            description=r'Ids of socken, one or many. Valid socken ids are found in endpoint XX'
+                        ' No error is triggered if the parameter has an unknown value.',
+        ),
+        coreapi.Field(
+            name='place',
+            location='query',
+            required=False,
+            type='integer',
+            description=r'Names of places (socken), one or many. Valid place names (socken (härad, landskap or län?)) are found in endpoint XX.'
+                        r' Example: place=Bolle '
+                        ' No error is triggered if the parameter has an unknown value.',
+        ),
+        coreapi.Field(
+            name='country',
+            location='query',
+            required=False,
+            type='string',
+            description=r'Country of the archive organisation. This is not the country where data is collected.'
+                        r' Possible values: '
+                        r' sweden: Institutet för språk och folkminnen'
+                        ' No error is triggered if the parameter has an unknown value.',
         )]
 
 class FormatParameters(BaseFilterBackend):
@@ -222,7 +275,7 @@ class FormatParameters(BaseFilterBackend):
             required=False,
             type='integer',
             description=r'Number of documents to return. Default is 100?'
-                        ' No error is triggered if parameter sort-order has an unknown value.',
+                        ' No error is triggered if the parameter has an unknown value.',
         ),
         coreapi.Field(
             name='offset',
@@ -230,7 +283,7 @@ class FormatParameters(BaseFilterBackend):
             required=False,
             type='integer',
             description='Offset for starting document to return. '
-                        ' No error is triggered if parameter sort-order has an unknown value.',
+                        ' No error is triggered if the parameter has an unknown value.',
         ),
         coreapi.Field(
             name='order',
@@ -240,8 +293,8 @@ class FormatParameters(BaseFilterBackend):
             description='Specifies how records should be sorted. '
                         ' Possible values: '
                         '   asc (default value). '
-                        '   desc?'
-                        ' No error is triggered if parameter sort-order has an unknown value.',
+                        '   desc?',
+                        #' No error is triggered if the parameter has an unknown value.',
         )]
 
 """
@@ -284,7 +337,7 @@ class Swagger(APIView):
                         # url(r'^v1/', include('sagendatabas_es_api.opendata.v1.urls', namespace='folke-opendata-v1')),
                         url(r'', include('sagendatabas_es_api.opendata.v1.urls', namespace='folke-opendata-v1')),
                         )
-        generator = SchemaGenerator(title='Folke opendata REST-API', url=base_url, patterns=url_patterns)
+        generator = SchemaGenerator(title='Folke opendata REST-API', description="License CC-BY 3.0? Description of json is found here..", version=1.0, url=base_url, patterns=url_patterns)
         schema = generator.get_schema(request=request)
         logger.debug("Swagger.get: " + str(schema))
 
