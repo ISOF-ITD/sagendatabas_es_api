@@ -1448,7 +1448,13 @@ def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False)
 		'took': responseData['took'] if 'took' in responseData else 0
 	}
 
-	outputData['aggregations'] = responseData['aggregations'] if 'aggregations' in responseData else None
+	# Om aggregations finns i responseData lägger vi det till outputData.aggregations,
+	# förutom om vi har lagt till 'add_aggregations=false' till url:et
+	# detta för att skicka mindre data till klienten om vi inte behöver aggregations
+	if 'aggregations' in responseData and ('add_aggregations' not in request.GET or request.GET['add_aggregations'] != 'false'):
+		outputData['aggregations'] = responseData['aggregations']
+	else:
+		outputData['aggregations'] = None
 
 	# Om vi har lagt till 'showQuery=true' till url:et lägger vi hela querien till outputData.metadata
 	if request is not None and ('showQuery' in request.GET) and request.GET['showQuery']:
