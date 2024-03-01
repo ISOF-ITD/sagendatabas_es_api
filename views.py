@@ -2286,7 +2286,7 @@ def getMediaCount(request):
 
 	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
 	def jsonFormat(json):
-		return list(map(itemFormat, json['aggregations']['sub_values_count']['value']))
+		return itemFormat(json['aggregations']['sub_values_count'])
 
 	if "id" in request.GET:
 		record_id = request.GET['id']
