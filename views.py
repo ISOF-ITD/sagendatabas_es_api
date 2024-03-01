@@ -2255,6 +2255,85 @@ def getTypes(request):
 	esQueryResponse = esQuery(request, query, jsonFormat)
 	return esQueryResponse
 
+def getMediaCount(request):
+	"""
+	 Test:
+	 http://127.0.0.1:8000/api/es/mediacount/?id=liu00198_194713_
+	 http://127.0.0.1:8000/api/es/mediacount/?id=liu00198_194713_&transcriptionstatus=published,autopublished
+	"""
+
+	# itemFormat som säger till hur varje object i esQuery resultatet skulle formateras
+	def itemFormat(item):
+		return {
+			# 'type': item['key'],
+			'array_count': item['value']
+		}
+
+	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
+	def jsonFormat(json):
+		return list(map(itemFormat, json['aggregations']['sub_values_count']['value']))
+
+	if "id" in request.GET:
+		record_id = request.GET['id']
+
+	query = {
+		'size': 0,
+		#'query': createQuery(request),
+		"query": {
+			"bool": {
+				"must": [
+					{
+						"prefix": {
+							"id": record_id
+						}
+					}
+				]
+			}
+		},
+		"aggs": {
+			"sub_values_count": {
+				"scripted_metric": {
+					"init_script": "state['count'] = 0",
+					"map_script": "if (doc.containsKey('media.source.keyword')) { state.count += doc['media.source.keyword'].length }",
+					"combine_script": "return state",
+					"reduce_script": "int totalCount = 0; for (state in states) { totalCount += state.count } return totalCount"
+				}
+			}
+		},
+	}
+
+	"""
+	if "id" in request.GET:
+		record_id = request.GET['id']
+		query['query']['bool'].append({
+			"bool": {
+				"must": [
+					{
+						"prefix": {
+							"id": record_id
+						}
+					}
+				]
+			}
+		})
+	"""
+
+	if "transcriptionstatus" in request.GET:
+		transcriptionstatus_strings = request.GET['transcriptionstatus'].split(',')
+
+		# query['query']['bool'].append(transcriptionstatus_filter)
+		query['query']['bool'].update({
+			"filter": {
+				"terms": {
+					"media.transcriptionstatus": transcriptionstatus_strings
+				}
+			}
+		})
+
+	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
+	esQueryResponse = esQuery(request, query, jsonFormat)
+	return esQueryResponse
+
 def getSockenTotal(request):
 	# itemFormat som säger till hur varje object i esQuery resultatet skulle formateras
 	def itemFormat(item):

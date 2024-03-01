@@ -56,6 +56,9 @@ urlpatterns = [
 	# aggregate socken
 	url(r'^socken/', views.getSocken, name='getSocken'),
 
+	# aggregate media (RecordsMedia)
+	url(r'^mediacount/', views.getMediaCount, name='getMediaCount'),
+
 	# aggregate harad
 	url(r'^harad/', views.getHarad, name='getHarad'),
 
