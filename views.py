@@ -2272,24 +2272,33 @@ def getTypes(request):
 
 def getMediaCount(request):
 	"""
+	Returns number of media files (representing pages) for a record id
+
+	parameters:
+	-search (same name as /count): id prefix
+	-transcriptionstatus
+
+	 Return:
+	 	value (same name as /count): Number of media files in media
+
 	 Test:
-	 http://127.0.0.1:8000/api/es/mediacount/?id=liu00198_194713_
-	 http://127.0.0.1:8000/api/es/mediacount/?id=liu00198_194713_&transcriptionstatus=published,autopublished
+	 http://127.0.0.1:8000/api/es/mediacount/?search=liu00198_194713_
+	 http://127.0.0.1:8000/api/es/mediacount/?search=liu00198_194713_&transcriptionstatus=published,autopublished
 	"""
 
 	# itemFormat som säger till hur varje object i esQuery resultatet skulle formateras
 	def itemFormat(item):
 		return {
 			# 'type': item['key'],
-			'array_count': item['value']
+			'value': item['value']
 		}
 
 	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
 	def jsonFormat(json):
 		return itemFormat(json['aggregations']['sub_values_count'])
 
-	if "id" in request.GET:
-		record_id = request.GET['id']
+	if "search" in request.GET:
+		record_id = request.GET['search']
 
 	query = {
 		'size': 0,
