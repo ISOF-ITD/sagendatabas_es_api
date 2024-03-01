@@ -2539,7 +2539,9 @@ def getSocken(request, sockenId = None):
 		if not 'bool' in query['query']:
 			query['query'] = {
 				'bool': {
-					'must': []
+					# we use should, so that one of the conditions
+					# must be met, but not all of them
+					'should': []
 				}
 			}
 		# Get data to calculate flag on socken for quick map selection and different map symbol, currently using  value 'has_metadata"
