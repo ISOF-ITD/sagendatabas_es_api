@@ -259,7 +259,9 @@ def createQuery(request, data_restriction=None):
 
 	# Hämtar documenter som har speciell typ av metadata. Exempel: `has_metadata=sitevision_url` (hämtar kurerade postar för matkartan).
 	if ('has_metadata' in request.GET):
-		query['bool']['must'].append({
+		# we use should, so that one of the conditions
+		# must be met, but not all of them
+		query['bool']['should'].append({
 			'match': {
 				'metadata.type': request.GET['has_metadata']
 			}
