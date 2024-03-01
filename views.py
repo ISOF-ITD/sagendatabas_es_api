@@ -258,10 +258,19 @@ def createQuery(request, data_restriction=None):
 
 
 	# Hämtar documenter som har speciell typ av metadata. Exempel: `has_metadata=sitevision_url` (hämtar kurerade postar för matkartan).
-	if ('has_metadata' in request.GET):
+	if 'has_metadata' in request.GET:
+		metadata_types = request.GET['has_metadata'].split(',')
+		should_query = []
+		for metadata_type in metadata_types:
+			should_query.append({
+				'match': {
+					'metadata.type': metadata_type
+				}
+			})
 		query['bool']['must'].append({
-			'match': {
-				'metadata.type': request.GET['has_metadata']
+			'bool': {
+				'should': should_query,
+				'minimum_should_match': 1
 			}
 		})
 
@@ -1448,7 +1457,13 @@ def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False)
 		'took': responseData['took'] if 'took' in responseData else 0
 	}
 
-	outputData['aggregations'] = responseData['aggregations'] if 'aggregations' in responseData else None
+	# Om aggregations finns i responseData lägger vi det till outputData.aggregations,
+	# förutom om vi har lagt till 'add_aggregations=false' till url:et
+	# detta för att skicka mindre data till klienten om vi inte behöver aggregations
+	if 'aggregations' in responseData and ('add_aggregations' not in request.GET or request.GET['add_aggregations'] != 'false'):
+		outputData['aggregations'] = responseData['aggregations']
+	else:
+		outputData['aggregations'] = None
 
 	# Om vi har lagt till 'showQuery=true' till url:et lägger vi hela querien till outputData.metadata
 	if request is not None and ('showQuery' in request.GET) and request.GET['showQuery']:
@@ -2612,7 +2627,9 @@ def getSocken(request, sockenId = None):
 		if not 'bool' in query['query']:
 			query['query'] = {
 				'bool': {
-					'must': []
+					# we use should, so that one of the conditions
+					# must be met, but not all of them
+					'should': []
 				}
 			}
 		# Get data to calculate flag on socken for quick map selection and different map symbol, currently using  value 'has_metadata"
