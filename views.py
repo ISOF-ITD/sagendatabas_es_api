@@ -1377,6 +1377,14 @@ def createQuery(request, data_restriction=None):
 			}
 		})
 
+	# Hämtar dokument vars id börjar på angiven sträng
+	if ('id_prefix' in request.GET):
+		query['bool']['must'].append({
+			'prefix': {
+				'id.keyword': request.GET['id_prefix']
+			}
+		})
+	
 	return query
 
 def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False):
