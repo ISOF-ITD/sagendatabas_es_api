@@ -1,4 +1,5 @@
 host = 'localhost:9200'
+#es_version = '8'
 index_name = 'isof-publik'
 #user = 'ES'
 #password = 'X'
