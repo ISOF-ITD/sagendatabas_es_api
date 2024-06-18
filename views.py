@@ -1,6 +1,6 @@
 from django.http import JsonResponse
 import requests, json, sys, os
-#from requests.auth import HTTPBasicAuth
+from requests.auth import HTTPBasicAuth
 from random import randint
 #from django.conf.urls import url, include
 
@@ -1412,8 +1412,17 @@ def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False)
 	host, index_name, password, protocol, user = getExtraIndexConfiguration(host, index_name, password, protocol,
 																			request, user)
 
+	authentication_type_ES8 = False
+	if hasattr(es_config, 'es_version'):
+		if (es_config.es_version == '8'):
+			authentication_type_ES8 = True
 	# Anropar ES, bygger upp url från es_config och skickar data som json (query)
-	esUrl = protocol+(user+':'+password+'@' if (user is not None) else '')+host+'/'+index_name+(apiUrl if apiUrl else '/_search')
+	# Old authentication up to version 7 with user in url
+	esUrl = protocol + (user + ':' + password + '@' if (user is not None) else '') + host + '/' + index_name + (apiUrl if apiUrl else '/_search')
+	# New authentication from version 8 has not user i url
+	esUrl = protocol+host+'/'+index_name+(apiUrl if apiUrl else '/_search')
+	if authentication_type_ES8 == True:
+		pass
 
 	query_request = {}
 	if 'query' in query:
@@ -1425,10 +1434,10 @@ def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False)
 				query_request['track_total_hits'] = True
 				track_total_hits = {
 					"track_total_hits": True,
-					}
-				#track_total_hits.append(query_request)
-				#query_request[].append(track_total_hits)
-#			logger.debug(query['query'])
+				}
+			#track_total_hits.append(query_request)
+			#query_request[].append(track_total_hits)
+		#			logger.debug(query['query'])
 		else:
 			# Remove queryObject if it is empty (Elasticsearch 7 seems to not like empty query object)
 			query.pop('query', None)
@@ -1437,17 +1446,25 @@ def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False)
 
 	#print("url, query %s %s", esUrl, query)
 	logger.debug("esQuery url, query %s %s", esUrl, query)
-	esResponse = requests.get(esUrl,
-							  data=json.dumps(query),
-							  verify=False,
-							  headers=headers,
-							  timeout=60)
+	if authentication_type_ES8 == True and user is not None:
+		esResponse = requests.get(esUrl,
+								  auth=HTTPBasicAuth(user, password),
+								  data=json.dumps(query),
+								  verify=False,
+								  headers=headers,
+								  timeout=60)
+	else:
+		esResponse = requests.get(esUrl,
+								  data=json.dumps(query),
+								  verify=False,
+								  headers=headers,
+								  timeout=60)
 
 	# Tar emot svaret som json
 	responseData = esResponse.json()
 	message = esResponse.status_code
 	#if 'error' in responseData:
-		#message = message + responseData.get('error')
+	#message = message + responseData.get('error')
 	logger.debug("response status_code %s %s ", message, responseData)
 
 	if (formatFunc):
