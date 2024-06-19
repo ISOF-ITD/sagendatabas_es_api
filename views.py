@@ -1878,7 +1878,7 @@ def getCollectionYearsTotal(request):
 					'field': 'materialtype',
 					'size': 10000,
 					'order': {
-						'_term': 'asc'
+						'_key': 'asc'
 					}
 				}
 			}
@@ -2001,7 +2001,7 @@ def getBirthYearsTotal(request):
 					'field': 'materialtype',
 					'size': 10000,
 					'order': {
-						'_term': 'asc'
+						'_key': 'asc'
 					}
 				}
 			}
@@ -2291,7 +2291,7 @@ def getTypes(request):
 					'field': 'materialtype',
 					'size': 10000,
 					'order': {
-						'_term': 'asc'
+						'_key': 'asc'
 					}
 				}
 			}
@@ -2416,7 +2416,7 @@ def getSockenTotal(request):
 					'field': 'materialtype',
 					'size': 10000,
 					'order': {
-						'_term': 'asc'
+						'_key': 'asc'
 					}
 				}
 			}
@@ -2452,7 +2452,7 @@ def getSockenTotal(request):
 										'field': 'places.name',
 										'size': 1,
 										'order': {
-											'_term': 'asc'
+											'_key': 'asc'
 										}
 									}
 								},
@@ -2461,7 +2461,7 @@ def getSockenTotal(request):
 										'field': 'places.harad',
 										'size': 1,
 										'order': {
-											'_term': 'asc'
+											'_key': 'asc'
 										}
 									}
 								},
@@ -2470,7 +2470,7 @@ def getSockenTotal(request):
 										'field': 'places.landskap',
 										'size': 1,
 										'order': {
-											'_term': 'asc'
+											'_key': 'asc'
 										}
 									}
 								},
@@ -2479,7 +2479,7 @@ def getSockenTotal(request):
 										'field': 'places.county',
 										'size': 1,
 										'order': {
-											'_term': 'asc'
+											'_key': 'asc'
 										}
 									}
 								},
@@ -2494,7 +2494,7 @@ def getSockenTotal(request):
 										'field': 'places.lm_id',
 										'size': 1,
 										'order': {
-											'_term': 'asc'
+											'_key': 'asc'
 										}
 									}
 								}
@@ -2595,7 +2595,7 @@ def getSocken(request, sockenId = None):
 									'field': 'places.name',
 									'size': 1,
 									'order': {
-										'_term': 'asc'
+										'_key': 'asc'
 									}
 								}
 							},
@@ -2607,7 +2607,7 @@ def getSocken(request, sockenId = None):
 									'field': 'places.harad',
 									'size': 1,
 									'order': {
-										'_term': 'asc'
+										'_key': 'asc'
 									}
 								}
 							},
@@ -2616,7 +2616,7 @@ def getSocken(request, sockenId = None):
 									'field': 'places.landskap',
 									'size': 1,
 									'order': {
-										'_term': 'asc'
+										'_key': 'asc'
 									}
 								}
 							},
@@ -2625,7 +2625,7 @@ def getSocken(request, sockenId = None):
 									'field': 'places.county',
 									'size': 1,
 									'order': {
-										'_term': 'asc'
+										'_key': 'asc'
 									}
 								}
 							},
@@ -2640,7 +2640,7 @@ def getSocken(request, sockenId = None):
 									'field': 'places.lm_id',
 									'size': 1,
 									'order': {
-										'_term': 'asc'
+										'_key': 'asc'
 									}
 								}
 							},
@@ -2649,7 +2649,7 @@ def getSocken(request, sockenId = None):
 									'field': 'places.type',
 									'size': 100,
 									'order': {
-										'_term': 'asc'
+										'_key': 'asc'
 									}
 								}
 							}
@@ -2768,7 +2768,7 @@ def getLetters(request, sockenId = None):
 										'terms': {
 											'field': 'places.name',
 											'order': {
-												'_term': 'asc'
+												'_key': 'asc'
 											},
 											'size': 1
 										}
@@ -2785,7 +2785,7 @@ def getLetters(request, sockenId = None):
 																		'terms': {
 																			'field': 'places.name',
 																			'order': {
-																				'_term': 'asc'
+																				'_key': 'asc'
 																			},
 																			'size': 1
 																		}
@@ -2794,7 +2794,7 @@ def getLetters(request, sockenId = None):
 																		'terms': {
 																			'field': 'places.harad',
 																			'order': {
-																				'_term': 'asc'
+																				'_key': 'asc'
 																			},
 																			'size': 1
 																		}
@@ -2803,7 +2803,7 @@ def getLetters(request, sockenId = None):
 																		'terms': {
 																			'field': 'places.county',
 																			'order': {
-																				'_term': 'asc'
+																				'_key': 'asc'
 																			},
 																			'size': 1
 																		}
@@ -2812,7 +2812,7 @@ def getLetters(request, sockenId = None):
 																		'terms': {
 																			'field': 'places.landskap',
 																			'order': {
-																				'_term': 'asc'
+																				'_key': 'asc'
 																			},
 																			'size': 1
 																		}
@@ -2821,7 +2821,7 @@ def getLetters(request, sockenId = None):
 																		'terms': {
 																			'field': 'places.lm_id',
 																			'order': {
-																				'_term': 'asc'
+																				'_key': 'asc'
 																			},
 																			'size': 1
 																		}
@@ -2857,7 +2857,7 @@ def getLetters(request, sockenId = None):
 										'terms': {
 											'field': 'places.harad',
 											'order': {
-												'_term': 'asc'
+												'_key': 'asc'
 											},
 											'size': 1
 										}
@@ -2866,7 +2866,7 @@ def getLetters(request, sockenId = None):
 										'terms': {
 											'field': 'places.county',
 											'order': {
-												'_term': 'asc'
+												'_key': 'asc'
 											},
 											'size': 1
 										}
@@ -2875,7 +2875,7 @@ def getLetters(request, sockenId = None):
 										'terms': {
 											'field': 'places.landskap',
 											'order': {
-												'_term': 'asc'
+												'_key': 'asc'
 											},
 											'size': 1
 										}
@@ -2884,7 +2884,7 @@ def getLetters(request, sockenId = None):
 										'terms': {
 											'field': 'places.lm_id',
 											'order': {
-												'_term': 'asc'
+												'_key': 'asc'
 											},
 											'size': 1
 										}
@@ -2993,7 +2993,7 @@ def getLandskapAutocomplete(request):
 								'field': 'places.landskap',
 								'size': 1000,
 								'order': {
-									'_term': 'asc'
+									'_key': 'asc'
 								}
 							}
 						}
@@ -3082,7 +3082,7 @@ def getSockenAutocomplete(request):
 									'field': 'places.name',
 									'size': 10000,
 									'order': {
-										'_term': 'asc',
+										'_key': 'asc',
 									}
 								},
 								'aggs': {
@@ -3091,7 +3091,7 @@ def getSockenAutocomplete(request):
 											'field': 'places.name',
 											'size': 1,
 											'order': {
-												'_term': 'asc'
+												'_key': 'asc'
 											}
 										}
 									},
@@ -3100,7 +3100,7 @@ def getSockenAutocomplete(request):
 											'field': 'places.harad',
 											'size': 1,
 											'order': {
-												'_term': 'asc'
+												'_key': 'asc'
 											}
 										}
 									},
@@ -3109,7 +3109,7 @@ def getSockenAutocomplete(request):
 											'field': 'places.landskap',
 											'size': 1,
 											'order': {
-												'_term': 'asc'
+												'_key': 'asc'
 											}
 										}
 									},
@@ -3118,7 +3118,7 @@ def getSockenAutocomplete(request):
 											'field': 'places.county',
 											'size': 1,
 											'order': {
-												'_term': 'asc'
+												'_key': 'asc'
 											}
 										}
 									},
@@ -3133,7 +3133,7 @@ def getSockenAutocomplete(request):
 											'field': 'places.comment.keyword',
 											'size': 1,
 											'order': {
-												'_term': 'asc'
+												'_key': 'asc'
 											}
 										}
 									},
@@ -3142,7 +3142,7 @@ def getSockenAutocomplete(request):
 											'field': 'places.lm_id',
 											'size': 1,
 											'order': {
-												'_term': 'asc'
+												'_key': 'asc'
 											}
 										}
 									}
@@ -3248,7 +3248,7 @@ def getHarad(request):
 									'field': 'places.harad',
 									'size': 10000,
 									'order': {
-										'_term': 'asc'
+										'_key': 'asc'
 									}
 								}
 							},
@@ -3260,7 +3260,7 @@ def getHarad(request):
 									'field': 'places.landskap',
 									'size': 10000,
 									'order': {
-										'_term': 'asc'
+										'_key': 'asc'
 									}
 								}
 							},
@@ -3269,7 +3269,7 @@ def getHarad(request):
 									'field': 'places.county',
 									'size': 10000,
 									'order': {
-										'_term': 'asc'
+										'_key': 'asc'
 									}
 								}
 							}
@@ -3431,7 +3431,7 @@ def getPersons(request, personId = None):
 									'field': 'persons.name_analysed.keyword',
 									'size': 1,
 									'order': {
-										'_term': 'asc'
+										'_key': 'asc'
 									}
 								}
 							},
@@ -3440,7 +3440,7 @@ def getPersons(request, personId = None):
 									'field': 'persons.birth_year',
 									'size': 1,
 									'order': {
-										'_term': 'asc'
+										'_key': 'asc'
 									}
 								}
 							},
@@ -3449,7 +3449,7 @@ def getPersons(request, personId = None):
 									'field': 'persons.relation',
 									'size': 1,
 									'order': {
-										'_term': 'asc'
+										'_key': 'asc'
 									}
 								}
 							},
@@ -3458,7 +3458,7 @@ def getPersons(request, personId = None):
 									'field': 'persons.home.id',
 									'size': 10,
 									'order': {
-										'_term': 'asc'
+										'_key': 'asc'
 									}
 								},
 								'aggs': {
@@ -3467,7 +3467,7 @@ def getPersons(request, personId = None):
 											'field': 'persons.home.name',
 											'size': 10,
 											'order': {
-												'_term': 'asc'
+												'_key': 'asc'
 											}
 										}
 									}
@@ -3600,7 +3600,7 @@ def getPersonsAutocomplete(request):
 											'field': 'persons.name_analysed.keyword',
 											'size': 1,
 											'order': {
-												'_term': 'asc'
+												'_key': 'asc'
 											}
 										}
 									},
@@ -3609,7 +3609,7 @@ def getPersonsAutocomplete(request):
 											'field': 'persons.birth_year',
 											'size': 1,
 											'order': {
-												'_term': 'asc'
+												'_key': 'asc'
 											}
 										}
 									},
@@ -3618,7 +3618,7 @@ def getPersonsAutocomplete(request):
 											'field': 'persons.relation',
 											'size': 1,
 											'order': {
-												'_term': 'asc'
+												'_key': 'asc'
 											}
 										}
 									},
@@ -3627,7 +3627,7 @@ def getPersonsAutocomplete(request):
 											'field': 'persons.home.id',
 											'size': 10,
 											'order': {
-												'_term': 'asc'
+												'_key': 'asc'
 											}
 										},
 										'aggs': {
@@ -3636,7 +3636,7 @@ def getPersonsAutocomplete(request):
 													'field': 'persons.home.name',
 													'size': 10,
 													'order': {
-														'_term': 'asc'
+														'_key': 'asc'
 													}
 												}
 											}
@@ -3719,7 +3719,7 @@ def getRelatedPersons(request, relation):
 											'field': 'persons.name_analysed.keyword',
 											'size': 1,
 											'order': {
-												'_term': 'asc'
+												'_key': 'asc'
 											}
 										}
 									},
@@ -3728,7 +3728,7 @@ def getRelatedPersons(request, relation):
 											'field': 'persons.birth_year',
 											'size': 1,
 											'order': {
-												'_term': 'asc'
+												'_key': 'asc'
 											}
 										}
 									},
@@ -3737,7 +3737,7 @@ def getRelatedPersons(request, relation):
 											'field': 'persons.relation',
 											'size': 1,
 											'order': {
-												'_term': 'asc'
+												'_key': 'asc'
 											}
 										}
 									},
@@ -3746,7 +3746,7 @@ def getRelatedPersons(request, relation):
 											'field': 'persons.home.id',
 											'size': 10,
 											'order': {
-												'_term': 'asc'
+												'_key': 'asc'
 											}
 										},
 										'aggs': {
@@ -3755,7 +3755,7 @@ def getRelatedPersons(request, relation):
 													'field': 'persons.home.name',
 													'size': 10,
 													'order': {
-														'_term': 'asc'
+														'_key': 'asc'
 													}
 												}
 											}
@@ -3851,7 +3851,7 @@ def getGenderTotal(request):
 					'field': 'materialtype',
 					'size': 10000,
 					'order': {
-						'_term': 'asc'
+						'_key': 'asc'
 					}
 				}
 			}
@@ -3870,7 +3870,7 @@ def getGenderTotal(request):
 							'field': 'persons.gender',
 							'size': 10000,
 							'order': {
-								'_term': 'asc'
+								'_key': 'asc'
 							}
 						},
 						'aggs': {
@@ -3903,7 +3903,7 @@ def getGenderTotal(request):
 									'field': 'persons.gender',
 									'size': 10000,
 									'order': {
-										'_term': 'asc'
+										'_key': 'asc'
 									}
 								},
 								'aggs': {
@@ -3981,7 +3981,7 @@ def getGender(request):
 							'field': 'persons.gender',
 							'size': 10000,
 							'order': {
-								'_term': 'asc'
+								'_key': 'asc'
 							}
 						},
 						'aggs': {
@@ -4014,7 +4014,7 @@ def getGender(request):
 									'field': 'persons.gender',
 									'size': 10000,
 									'order': {
-										'_term': 'asc'
+										'_key': 'asc'
 									}
 								},
 								'aggs': {
