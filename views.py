@@ -1445,7 +1445,7 @@ def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False)
 	headers = {'Accept': 'application/json', 'content-type': 'application/json'}
 
 	#print("url, query %s %s", esUrl, query)
-	logger.debug("esQuery url, query %s %s", esUrl, query)
+	logger.debug("esQuery authentication_type_ES8, user, url, query: %s %s %s %s", authentication_type_ES8, user, esUrl, query)
 	if authentication_type_ES8 == True and user is not None:
 		esResponse = requests.get(esUrl,
 								  auth=HTTPBasicAuth(user, password),
