@@ -1545,8 +1545,18 @@ def getDocument(request, documentId):
 	#Check if application has extra index configuration
 	host, index_name, password, protocol, user = getExtraIndexConfiguration(host, index_name, password, protocol,
 																			request, user)
+	if hasattr(es_config, 'es_version'):
+		if (es_config.es_version == '8'):
+			authentication_type_ES8 = True
+	if hasattr(es_config, 'user'):
+		user = es_config.user
+		password = es_config.password
 	# Hämtar enda dokument, använder inte esQuery för den anropar ES direkt
-	esResponse = requests.get(protocol+(user+':'+password+'@' if (user is not None) else '')+host+'/'+index_name+'/_doc/'+documentId, verify=False)
+	if authentication_type_ES8 == True:
+		# New authentication from version 8 has not user i url
+		esResponse = requests.get(protocol+host+'/'+index_name+'/_doc/'+documentId, auth=HTTPBasicAuth(user, password), verify=False)
+	else:
+		esResponse = requests.get(protocol+(user+':'+password+'@' if (user is not None) else '')+host+'/'+index_name+'/_doc/'+documentId, verify=False)
 
 	jsonResponse = JsonResponse(esResponse.json())
 	jsonResponse['Access-Control-Allow-Origin'] = '*'
