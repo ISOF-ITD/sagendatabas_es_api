@@ -1446,21 +1446,28 @@ def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False)
 
 	#print("url, query %s %s", esUrl, query)
 	logger.debug("esQuery authentication_type_ES8, user, url, query: %s %s %s %s", authentication_type_ES8, user, esUrl, query)
-	if authentication_type_ES8 == True and user is not None:
-		esResponse = requests.get(esUrl,
-								  auth=HTTPBasicAuth(user, password),
-								  data=json.dumps(query),
-								  verify=False,
-								  headers=headers,
-								  timeout=60)
-	else:
-		esResponse = requests.get(esUrl,
-								  data=json.dumps(query),
-								  verify=False,
-								  headers=headers,
-								  timeout=60)
+	try:
+		if authentication_type_ES8 == True and user is not None:
+			esResponse = requests.get(esUrl,
+									  auth=HTTPBasicAuth(user, password),
+									  data=json.dumps(query),
+									  verify=False,
+									  headers=headers,
+									  timeout=60)
+		else:
+			esResponse = requests.get(esUrl,
+									  data=json.dumps(query),
+									  verify=False,
+									  headers=headers,
+									  timeout=60)
+	except Exception as e:
+		logger.error(f"esQuery requests.get Exception: {e}")
 
 	# Tar emot svaret som json
+	if esResponse.status_code != 200:
+		logger.error("esQuery requests.get: Exception %s ", esResponse.text)
+		if esResponse.json() is not None:
+			logger.error("Exception: Exception json %s ", esResponse.json())
 	responseData = esResponse.json()
 	message = esResponse.status_code
 	#if 'error' in responseData:
