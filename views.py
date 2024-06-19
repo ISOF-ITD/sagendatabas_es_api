@@ -1367,7 +1367,7 @@ def createQuery(request, data_restriction=None):
 
 	# Hämtar dokument med angiven range på angivet fält
 	if ('range' in request.GET):
-		range = request.GET['range'].split(',')
+		range = request.GET['range'].replace('PLUS','+').split(',')
 		query['bool']['must'].append({
 			'range': {
 				range[0]: {
