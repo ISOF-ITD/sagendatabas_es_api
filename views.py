@@ -1420,9 +1420,8 @@ def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False)
 	# Old authentication up to version 7 with user in url
 	esUrl = protocol + (user + ':' + password + '@' if (user is not None) else '') + host + '/' + index_name + (apiUrl if apiUrl else '/_search')
 	# New authentication from version 8 has not user i url
-	esUrl = protocol+host+'/'+index_name+(apiUrl if apiUrl else '/_search')
 	if authentication_type_ES8 == True:
-		pass
+		esUrl = protocol + host + '/' + index_name + (apiUrl if apiUrl else '/_search')
 
 	query_request = {}
 	if 'query' in query:
