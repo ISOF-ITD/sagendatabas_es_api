@@ -1545,19 +1545,27 @@ def getDocument(request, documentId):
 	#Check if application has extra index configuration
 	host, index_name, password, protocol, user = getExtraIndexConfiguration(host, index_name, password, protocol,
 																			request, user)
+	authentication_type_ES8 = False
 	if hasattr(es_config, 'es_version'):
 		if (es_config.es_version == '8'):
 			authentication_type_ES8 = True
 	if hasattr(es_config, 'user'):
 		user = es_config.user
 		password = es_config.password
+
+	esUrl = protocol+host+'/'+index_name+'/_doc/'+documentId
+	logger.debug("getDocument authentication_type_ES8, user, url: %s %s %s", authentication_type_ES8, user, esUrl)
 	# Hämtar enda dokument, använder inte esQuery för den anropar ES direkt
 	if authentication_type_ES8 == True:
 		# New authentication from version 8 has not user i url
-		esResponse = requests.get(protocol+host+'/'+index_name+'/_doc/'+documentId, auth=HTTPBasicAuth(user, password), verify=False)
+		esResponse = requests.get(esUrl, auth=HTTPBasicAuth(user, password), verify=False)
 	else:
 		esResponse = requests.get(protocol+(user+':'+password+'@' if (user is not None) else '')+host+'/'+index_name+'/_doc/'+documentId, verify=False)
 
+	if esResponse.status_code != 200:
+		logger.error("esQuery requests.get: Exception %s ", esResponse.text)
+		if esResponse.json() is not None:
+			logger.error("Exception: Exception json %s ", esResponse.json())
 	jsonResponse = JsonResponse(esResponse.json())
 	jsonResponse['Access-Control-Allow-Origin'] = '*'
 
