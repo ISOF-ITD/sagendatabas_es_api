@@ -1931,7 +1931,7 @@ def getCollectionYearsTotal(request):
 						'data': {
 							'date_histogram' : {
 								'field' : 'year',
-								'interval' : 'year',
+								'calendar_interval' : 'year',
 								'format': 'yyyy'
 							}
 						}
@@ -1979,7 +1979,7 @@ def getCollectionYears(request):
 					'data': {
 						'date_histogram' : {
 							'field' : 'year',
-							'interval' : 'year',
+							'calendar_interval' : 'year',
 							'format': 'yyyy'
 						}
 					}
@@ -2039,7 +2039,7 @@ def getBirthYearsTotal(request):
 					'data': {
 						'date_histogram' : {
 							'field' : 'persons.birth_year',
-							'interval' : 'year',
+							'calendar_interval' : 'year',
 							'format': 'yyyy'
 						},
 						'aggs': {
@@ -2070,7 +2070,7 @@ def getBirthYearsTotal(request):
 							'data': {
 								'date_histogram' : {
 									'field' : 'persons.birth_year',
-									'interval' : 'year',
+									'calendar_interval' : 'year',
 									'format': 'yyyy'
 								},
 								'aggs': {
@@ -2147,7 +2147,7 @@ def getBirthYears(request):
 					'data': {
 						'date_histogram' : {
 							'field' : 'persons.birth_year',
-							'interval' : 'year',
+							'calendar_interval' : 'year',
 							'format': 'yyyy'
 						},
 						'aggs': {
@@ -2178,7 +2178,7 @@ def getBirthYears(request):
 							'data': {
 								'date_histogram' : {
 									'field' : 'persons.birth_year',
-									'interval' : 'year',
+									'calendar_interval' : 'year',
 									'format': 'yyyy'
 								},
 								'aggs': {
