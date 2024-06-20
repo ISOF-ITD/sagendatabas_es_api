@@ -1466,9 +1466,9 @@ def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False)
 
 	# Tar emot svaret som json
 	if esResponse.status_code != 200:
-		logger.error("esQuery requests.get: Exception %s ", esResponse.text)
+		logger.error("esQuery requests.get Exception status_code, text: %s %s", esResponse.status_code, esResponse.text)
 		if esResponse.json() is not None:
-			logger.error("esQuery requests.get: Exception json %s ", esResponse.json())
+			logger.error("esQuery requests.get Exception json: %s ", esResponse.json())
 	responseData = esResponse.json()
 	message = esResponse.status_code
 	#if 'error' in responseData:
@@ -1563,10 +1563,12 @@ def getDocument(request, documentId):
 		esResponse = requests.get(protocol+(user+':'+password+'@' if (user is not None) else '')+host+'/'+index_name+'/_doc/'+documentId, verify=False)
 
 	if esResponse.status_code != 200:
-		logger.error("getDocument requests.get: Exception %s ", esResponse.text)
+		logger.error("getDocument requests.get Exception status_code, text: %s %s", esResponse.status_code, esResponse.text)
 		if esResponse.json() is not None:
-			logger.error("getDocument requests.get: Exception json %s ", esResponse.json())
-	jsonResponse = JsonResponse(esResponse.json())
+			logger.error("getDocument requests.get Exception json: %s ", esResponse.json())
+			jsonResponse = JsonResponse({"error": True})
+	else:
+		jsonResponse = JsonResponse(esResponse.json())
 	jsonResponse['Access-Control-Allow-Origin'] = '*'
 
 	return jsonResponse
