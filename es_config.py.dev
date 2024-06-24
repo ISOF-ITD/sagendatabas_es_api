@@ -1,5 +1,9 @@
+from kartplattformen_common import secrets_env
+
+user = secrets_env.es_user
+password = secrets_env.es_password
 host = 'localhost:9200'
-#es_version = '8'
+es_version = '8'
 index_name = 'isof-publik'
 #user = 'ES'
 #password = 'X'
