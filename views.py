@@ -2439,7 +2439,7 @@ def getMediaCount(request):
 	def itemFormat(item):
 		return {
 			# 'type': item['key'],
-			'value': item['value']
+			'value': item['filtered_media']['doc_count']
 		}
 
 	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
