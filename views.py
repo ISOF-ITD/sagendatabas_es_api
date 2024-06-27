@@ -2323,7 +2323,7 @@ def getTypes(request):
 	esQueryResponse = esQuery(request, query, jsonFormat)
 	return esQueryResponse
 
-def getMediaCount(request):
+def getMediaCountTest1(request):
 	"""
 	Returns number of media files (representing pages) for a record id
 
@@ -2406,6 +2406,104 @@ def getMediaCount(request):
 				}
 			}
 		})
+
+	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
+	esQueryResponse = esQuery(request, query, jsonFormat)
+	return esQueryResponse
+
+def getMediaCount(request):
+	"""
+	Returns number of media files (representing pages) for a record id
+
+	parameters:
+	-search (same name as /count): id prefix
+	-transcriptionstatus (not yet working)
+
+	 Return:
+	doc_count: total number of media objects
+	filtered_media.doc_count: total number of media objects with transcriptionstatus not 'readytotranscribe'
+	Example:
+		"media_count": {
+		  "doc_count": 15,
+		  "filtered_media": {
+				"doc_count": 6
+			}
+		}
+
+	 Test:
+	 http://127.0.0.1:8000/api/es/mediacount/?search=liu00198_194713_
+	 http://127.0.0.1:8000/api/es/mediacount/?search=liu00198_194713_&transcriptionstatus=published,autopublished
+	"""
+
+	# itemFormat som säger till hur varje object i esQuery resultatet skulle formateras
+	def itemFormat(item):
+		return {
+			# 'type': item['key'],
+			'value': item['value']
+		}
+
+	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
+	def jsonFormat(json):
+		return itemFormat(json['aggregations']['media_count'])
+
+	if "search" in request.GET:
+		record_id = request.GET['search']
+
+	if "transcriptionstatus" in request.GET:
+		transcriptionstatus_strings = request.GET['transcriptionstatus'].split(',')
+
+	query = {
+		"size": 0,
+		"query": {
+			"bool": {
+				"must": [
+					{
+						"term": {
+							"_id": record_id
+						}
+					},
+					{
+						"nested": {
+							"path": "media",
+							"query": {
+								"bool": {
+									"must_not": [
+										{
+											"term": {
+												"media.transcriptionstatus": "readytotranscribe"
+											}
+										}
+									]
+								}
+							}
+						}
+					}
+				]
+			}
+		},
+		"aggs": {
+			"media_count": {
+				"nested": {
+					"path": "media"
+				},
+				"aggs": {
+					"filtered_media": {
+						"filter": {
+							"bool": {
+								"must_not": [
+									{
+										"term": {
+											"media.transcriptionstatus": "readytotranscribe"
+										}
+									}
+								]
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 
 	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
 	esQueryResponse = esQuery(request, query, jsonFormat)
