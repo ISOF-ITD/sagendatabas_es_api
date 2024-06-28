@@ -2470,8 +2470,8 @@ def getMediaCount(request):
 			"bool": {
 				"must": [
 					{
-						"term": {
-							"_id": record_id
+						"prefix": {
+							"id": record_id
 						}
 					},
 					{
@@ -2488,6 +2488,11 @@ def getMediaCount(request):
 									]
 								}
 							}
+						}
+					},
+					{
+						"term": {
+							"recordtype": "one_record"
 						}
 					}
 				]
