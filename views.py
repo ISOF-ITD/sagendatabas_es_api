@@ -351,9 +351,21 @@ def createQuery(request, data_restriction=None):
 
 	# Hämtar dokument som har minst en mediafil (t.ex. pdf)
 	if ('has_media' in request.GET and request.GET['has_media'].lower() == 'true'):
+		# Does not work when media is nested:
+		#query['bool']['must'].append({
+		#	'exists' : {
+		#		'field': 'media.source'
+		#	}
+		#})
+		# Works when media is nested:
 		query['bool']['must'].append({
-			'exists' : {
-				'field': 'media.source'
+			"nested": {
+				"path": "media",
+				"query": {
+					"exists": {
+						"field": "media.source"
+					}
+				}
 			}
 		})
 
@@ -1444,8 +1456,8 @@ def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False)
 	headers = {'Accept': 'application/json', 'content-type': 'application/json'}
 
 	#print("url, query %s %s", esUrl, query)
-	query_json = query
-	#query_json = json.dumps(query, indent=2, sort_keys=True)
+	#query_json = query
+	query_json = json.dumps(query, indent=2, sort_keys=True)
 	logger.debug("esQuery authentication_type_ES8, user, url, query: %s %s %s %s", authentication_type_ES8, user, esUrl, query_json)
 	try:
 		if authentication_type_ES8 == True and user is not None:
