@@ -1378,6 +1378,8 @@ def createQuery(request, data_restriction=None):
 		})
 
 	# Hämtar dokument med angiven range på angivet fält
+	# https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-range-query.html
+	# https://www.elastic.co/guide/en/elasticsearch/reference/8.15/common-options.html#date-math
 	if ('range' in request.GET):
 		range = request.GET['range'].replace('PLUS','+').split(',')
 		query['bool']['must'].append({
