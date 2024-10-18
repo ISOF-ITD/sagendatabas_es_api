@@ -137,6 +137,7 @@ def createQuery(request, data_restriction=None):
 		# utan att vara säker på att det är bästa lösningen
 		standardFields = [
 			'text^2',
+			'media.text^2',
 			'search_other',
 			'metadata.value',
 			'title',
@@ -168,6 +169,7 @@ def createQuery(request, data_restriction=None):
 		]
 		contentFields = [
 			'text',
+			'media.text',
 		]
 		titleRawFields = [
 			'title.raw',
