@@ -4274,23 +4274,24 @@ def getDocuments(request, data_restriction=None):
 	titleField = 'title.raw' if 'search_raw' in request.GET and request.GET['search_raw'] != 'false' else 'title'
 	contentsField = 'contents.raw' if 'search_raw' in request.GET and request.GET['search_raw'] != 'false' else 'contents'
 	headwordsField = 'headwords.raw' if 'search_raw' in request.GET and request.GET['search_raw'] != 'false' else 'headwords'
+
 	query = {
 		'query': createQuery(request, data_restriction),
 		'size': request.GET['size'] if 'size' in request.GET else 100,
 		'from': request.GET['from'] if 'from' in request.GET else 0,
-		'highlight' : {
+		'highlight': {
 			'pre_tags': [
 				'<span class="highlight">'
 			],
 			'post_tags': [
 				'</span>'
 			],
-			'fields' : {
+			'fields': {
+				# The maximum number of fragments to return. If the number
+				# of fragments is set to 0, no fragments are returned. Instead,
+				# the entire field contents are highlighted and returned.
+				# https://www.elastic.co/guide/en/elasticsearch/reference/current/highlighting.html
 				textField: {
-					# The maximum number of fragments to return. If the number
-					# of fragments is set to 0, no fragments are returned. Instead,
-					# the entire field contents are highlighted and returned. 
-					# https://www.elastic.co/guide/en/elasticsearch/reference/current/highlighting.html
 					'number_of_fragments': 0
 				},
 				titleField: {
@@ -4304,20 +4305,19 @@ def getDocuments(request, data_restriction=None):
 					'number_of_fragments': 0
 				}
 			},
-			# TODO: do not hardcode this.
-			'nested': [
-				{
-					'path': 'media',
-					'fields': {
-						'media.text': {
-							'number_of_fragments': 0
-						}
-					}
-				}
-			]
+			# Highlight for nested fields
+			# 'nested': [
+			# 	{
+			# 		'path': 'media',
+			# 		'fields': {
+			# 			'media.text': {
+			# 				'number_of_fragments': 0
+			# 			}
+			# 		}
+			# 	}
+			# ]
 		}
 	}
-
 
 	if('aggregation' in request.GET):
 		query['size'] = 0
