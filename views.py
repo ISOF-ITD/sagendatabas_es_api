@@ -212,13 +212,28 @@ def createQuery(request, data_restriction=None):
 					{
 						# TODO: allow for multiple paths?
 						'nested': {
-						'path': nestedContentFields[0]['path'],
-						"query": {
-							"multi_match": {
-								"query": term,
-								"type": matchType,
-								"fields": nestedContentFields[0]['fieldNames'],
-								"minimum_should_match": "100%"
+							'path': nestedContentFields[0]['path'],
+							"query": {
+								"multi_match": {
+									"query": term,
+									"type": matchType,
+									"fields": nestedContentFields[0]['fieldNames'],
+									"minimum_should_match": "100%"
+									}
+								},
+							"inner_hits": {
+								"highlight": {
+									"pre_tags": [
+										"<span class=\"highlight\">"
+									],
+									"post_tags": [
+										"</span>"
+									],
+									"fields": {
+										"media.text": {
+											"number_of_fragments": 0
+										}
+									}
 								}
 							}
 						}
