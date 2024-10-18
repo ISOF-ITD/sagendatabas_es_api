@@ -4311,9 +4311,22 @@ def getDocuments(request, data_restriction=None):
 						'number_of_fragments': 0
 					}
 				}
+			],
+			# TODO: do not hardcode this.
+			'nested': [
+				{
+					'path': 'media',
+					'highlight': {
+						'fields': {
+							'media.text': {
+								'number_of_fragments': 0
+							}
+						}
+					}
+				}
 			]
-			
 		}
+
 	}
 
 	if('aggregation' in request.GET):
