@@ -137,7 +137,6 @@ def createQuery(request, data_restriction=None):
 		# utan att vara säker på att det är bästa lösningen
 		standardFields = [
 			'text^2',
-			'media.text^2',
 			'search_other',
 			'metadata.value',
 			'title',
@@ -178,6 +177,14 @@ def createQuery(request, data_restriction=None):
 		contentRawFields = [
 			'text.raw',
 		]
+		# at the moment, only support for one path (nestendContentFields[0])
+		nestedContentFields = [
+			{
+				'path': 'media',
+				'fieldNames': ['media.text^2']
+			}
+		]
+		# TODO: add nestedContentRawFields?
 		
 		fields = standardFields
 		if raw:
@@ -203,14 +210,15 @@ def createQuery(request, data_restriction=None):
 						}
 					},
 					{
+						# TODO: allow for multiple paths?
 						'nested': {
-						'path': 'media',
+						'path': nestedContentFields[0]['path'],
 						"query": {
 							"multi_match": {
 								"query": term,
 								"type": matchType,
 								"fields": [
-									"media.text^2"
+									nestedContentFields[0]['fieldNames'],
 								],
 								"minimum_should_match": "100%"
 								}
