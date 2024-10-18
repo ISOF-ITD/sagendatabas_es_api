@@ -4285,49 +4285,39 @@ def getDocuments(request, data_restriction=None):
 			'post_tags': [
 				'</span>'
 			],
-			'fields' : [
-				{
-					textField : {
-						# The maximum number of fragments to return. If the number
-						# of fragments is set to 0, no fragments are returned. Instead,
-						# the entire field contents are highlighted and returned. 
-						# https://www.elastic.co/guide/en/elasticsearch/reference/current/highlighting.html
-						'number_of_fragments': 0
-					} 
-				}, 
-				{
-					titleField : {
-						'number_of_fragments': 0
-					}
+			'fields' : {
+				textField: {
+					# The maximum number of fragments to return. If the number
+					# of fragments is set to 0, no fragments are returned. Instead,
+					# the entire field contents are highlighted and returned. 
+					# https://www.elastic.co/guide/en/elasticsearch/reference/current/highlighting.html
+					'number_of_fragments': 0
 				},
-				{
-					contentsField : {
-      					"number_of_fragments": 1,
-						"fragment_size": 300
-					}
+				titleField: {
+					'number_of_fragments': 0
 				},
-				{
-					headwordsField : {
-						'number_of_fragments': 0
-					}
+				contentsField: {
+					'number_of_fragments': 1,
+					'fragment_size': 300
+				},
+				headwordsField: {
+					'number_of_fragments': 0
 				}
-			],
+			},
 			# TODO: do not hardcode this.
 			'nested': [
 				{
 					'path': 'media',
-					'highlight': {
-						'fields': {
-							'media.text': {
-								'number_of_fragments': 0
-							}
+					'fields': {
+						'media.text': {
+							'number_of_fragments': 0
 						}
 					}
 				}
 			]
 		}
-
 	}
+
 
 	if('aggregation' in request.GET):
 		query['size'] = 0
