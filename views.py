@@ -217,9 +217,7 @@ def createQuery(request, data_restriction=None):
 							"multi_match": {
 								"query": term,
 								"type": matchType,
-								"fields": [
-									nestedContentFields[0]['fieldNames'],
-								],
+								"fields": nestedContentFields[0]['fieldNames'],
 								"minimum_should_match": "100%"
 								}
 							}
