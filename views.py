@@ -201,6 +201,21 @@ def createQuery(request, data_restriction=None):
 							'fields': fields,
 							'minimum_should_match': '100%'
 						}
+					},
+					{
+						'nested': {
+						'path': 'media',
+						"query": {
+							"multi_match": {
+								"query": term,
+								"type": matchType,
+								"fields": [
+									"media.text^2"
+								],
+								"minimum_should_match": "100%"
+								}
+							}
+						}
 					}
 				]
 			}
