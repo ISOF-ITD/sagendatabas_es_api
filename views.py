@@ -4228,8 +4228,6 @@ def getSimilar(request, documentId):
 				'fields' : ['text', 'title'],
 				'like' : [
 					{
-						'_index' : 'isof-publik_20240620-28-swe-media-nested',
-						# '_type' : 'legend',
 						'_id' : documentId
 					}
 				],
@@ -4237,19 +4235,19 @@ def getSimilar(request, documentId):
 				'max_query_terms' : 12
 			}
 		},
-		'highlight': {
-			'pre_tags': [
-				'<span class="highlight">'
-			],
-			'post_tags': [
-				'</span>'
-			],
-			'fields': {
-				'text': {
-					'number_of_fragments': 0
-				}
-			}
-		}
+		# 'highlight': {
+		# 	'pre_tags': [
+		# 		'<span class="highlight">'
+		# 	],
+		# 	'post_tags': [
+		# 		'</span>'
+		# 	],
+		# 	'fields': {
+		# 		'text': {
+		# 			'number_of_fragments': 0
+		# 		}
+		# 	}
+		# }
 	}
 
 	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
