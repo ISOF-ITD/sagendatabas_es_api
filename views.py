@@ -4228,7 +4228,7 @@ def getSimilar(request, documentId):
 				'fields' : ['text', 'title'],
 				'like' : [
 					{
-						'_index' : 'sagenkarta_v3isof-publik_20240620-28-swe-media-nested',
+						'_index' : 'isof-publik_20240620-28-swe-media-nested',
 						# '_type' : 'legend',
 						'_id' : documentId
 					}
