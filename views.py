@@ -3682,11 +3682,11 @@ def getPersonsAutocomplete(request):
 
 	Get list of persons for automcomplete
 
-    :param request:
+	:param request:
 	Arguments for formatting response data in json
 	 -relation:
 
-    :return: documents: Fromat json.
+	:return: documents: Fromat json.
 			  May return None if no hit.
 
 	"""
@@ -4224,30 +4224,35 @@ def getGender(request):
 def getSimilar(request, documentId):
 	query = {
 		'query': {
-			'more_like_this' : {
-				'fields' : ['text', 'title'],
-				'like' : [
+			'bool': {
+				'must': [
 					{
-						'_id' : documentId
+						'more_like_this': {
+							'fields': ['text', 'title'],
+							'like': [
+								{
+									'_id': documentId
+								}
+							],
+							'min_term_freq': 1,
+							'max_query_terms': 12
+						}
+					},
+					# anpassad för folke sök. ska det fungera för annat
+					# så måste det göras med URL-parametrar
+					{
+						'term': {
+							'type': 'arkiv'
+						}
+					},
+					{
+						'term': {
+							'publishstatus': 'published'
+						}
 					}
-				],
-				'min_term_freq' : 1,
-				'max_query_terms' : 12
+				]
 			}
-		},
-		# 'highlight': {
-		# 	'pre_tags': [
-		# 		'<span class="highlight">'
-		# 	],
-		# 	'post_tags': [
-		# 		'</span>'
-		# 	],
-		# 	'fields': {
-		# 		'text': {
-		# 			'number_of_fragments': 0
-		# 		}
-		# 	}
-		# }
+		}
 	}
 
 	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
@@ -4620,8 +4625,8 @@ def getCount(requests):
 
 def getTopTranscribersByPagesStatistics(requests):
 	"""
-    Returns top transcribers by page statistics.
-    """
+	Returns top transcribers by page statistics.
+	"""
 	
 	def jsonFormatFunction(json):
 		"""
@@ -4658,7 +4663,7 @@ def getTopTranscribersByPagesStatistics(requests):
 			}
 		},
 	}
-    
+	
 	try:
 		esQueryResponse = esQuery(requests, query, jsonFormatFunction)
 	except Exception as e:
