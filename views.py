@@ -4242,7 +4242,7 @@ def getSimilar(request, documentId):
 					# så måste det göras med URL-parametrar
 					{
 						'term': {
-							'type': 'arkiv'
+							'materialtype': 'arkiv'
 						}
 					},
 					{
@@ -4663,7 +4663,7 @@ def getTopTranscribersByPagesStatistics(requests):
 			}
 		},
 	}
-	
+
 	try:
 		esQueryResponse = esQuery(requests, query, jsonFormatFunction)
 	except Exception as e:
