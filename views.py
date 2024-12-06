@@ -4238,8 +4238,8 @@ def getSimilar(request, documentId):
 							'max_query_terms': 12
 						}
 					},
-					# anpassad för folke sök. ska det fungera för annat
-					# så måste det göras med URL-parametrar
+					# anpassad för uppteckningar i folke sök.
+					# ska det fungera för annat så måste det göras med URL-parametrar
 					{
 						'term': {
 							'materialtype': 'arkiv'
@@ -4253,6 +4253,11 @@ def getSimilar(request, documentId):
 					{
 						'term': {
 							'transcriptionstatus': 'published'
+						}
+					},
+					{
+						'term': {
+							'recordtype': 'one_record'
 						}
 					}
 				]
