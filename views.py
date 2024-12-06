@@ -4249,6 +4249,11 @@ def getSimilar(request, documentId):
 						'term': {
 							'publishstatus': 'published'
 						}
+					},
+					{
+						'term': {
+							'transcriptionstatus': 'published'
+						}
 					}
 				]
 			}
