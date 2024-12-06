@@ -4228,7 +4228,7 @@ def getSimilar(request, documentId):
 				'must': [
 					{
 						'more_like_this': {
-							'fields': ['text', 'title'],
+							'fields': ['text', 'title', 'media.text'],
 							'like': [
 								{
 									'_id': documentId
