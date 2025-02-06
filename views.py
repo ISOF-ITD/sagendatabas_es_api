@@ -4259,6 +4259,11 @@ def getSimilar(request, documentId):
 						'term': {
 							'recordtype': 'one_record'
 						}
+					},
+					{
+						'term': {
+							'taxonomy.type': 'tradark'
+						}
 					}
 				]
 			}
