@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.filters import BaseFilterBackend
 
 # Swagger API UI
-from django.conf.urls import url, include
+from django.urls import path, include
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.schemas import SchemaGenerator
@@ -335,7 +335,7 @@ class Swagger(APIView):
         url_patterns = (
                         # Seems it must be iterable so add comma if only one url
                         # url(r'^v1/', include('sagendatabas_es_api.opendata.v1.urls', namespace='folke-opendata-v1')),
-                        url(r'', include('sagendatabas_es_api.opendata.v1.urls', namespace='folke-opendata-v1')),
+                        path('/', include('sagendatabas_es_api.opendata.v1.urls', namespace='folke-opendata-v1')),
                         )
         generator = SchemaGenerator(title='Folke opendata REST-API', description="The response data is returned in the json format. License CC-BY 3.0? Description of response data is found here..", version=1.0, url=base_url, patterns=url_patterns)
         schema = generator.get_schema(request=request)
