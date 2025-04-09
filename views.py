@@ -496,7 +496,9 @@ def createQuery(request, data_restriction=None):
 								{
 									"script": {
 										"script": {
-											"source": "doc['numberofcontributedonerecord'].value < doc['numberofonerecord'].value"
+											#"source": "doc['numberofcontributedonerecord'].value < doc['numberofonerecord'].value"
+											# bara om key 'numberofcontributedonerecord' finns
+											"source": "doc.containsKey('numberofcontributedonerecord') ? doc['numberofcontributedonerecord'].value < doc['numberofonerecord'].value : true"
 										}
 									}
 								}
