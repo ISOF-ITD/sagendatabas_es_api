@@ -36,7 +36,7 @@ class GetDocumentsTestCase(unittest.TestCase):
     """
 
     base_url = "http://localhost:8000/api/es/"
-    search_text_audio_and_text = "search=rompedrag"
+    search_text_with_hits_in_audio_and_text = "search=rompedrag"
     use_slash = "/"
     #use_slash = ""
 
@@ -46,8 +46,10 @@ class GetDocumentsTestCase(unittest.TestCase):
     https://garm-test.isof.se/folkeservice/api/es/count/?type=arkiv&categorytypes=tradark&publishstatus=published&has_media=true&add_aggregations=false&search=rompedrag&category=contentG5&transcriptionstatus=published,accession
     https://garm-test.isof.se/folkeservice/api/es/count/?type=arkiv&categorytypes=tradark&publishstatus=published&has_media=true&add_aggregations=false&search=rompedrag&category=contentG2&transcriptionstatus=published,accession
     """
-    socken = "socken/?type=arkiv&categorytypes=tradark&publishstatus=published&has_media=true&add_aggregations=false&transcriptionstatus=published,accession"
-    documents = "documents/?type=arkiv&categorytypes=tradark&publishstatus=published&has_media=true&add_aggregations=false&size=100&transcriptionstatus=published,accession&sort=archive.archive_id_row.keyword&order=asc"
+    #transcriptionstatus = "published,accession"
+    transcriptionstatus = "published,accession,readytocontribute"
+    socken = "socken/?type=arkiv&categorytypes=tradark&publishstatus=published&has_media=true&add_aggregations=false"
+    documents = "documents/?type=arkiv&categorytypes=tradark&publishstatus=published&has_media=true&add_aggregations=false&size=100&sort=archive.archive_id_row.keyword&order=asc"
     # No setup needed yet
     # @classmethod
     # def setUpClass(cls):
@@ -69,7 +71,7 @@ class GetDocumentsTestCase(unittest.TestCase):
 
     def test_10_socken_search_text(self):
         logid = "test_10_socken_search_text"
-        url = f"{self.base_url}" + self.socken + '&' + self.search_text_audio_and_text
+        url = f"{self.base_url}" + self.socken + '&' + self.transcriptionstatus + '&' + self.search_text_with_hits_in_audio_and_text
         print(logid + ' ' + str(url))
         # print(logid + ' ' + str(files))
         response = requests.get(url)
@@ -80,7 +82,7 @@ class GetDocumentsTestCase(unittest.TestCase):
 
     def test_20_documents_search_text(self):
         logid = "test_20_documents_search_text"
-        url = f"{self.base_url}" + self.documents + '&' + self.search_text_audio_and_text
+        url = f"{self.base_url}" + self.documents + '&' + self.transcriptionstatus + '&' + self.search_text_with_hits_in_audio_and_text
         print(logid + ' ' + str(url))
         # print(logid + ' ' + str(files))
         response = requests.get(url)
