@@ -210,28 +210,81 @@ def createQuery(request, data_restriction=None):
 						}
 					},
 					{
-						# TODO: allow for multiple paths?
 						'nested': {
-							'path': nestedContentFields[0]['path'],
-							"query": {
-								"multi_match": {
-									"query": term,
-									"type": matchType,
-									"fields": nestedContentFields[0]['fieldNames'],
-									"minimum_should_match": "100%"
+							'path': 'media',
+							'query': {
+								'multi_match': {
+									'query': term,
+									'type': matchType,
+									'fields': ['media.text'],
+									'minimum_should_match': '100%'
+								}
+							},
+							'inner_hits': {
+								'highlight': {
+									'pre_tags': ['<span class="highlight">'],
+									'post_tags': ['</span>'],
+									'fields': {
+										'media.text': {
+											'number_of_fragments': 0
+										}
 									}
-								},
-							"inner_hits": {
-								"highlight": {
-									"pre_tags": [
-										"<span class=\"highlight\">"
-									],
-									"post_tags": [
-										"</span>"
-									],
-									"fields": {
-										"media.text": {
-											"number_of_fragments": 0
+								}
+							}
+						}
+					},
+					{
+						'nested': {
+							'path': 'media',
+							'query': {
+								'nested': {
+									'path': 'media.description',
+									'query': {
+										'match': {
+											'media.description.text': {
+												'query': term,
+												'operator': 'and'
+											}
+										}
+									},
+									'inner_hits': {
+										'highlight': {
+											'pre_tags': ['<span class="highlight">'],
+											'post_tags': ['</span>'],
+											'fields': {
+												'media.description.text': {
+													'number_of_fragments': 0
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					},
+					{
+						'nested': {
+							'path': 'media',
+							'query': {
+								'nested': {
+									'path': 'media.utterances',
+									'query': {
+										'match': {
+											'media.utterances.text': {
+												'query': term,
+												'operator': 'and'
+											}
+										}
+									},
+									'inner_hits': {
+										'highlight': {
+											'pre_tags': ['<span class="highlight">'],
+											'post_tags': ['</span>'],
+											'fields': {
+												'media.utterances.text': {
+													'number_of_fragments': 0
+												}
+											}
 										}
 									}
 								}
@@ -241,7 +294,6 @@ def createQuery(request, data_restriction=None):
 				]
 			}
 		}
-
 		# search_exclude_title = true, sök inte i titel fältet
 		if (not 'search_exclude_title' in request.GET or request.GET['search_exclude_title'] == 'false') and (not 'search_raw' in request.GET or request.GET['search_raw'] != 'true'):
 			matchObj['bool']['should'][0]['multi_match']['fields'].append('title')
