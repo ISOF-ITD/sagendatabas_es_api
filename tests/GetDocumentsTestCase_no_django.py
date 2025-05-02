@@ -7,7 +7,7 @@ import json
 import logging
 logger = logging.getLogger(__name__)
 
-class APIUtteranceViewTestCase(unittest.TestCase):
+class GetDocumentsTestCase(unittest.TestCase):
     """
     API test cases for updating data in the database.
     This test case is independent of Django and can be executed in the shell.
@@ -31,6 +31,8 @@ class APIUtteranceViewTestCase(unittest.TestCase):
         OK
     Check data in for example folke:
         https://sok.folke-test.isof.se/search/rompedrag?s=rompedrag
+        https://garm-test.isof.se/folkeservice/api/es/document/bd00614:b_231626_a/
+        https://garm-test.isof.se/folkeservice/api/es/document/bd00615_52211_a
     """
 
     base_url = "http://localhost:8000/api/es/"
