@@ -31,32 +31,16 @@ GET isof-publik/_search
         {
           "bool": {
             "should": [
-              {
-                "match": {
-                  "transcriptionstatus": "published"
-                }
-              },
-              {
-                "match": {
-                  "transcriptionstatus": "accession"
-                }
-              },
-              {
-                "match": {
-                  "transcriptionstatus": "readytocontribute"
-                }
-              }
+              { "match": { "transcriptionstatus": "published" }},
+              { "match": { "transcriptionstatus": "accession" }},
+              { "match": { "transcriptionstatus": "readytocontribute" }}
             ]
           }
         },
         {
           "bool": {
             "should": [
-              {
-                "match": {
-                  "publishstatus": "published"
-                }
-              }
+              { "match": { "publishstatus": "published" }}
             ]
           }
         },
@@ -90,30 +74,24 @@ GET isof-publik/_search
               },
               {
                 "nested": {
-                  "inner_hits": {
-                    "highlight": {
-                      "fields": {
-                        "media.text": {
-                          "number_of_fragments": 0
-                        }
-                      },
-                      "post_tags": [
-                        "</span>"
-                      ],
-                      "pre_tags": [
-                        "<span class=\"highlight\">"
-                      ]
-                    }
-                  },
                   "path": "media",
                   "query": {
                     "multi_match": {
-                      "fields": [
-                        "media.text"
-                      ],
+                      "fields": ["media.text"],
                       "minimum_should_match": "100%",
                       "query": "rompedrag",
                       "type": "best_fields"
+                    }
+                  },
+                  "inner_hits": {
+                    "highlight": {
+                      "fields": {
+                        "text": {
+                          "number_of_fragments": 0
+                        }
+                      },
+                      "pre_tags": ["<span class=\"highlight\">"],
+                      "post_tags": ["</span>"]
                     }
                   }
                 }
@@ -123,21 +101,6 @@ GET isof-publik/_search
                   "path": "media",
                   "query": {
                     "nested": {
-                      "inner_hits": {
-                        "highlight": {
-                          "fields": {
-                            "media.description.text": {
-                              "number_of_fragments": 0
-                            }
-                          },
-                          "post_tags": [
-                            "</span>"
-                          ],
-                          "pre_tags": [
-                            "<span class=\"highlight\">"
-                          ]
-                        }
-                      },
                       "path": "media.description",
                       "query": {
                         "match": {
@@ -146,8 +109,30 @@ GET isof-publik/_search
                             "query": "rompedrag"
                           }
                         }
+                      },
+                      "inner_hits": {
+                        "highlight": {
+                          "fields": {
+                            "text": {
+                              "number_of_fragments": 0
+                            }
+                          },
+                          "pre_tags": ["<span class=\"highlight\">"],
+                          "post_tags": ["</span>"]
+                        }
                       }
                     }
+                  },
+                  "inner_hits": {
+                    "name": "media_with_description",
+                    "highlight": {
+                      "fields": {
+                        "description.text": { "number_of_fragments": 0 }
+                      },
+                      "pre_tags": ["<span class=\"highlight\">"],
+                      "post_tags": ["</span>"]
+                    },
+                      "_source": false
                   }
                 }
               },
@@ -156,21 +141,6 @@ GET isof-publik/_search
                   "path": "media",
                   "query": {
                     "nested": {
-                      "inner_hits": {
-                        "highlight": {
-                          "fields": {
-                            "media.utterances.text": {
-                              "number_of_fragments": 0
-                            }
-                          },
-                          "post_tags": [
-                            "</span>"
-                          ],
-                          "pre_tags": [
-                            "<span class=\"highlight\">"
-                          ]
-                        }
-                      },
                       "path": "media.utterances",
                       "query": {
                         "match": {
@@ -178,6 +148,17 @@ GET isof-publik/_search
                             "operator": "and",
                             "query": "rompedrag"
                           }
+                        }
+                      },
+                      "inner_hits": {
+                        "highlight": {
+                          "fields": {
+                            "text": {
+                              "number_of_fragments": 0
+                            }
+                          },
+                          "pre_tags": ["<span class=\"highlight\">"],
+                          "post_tags": ["</span>"]
                         }
                       }
                     }
@@ -190,11 +171,7 @@ GET isof-publik/_search
         {
           "bool": {
             "should": [
-              {
-                "match": {
-                  "materialtype": "arkiv"
-                }
-              }
+              { "match": { "materialtype": "arkiv" }}
             ]
           }
         },
@@ -211,23 +188,17 @@ GET isof-publik/_search
         {
           "bool": {
             "should": [
-              {
-                "match": {
-                  "taxonomy.type": "tradark"
-                }
-              }
+              { "match": { "taxonomy.type": "tradark" }}
             ]
           }
         }
       ]
     }
   },
-  "size": "100",
+  "size": 100,
   "sort": [
-    {
-      "archive.archive_id_row.keyword": "asc",
-      "archive.page.long": "asc"
-    }
+    { "archive.archive_id_row.keyword": "asc" },
+    { "archive.page.long": "asc" }
   ],
   "track_total_hits": true
 }
