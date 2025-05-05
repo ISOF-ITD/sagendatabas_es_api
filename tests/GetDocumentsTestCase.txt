@@ -1,0 +1,233 @@
+# Kibana test
+GET isof-publik/_search
+{
+  "from": 0,
+  "highlight": {
+    "fields": {
+      "contents": {
+        "fragment_size": 300,
+        "number_of_fragments": 1
+      },
+      "headwords": {
+        "number_of_fragments": 0
+      },
+      "text": {
+        "number_of_fragments": 0
+      },
+      "title": {
+        "number_of_fragments": 0
+      }
+    },
+    "post_tags": [
+      "</span>"
+    ],
+    "pre_tags": [
+      "<span class=\"highlight\">"
+    ]
+  },
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "bool": {
+            "should": [
+              {
+                "match": {
+                  "transcriptionstatus": "published"
+                }
+              },
+              {
+                "match": {
+                  "transcriptionstatus": "accession"
+                }
+              },
+              {
+                "match": {
+                  "transcriptionstatus": "readytocontribute"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "bool": {
+            "should": [
+              {
+                "match": {
+                  "publishstatus": "published"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "bool": {
+            "should": [
+              {
+                "multi_match": {
+                  "fields": [
+                    "text^2",
+                    "search_other",
+                    "metadata.value",
+                    "title",
+                    "contents",
+                    "archive.archive",
+                    "archive.archive_id",
+                    "archive.archive_id_row",
+                    "places.name",
+                    "places.landskap",
+                    "places.county",
+                    "places.harad",
+                    "persons.name",
+                    "id",
+                    "headwords",
+                    "title"
+                  ],
+                  "minimum_should_match": "100%",
+                  "query": "rompedrag",
+                  "type": "best_fields"
+                }
+              },
+              {
+                "nested": {
+                  "inner_hits": {
+                    "highlight": {
+                      "fields": {
+                        "media.text": {
+                          "number_of_fragments": 0
+                        }
+                      },
+                      "post_tags": [
+                        "</span>"
+                      ],
+                      "pre_tags": [
+                        "<span class=\"highlight\">"
+                      ]
+                    }
+                  },
+                  "path": "media",
+                  "query": {
+                    "multi_match": {
+                      "fields": [
+                        "media.text"
+                      ],
+                      "minimum_should_match": "100%",
+                      "query": "rompedrag",
+                      "type": "best_fields"
+                    }
+                  }
+                }
+              },
+              {
+                "nested": {
+                  "path": "media",
+                  "query": {
+                    "nested": {
+                      "inner_hits": {
+                        "highlight": {
+                          "fields": {
+                            "media.description.text": {
+                              "number_of_fragments": 0
+                            }
+                          },
+                          "post_tags": [
+                            "</span>"
+                          ],
+                          "pre_tags": [
+                            "<span class=\"highlight\">"
+                          ]
+                        }
+                      },
+                      "path": "media.description",
+                      "query": {
+                        "match": {
+                          "media.description.text": {
+                            "operator": "and",
+                            "query": "rompedrag"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "nested": {
+                  "path": "media",
+                  "query": {
+                    "nested": {
+                      "inner_hits": {
+                        "highlight": {
+                          "fields": {
+                            "media.utterances.text": {
+                              "number_of_fragments": 0
+                            }
+                          },
+                          "post_tags": [
+                            "</span>"
+                          ],
+                          "pre_tags": [
+                            "<span class=\"highlight\">"
+                          ]
+                        }
+                      },
+                      "path": "media.utterances",
+                      "query": {
+                        "match": {
+                          "media.utterances.text": {
+                            "operator": "and",
+                            "query": "rompedrag"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "bool": {
+            "should": [
+              {
+                "match": {
+                  "materialtype": "arkiv"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "nested": {
+            "path": "media",
+            "query": {
+              "exists": {
+                "field": "media.source"
+              }
+            }
+          }
+        },
+        {
+          "bool": {
+            "should": [
+              {
+                "match": {
+                  "taxonomy.type": "tradark"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "size": "100",
+  "sort": [
+    {
+      "archive.archive_id_row.keyword": "asc",
+      "archive.page.long": "asc"
+    }
+  ],
+  "track_total_hits": true
+}
