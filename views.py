@@ -210,81 +210,92 @@ def createQuery(request, data_restriction=None):
 						}
 					},
 					{
-						'nested': {
-							'path': 'media',
-							'query': {
-								'multi_match': {
-									'query': term,
-									'type': matchType,
-									'fields': ['media.text'],
-									'minimum_should_match': '100%'
+						"nested": {
+							"path": "media",
+							"query": {
+								"multi_match": {
+									"fields": ["media.text"],
+									"minimum_should_match": "100%",
+									"query": term,
+									"type": "best_fields"
 								}
 							},
-							'inner_hits': {
-								'highlight': {
-									'pre_tags': ['<span class="highlight">'],
-									'post_tags': ['</span>'],
-									'fields': {
-										'media.text': {
-											'number_of_fragments': 0
+							"inner_hits": {
+								"highlight": {
+									"fields": {
+										"text": {
+											"number_of_fragments": 0
 										}
-									}
+									},
+									"pre_tags": ["<span class=\"highlight\">"],
+									"post_tags": ["</span>"]
 								}
 							}
 						}
 					},
 					{
-						'nested': {
-							'path': 'media',
-							'query': {
-								'nested': {
-									'path': 'media.description',
-									'query': {
-										'match': {
-											'media.description.text': {
-												'query': term,
-												'operator': 'and'
+						"nested": {
+							"path": "media",
+							"query": {
+								"nested": {
+									"path": "media.description",
+									"query": {
+										"match": {
+											"media.description.text": {
+												"operator": "and",
+												"query": term
 											}
 										}
 									},
-									'inner_hits': {
-										'highlight': {
-											'pre_tags': ['<span class="highlight">'],
-											'post_tags': ['</span>'],
-											'fields': {
-												'media.description.text': {
-													'number_of_fragments': 0
+									"inner_hits": {
+										"highlight": {
+											"fields": {
+												"text": {
+													"number_of_fragments": 0
 												}
-											}
+											},
+											"pre_tags": ["<span class=\"highlight\">"],
+											"post_tags": ["</span>"]
 										}
 									}
 								}
+							},
+							"inner_hits": {
+								"name": "media_with_description",
+								"highlight": {
+									"fields": {
+										"description.text": {"number_of_fragments": 0}
+									},
+									"pre_tags": ["<span class=\"highlight\">"],
+									"post_tags": ["</span>"]
+								} ,
+								"_source": False # Don't return the full source again, only the highlighted fields
 							}
 						}
 					},
 					{
-						'nested': {
-							'path': 'media',
-							'query': {
-								'nested': {
-									'path': 'media.utterances',
-									'query': {
-										'match': {
-											'media.utterances.text': {
-												'query': term,
-												'operator': 'and'
+						"nested": {
+							"path": "media",
+							"query": {
+								"nested": {
+									"path": "media.utterances",
+									"query": {
+										"match": {
+											"media.utterances.text": {
+												"operator": "and",
+												"query": term
 											}
 										}
 									},
-									'inner_hits': {
-										'highlight': {
-											'pre_tags': ['<span class="highlight">'],
-											'post_tags': ['</span>'],
-											'fields': {
-												'media.utterances.text': {
-													'number_of_fragments': 0
+									"inner_hits": {
+										"highlight": {
+											"fields": {
+												"text": {
+													"number_of_fragments": 0
 												}
-											}
+											},
+											"pre_tags": ["<span class=\"highlight\">"],
+											"post_tags": ["</span>"]
 										}
 									}
 								}
