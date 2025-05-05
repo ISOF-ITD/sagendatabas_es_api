@@ -35,7 +35,9 @@ class GetDocumentsTestCase(unittest.TestCase):
         https://garm-test.isof.se/folkeservice/api/es/document/bd00615_52211_a
     """
 
-    base_url = "http://localhost:8000/api/es/"
+    # base_url = "http://localhost:8000/api/es/"
+    base_url = "https://garm-test.isof.se/folkeservice/api/es/"
+    # 3 hits in text, 1 in audio:
     search_text_with_hits_in_audio_and_text = "search=rompedrag"
     use_slash = "/"
     #use_slash = ""
@@ -45,6 +47,13 @@ class GetDocumentsTestCase(unittest.TestCase):
     https://garm-test.isof.se/folkeservice/api/es/count/?type=arkiv&categorytypes=tradark&publishstatus=published&has_media=true&add_aggregations=false&search=rompedrag&transcriptionstatus=published,accession    
     https://garm-test.isof.se/folkeservice/api/es/count/?type=arkiv&categorytypes=tradark&publishstatus=published&has_media=true&add_aggregations=false&search=rompedrag&category=contentG5&transcriptionstatus=published,accession
     https://garm-test.isof.se/folkeservice/api/es/count/?type=arkiv&categorytypes=tradark&publishstatus=published&has_media=true&add_aggregations=false&search=rompedrag&category=contentG2&transcriptionstatus=published,accession
+    
+    socken:
+    https://garm-test.isof.se/folkeservice/api/es/socken/?type=arkiv&categorytypes=tradark&publishstatus=published&has_media=true&add_aggregations=false
+    
+    documents:
+    http://localhost:8000/api/es/documents/?type=arkiv&categorytypes=tradark&publishstatus=published&has_media=true&add_aggregations=false&size=100&search=kommuniststaterna&transcriptionstatus=published,accession,readytocontribute&sort=archive.archive_id_row.keyword&order=asc
+    https://garm-test.isof.se/folkeservice/api/es/documents/?type=arkiv&categorytypes=tradark&publishstatus=published&has_media=true&add_aggregations=false&size=100&search=kommuniststaterna&transcriptionstatus=published,accession,readytocontribute&sort=archive.archive_id_row.keyword&order=asc
     """
     #transcriptionstatus = "published,accession"
     transcriptionstatus = "published,accession,readytocontribute"
