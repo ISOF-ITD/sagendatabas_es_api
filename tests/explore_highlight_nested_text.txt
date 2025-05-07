@@ -109,3 +109,105 @@ GET isof-highlight-test/_termvectors/1
   "offsets": true,
   "positions": true
 }
+
+# Test highlighting of nested fields
+PUT test-highlight-nested
+{
+  "mappings": {
+    "properties": {
+      "media": {
+        "type": "nested",
+        "properties": {
+          "description": {
+            "type": "nested",
+            "properties": {
+              "text": {
+                "type": "text",
+                "analyzer": "swedish",
+                "term_vector": "with_positions_offsets"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+PUT test-highlight-nested/_doc/1
+{
+  "media": [
+    {
+      "description": [
+        {
+          "text": "Korv och rompedrag"
+        },
+        {
+          "text": "Nävgröt och fläsk"
+        }
+      ]
+    }
+  ]
+}
+
+GET test-highlight-nested/_search
+{
+  "query": {
+    "nested": {
+      "path": "media",
+      "query": {
+        "nested": {
+          "path": "media.description",
+          "query": {
+            "match": {
+              "media.description.text": "rompedrag"
+            }
+          },
+          "inner_hits": {
+            "highlight": {
+              "type": "plain",
+              "fields": {
+                "text": {
+                  "number_of_fragments": 0
+                }
+              },
+              "pre_tags": ["<mark>"],
+              "post_tags": ["</mark>"]
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+GET test-highlight-nested/_search
+{
+  "query": {
+    "nested": {
+      "path": "media",
+      "query": {
+        "nested": {
+          "path": "media.description",
+          "query": {
+            "match": {
+              "media.description.text": "rompedrag"
+            }
+          },
+          "inner_hits": {
+            "highlight": {
+              "type": "plain",
+              "fields": {
+                "media.description.text": {
+                  "number_of_fragments": 0
+                }
+              },
+              "pre_tags": ["<mark>"],
+              "post_tags": ["</mark>"]
+            }
+          }
+        }
+      }
+    }
+  }
+}

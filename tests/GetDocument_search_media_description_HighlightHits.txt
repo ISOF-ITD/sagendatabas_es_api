@@ -1,5 +1,4 @@
 # This test checks if the search for a specific term in the media description field returns the expected results with highlighting.
-GET isof-publik/_search
 {
   "query": {
     "nested": {
@@ -14,8 +13,11 @@ GET isof-publik/_search
           },
           "inner_hits": {
             "highlight": {
+              "type": "plain",
               "fields": {
-                "text": {}
+                "text": {
+                  "number_of_fragments": 0
+                }
               },
               "pre_tags": ["<mark>"],
               "post_tags": ["</mark>"]
