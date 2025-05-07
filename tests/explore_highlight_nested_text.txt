@@ -1,0 +1,111 @@
+# Reindex with pipeline
+PUT _ingest/pipeline/rewrite-media-description
+{
+  "description": "Force re-analysis of media.description.text",
+  "processors": [
+    {
+      "script": {
+        "source": """
+          if (ctx.media != null) {
+            for (m in ctx.media) {
+              if (m.containsKey('description')) {
+                def rewritten = [];
+                for (d in m.description) {
+                  if (d.containsKey('text')) {
+                    d.text = d.text;  // No-op to trigger reindex
+                  }
+                  rewritten.add(d);
+                }
+                m.description = rewritten;
+              }
+            }
+          }
+        """
+      }
+    }
+  ]
+}
+
+POST _reindex
+{
+  "source": {
+    "index": "isof-publik_20250507"
+  },
+  "dest": {
+    "index": "isof-publik_20250507-double-nested-text",
+    "pipeline": "rewrite-media-description"
+  }
+}
+
+GET isof-publik_20250507-double-nested-text/_termvectors/bd00614:b_231626_a
+{
+  "fields": ["media.description.text"],
+  "offsets": true,
+  "positions": true
+}
+
+GET isof-publik_20250507-double-nested-text/_mapping/field/media.description.text
+
+POST isof-publik_20250507-double-nested-text/_doc/bd00615_52211_a
+{
+  "media": [
+    {
+      "description": [
+        {
+          "text": "Nävgröt och fläsk"
+        }
+      ]
+    }
+  ]
+}
+
+GET isof-publik_20250507-double-nested-text/_termvectors/bd00615_52211_a
+{
+  "fields": ["media.description.text"],
+  "offsets": true,
+  "positions": true
+}
+
+# TEST New small test index
+PUT isof-highlight-test
+{
+  "mappings": {
+    "properties": {
+      "media": {
+        "type": "nested",
+        "properties": {
+          "description": {
+            "type": "nested",
+            "properties": {
+              "text": {
+                "type": "text",
+                "analyzer": "swedish",
+                "term_vector": "with_positions_offsets"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+PUT isof-highlight-test/_doc/1
+{
+  "media": [
+    {
+      "description": [
+        {
+          "text": "Nävgröt och fläsk"
+        }
+      ]
+    }
+  ]
+}
+
+GET isof-highlight-test/_termvectors/1
+{
+  "fields": ["media.description.text"],
+  "offsets": true,
+  "positions": true
+}

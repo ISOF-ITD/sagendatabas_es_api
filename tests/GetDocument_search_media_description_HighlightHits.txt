@@ -1,0 +1,29 @@
+# This test checks if the search for a specific term in the media description field returns the expected results with highlighting.
+GET isof-publik/_search
+{
+  "query": {
+    "nested": {
+      "path": "media",
+      "query": {
+        "nested": {
+          "path": "media.description",
+          "query": {
+            "match": {
+              "media.description.text": "rompedrag"
+            }
+          },
+          "inner_hits": {
+            "highlight": {
+              "fields": {
+                "text": {}
+              },
+              "pre_tags": ["<mark>"],
+              "post_tags": ["</mark>"]
+            }
+          }
+        }
+      }
+    }
+  },
+  "size": 1
+}
