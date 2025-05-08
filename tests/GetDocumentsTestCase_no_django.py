@@ -56,9 +56,18 @@ class GetDocumentsTestCase(unittest.TestCase):
     https://garm-test.isof.se/folkeservice/api/es/documents/?type=arkiv&categorytypes=tradark&publishstatus=published&has_media=true&add_aggregations=false&size=100&search=kommuniststaterna&transcriptionstatus=published,accession,readytocontribute&sort=archive.archive_id_row.keyword&order=asc
     """
     #transcriptionstatus = "published,accession"
-    transcriptionstatus = "published,accession,readytocontribute"
+    transcriptionstatus = "transcriptionstatus=published,accession,readytocontribute"
     socken = "socken/?type=arkiv&categorytypes=tradark&publishstatus=published&has_media=true&add_aggregations=false"
     documents = "documents/?type=arkiv&categorytypes=tradark&publishstatus=published&has_media=true&add_aggregations=false&size=100&sort=archive.archive_id_row.keyword&order=asc"
+    count_all = "count/?type=arkiv&categorytypes=tradark&publishstatus=published&has_media=true&add_aggregations=false"
+    count_all_mininum = 4
+    # contentG5 = ljud
+    count_audio = "count/?type=arkiv&categorytypes=tradark&publishstatus=published&has_media=true&add_aggregations=false&category=contentG5"
+    count_audio_mininum = 1
+    # contentG2 = bild
+    count_image = "count/?type=arkiv&categorytypes=tradark&publishstatus=published&has_media=true&add_aggregations=false&category=contentG2"
+    count_image_mininum = 0
+
     # No setup needed yet
     # @classmethod
     # def setUpClass(cls):
@@ -78,6 +87,35 @@ class GetDocumentsTestCase(unittest.TestCase):
     # @classmethod
     # def tearDownClass(cls):
 
+    def test_01_documents_search_count(self):
+        logid = "test_01_documents_search_count"
+        url = f"{self.base_url}" + self.count_all + '&' + self.transcriptionstatus + '&' + self.search_text_with_hits_in_audio_and_text
+        print(logid + ' ' + str(url))
+        # print(logid + ' ' + str(files))
+        response = requests.get(url)
+        self.log_response(response, logid)
+        self.assertEqual(response.status_code, 200, f"Unexpected status code: {response.status_code}")
+        # self.assertIn("success", response.json(), f"Unexpected response: {response.json()}")
+        self.assertGreaterEqual(response.json().get("data", {}).get("value", 0), self.count_all_mininum, f"Unexpected value: {response.json()}")
+
+        url = f"{self.base_url}" + self.count_audio + '&' + self.transcriptionstatus + '&' + self.search_text_with_hits_in_audio_and_text
+        print(logid + ' ' + str(url))
+        # print(logid + ' ' + str(files))
+        response = requests.get(url)
+        self.log_response(response, logid)
+        self.assertEqual(response.status_code, 200, f"Unexpected status code: {response.status_code}")
+        # self.assertIn("success", response.json(), f"Unexpected response: {response.json()}")
+        self.assertGreaterEqual(response.json().get("data", {}).get("value", 0), self.count_audio_mininum, f"Unexpected value: {response.json()}")
+
+        url = f"{self.base_url}" + self.count_image + '&' + self.transcriptionstatus + '&' + self.search_text_with_hits_in_audio_and_text
+        print(logid + ' ' + str(url))
+        # print(logid + ' ' + str(files))
+        response = requests.get(url)
+        self.log_response(response, logid)
+        self.assertEqual(response.status_code, 200, f"Unexpected status code: {response.status_code}")
+        # self.assertIn("success", response.json(), f"Unexpected response: {response.json()}")
+        self.assertGreaterEqual(response.json().get("data", {}).get("value", 0), self.count_image_mininum, f"Unexpected value: {response.json()}")
+
     def test_10_socken_search_text(self):
         logid = "test_10_socken_search_text"
         url = f"{self.base_url}" + self.socken + '&' + self.transcriptionstatus + '&' + self.search_text_with_hits_in_audio_and_text
@@ -87,7 +125,6 @@ class GetDocumentsTestCase(unittest.TestCase):
         self.log_response(response, logid)
         self.assertEqual(response.status_code, 200, f"Unexpected status code: {response.status_code}")
         # self.assertIn("success", response.json(), f"Unexpected response: {response.json()}")
-
 
     def test_20_documents_search_text(self):
         logid = "test_20_documents_search_text"
@@ -99,6 +136,47 @@ class GetDocumentsTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200, f"Unexpected status code: {response.status_code}")
         # self.assertIn("success", response.json(), f"Unexpected response: {response.json()}")
 
+        data = response.json().get("data", [])
+
+        for index, item in enumerate(data):
+            condition_met = False
+
+            # Condition 1: Check inner_hits.media_with_description.media.description._source.text
+            inner_hits = item.get("inner_hits", {})
+            media_desc_hits = (
+                inner_hits.get("media_with_description", {})
+                .get("hits", {})
+                .get("hits", [])
+            )
+
+            for media_hit in media_desc_hits:
+                desc_hits = (
+                    media_hit.get("inner_hits", {})
+                    .get("media.description", {})
+                    .get("hits", {})
+                    .get("hits", [])
+                )
+
+                for desc in desc_hits:
+                    desc_text = desc.get("_source", {}).get("text", "")
+                    if "rompedrag" in desc_text.lower():
+                        condition_met = True
+                        break
+                if condition_met:
+                    break
+
+            # Condition 2: Check highlight.text contains "rompedrag"
+            if not condition_met:
+                highlights = item.get("highlight", {}).get("text", [])
+                # Remove newlines:
+                if any("rompedrag" in h.lower().replace('-\n','') for h in highlights):
+                    condition_met = True
+
+            # Assert that the current item meets at least one condition
+            self.assertTrue(
+                condition_met,
+                f"Item at index {index} with ID {item.get('_id')} does not meet any condition."
+            )
 
 if __name__ == "__main__":
     unittest.main()
