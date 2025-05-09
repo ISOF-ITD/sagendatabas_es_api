@@ -1,3 +1,293 @@
+# New mapping with the nested media.utterances field as media.utterances.utterances
+# Test queries for inner_hits in both media.description and media.utterances.utterances
+GET isof-publik_20250509-metadata/_search
+{
+  "size": 10,
+  "query": {
+    "bool": {
+      "should": [
+        {
+          "multi_match": {
+            "query": "rompedrag",
+            "type": "best_fields",
+            "fields": [
+              "text",
+              "title",
+              "headwords",
+              "comments",
+              "contents"
+            ],
+            "minimum_should_match": "100%"
+          }
+        },
+        {
+          "nested": {
+            "path": "media",
+            "query": {
+              "multi_match": {
+                "fields": ["media.text"],
+                "minimum_should_match": "100%",
+                "query": "rompedrag",
+                "type": "best_fields"
+              }
+            },
+            "inner_hits": {
+              "highlight": {
+                "fields": {
+                  "text": {
+                    "number_of_fragments": 0
+                  }
+                },
+                "pre_tags": ["<span class=\"highlight\">"],
+                "post_tags": ["</span>"]
+              }
+            }
+          }
+        },
+        {
+          "nested": {
+            "path": "media",
+            "query": {
+              "nested": {
+                "path": "media.description",
+                "query": {
+                  "match": {
+                    "media.description.text": {
+                      "operator": "and",
+                      "query": "rompedrag"
+                    }
+                  }
+                },
+                "inner_hits": {
+                  "highlight": {
+                    "fields": {
+                      "text": {
+                        "number_of_fragments": 0
+                      }
+                    },
+                    "pre_tags": ["<span class=\"highlight\">"],
+                    "post_tags": ["</span>"]
+                  }
+                }
+              }
+            },
+            "inner_hits": {
+              "name": "media_with_description",
+              "highlight": {
+                "fields": {
+                  "description.text": {
+                    "number_of_fragments": 0
+                  }
+                },
+                "pre_tags": ["<span class=\"highlight\">"],
+                "post_tags": ["</span>"]
+              },
+              "_source": false
+            }
+          }
+        },
+        {
+          "nested": {
+            "path": "media",
+            "query": {
+              "nested": {
+                "path": "media.utterances.utterances",
+                "query": {
+                  "match": {
+                    "media.utterances.utterances.text": {
+                      "operator": "and",
+                      "query": "rompedrag"
+                    }
+                  }
+                },
+                "inner_hits": {
+                  "highlight": {
+                    "fields": {
+                      "text": {
+                        "number_of_fragments": 0
+                      }
+                    },
+                    "pre_tags": ["<span class=\"highlight\">"],
+                    "post_tags": ["</span>"]
+                  }
+                }
+              }
+            },
+            "inner_hits": {
+              "name": "media_with_utterances",
+              "highlight": {
+                "fields": {
+                  "utterances.utterances.text": {
+                    "number_of_fragments": 0
+                  }
+                },
+                "pre_tags": ["<span class=\"highlight\">"],
+                "post_tags": ["</span>"]
+              },
+              "_source": false
+            }
+          }
+        }
+      ],
+      "minimum_should_match": 1
+    }
+  },
+  "highlight": {
+    "fields": {
+      "text": {
+        "number_of_fragments": 0
+      }
+    },
+    "pre_tags": ["<span class=\"highlight\">"],
+    "post_tags": ["</span>"]
+  }
+}
+
+
+GET isof-publik_20250509-metadata/_search
+{
+  "size": 10,
+  "query": {
+    "bool": {
+      "should": [
+        {
+          "multi_match": {
+            "query": "vråhållet",
+            "type": "best_fields",
+            "fields": [
+              "text",
+              "title",
+              "headwords",
+              "comments",
+              "contents"
+            ],
+            "minimum_should_match": "100%"
+          }
+        },
+        {
+          "nested": {
+            "path": "media",
+            "query": {
+              "multi_match": {
+                "fields": ["media.text"],
+                "minimum_should_match": "100%",
+                "query": "vråhållet",
+                "type": "best_fields"
+              }
+            },
+            "inner_hits": {
+              "highlight": {
+                "fields": {
+                  "text": {
+                    "number_of_fragments": 0
+                  }
+                },
+                "pre_tags": ["<span class=\"highlight\">"],
+                "post_tags": ["</span>"]
+              }
+            }
+          }
+        },
+        {
+          "nested": {
+            "path": "media",
+            "query": {
+              "nested": {
+                "path": "media.description",
+                "query": {
+                  "match": {
+                    "media.description.text": {
+                      "operator": "and",
+                      "query": "vråhållet"
+                    }
+                  }
+                },
+                "inner_hits": {
+                  "highlight": {
+                    "fields": {
+                      "text": {
+                        "number_of_fragments": 0
+                      }
+                    },
+                    "pre_tags": ["<span class=\"highlight\">"],
+                    "post_tags": ["</span>"]
+                  }
+                }
+              }
+            },
+            "inner_hits": {
+              "name": "media_with_description",
+              "highlight": {
+                "fields": {
+                  "description.text": {
+                    "number_of_fragments": 0
+                  }
+                },
+                "pre_tags": ["<span class=\"highlight\">"],
+                "post_tags": ["</span>"]
+              },
+              "_source": false
+            }
+          }
+        },
+        {
+          "nested": {
+            "path": "media",
+            "query": {
+              "nested": {
+                "path": "media.utterances.utterances",
+                "query": {
+                  "match": {
+                    "media.utterances.utterances.text": {
+                      "operator": "and",
+                      "query": "vråhållet"
+                    }
+                  }
+                },
+                "inner_hits": {
+                  "highlight": {
+                    "fields": {
+                      "text": {
+                        "number_of_fragments": 0
+                      }
+                    },
+                    "pre_tags": ["<span class=\"highlight\">"],
+                    "post_tags": ["</span>"]
+                  }
+                }
+              }
+            },
+            "inner_hits": {
+              "name": "media_with_utterances",
+              "highlight": {
+                "fields": {
+                  "utterances.utterances.text": {
+                    "number_of_fragments": 0
+                  }
+                },
+                "pre_tags": ["<span class=\"highlight\">"],
+                "post_tags": ["</span>"]
+              },
+              "_source": false
+            }
+          }
+        }
+      ],
+      "minimum_should_match": 1
+    }
+  },
+  "highlight": {
+    "fields": {
+      "text": {
+        "number_of_fragments": 0
+      }
+    },
+    "pre_tags": ["<span class=\"highlight\">"],
+    "post_tags": ["</span>"]
+  }
+}
+
+
 # This test checks if the search for a specific term in the media description field returns the expected results with highlighting.
 {
   "query": {

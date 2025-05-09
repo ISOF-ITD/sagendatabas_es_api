@@ -61,7 +61,7 @@ class GetDocumentsTestCase(unittest.TestCase):
         {
             # 1 hits in text, 1 in audio utterance:
             # vff02333_204956_2 skeen (skeden)
-            # s00247:a_f_127613_a Skeena torg
+            # s00247:a_f_127613_a, s00247:a_f_X_127613_a Lund/Ljudarkiv/1-1000/201-300/S 247A_mp3.MP3: Skeena torg, Numera skena torg
             "search_text": "skeena",
             "expected_counts": {
                 # counts correct 2025-05-09. Uppdatera om dom ändras!
