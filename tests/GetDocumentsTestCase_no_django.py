@@ -37,10 +37,40 @@ class GetDocumentsTestCase(unittest.TestCase):
 
     # base_url = "http://localhost:8000/api/es/"
     base_url = "https://garm-test.isof.se/folkeservice/api/es/"
-    # 3 hits in text, 1 in audio:
-    search_text_with_hits_in_audio_and_text = "search=rompedrag"
     use_slash = "/"
     #use_slash = ""
+
+    count_all = "count/?type=arkiv&categorytypes=tradark&publishstatus=published&has_media=true&add_aggregations=false"
+    # contentG2 = bild
+    count_image = "count/?type=arkiv&categorytypes=tradark&publishstatus=published&has_media=true&add_aggregations=false&category=contentG2"
+    # contentG5 = ljud
+    count_audio = "count/?type=arkiv&categorytypes=tradark&publishstatus=published&has_media=true&add_aggregations=false&category=contentG5"
+
+    # Define a struct-like dictionary to hold search text and expected counts
+    test_cases = [
+        {
+            # 3 hits in text, 1 in audio desription:
+            "search_text": "rompedrag",
+            "expected_counts": {
+                # counts correct 2025-05-09. Uppdatera om dom ändras!
+                "count_all_minimum": 4,
+                "count_audio_minimum": 1,
+                "count_image_minimum": 0
+            }
+        },
+        {
+            # 1 hits in text, 1 in audio utterance:
+            # vff02333_204956_2 skeen (skeden)
+            # s00247:a_f_127613_a Skeena torg
+            "search_text": "skeena",
+            "expected_counts": {
+                # counts correct 2025-05-09. Uppdatera om dom ändras!
+                "count_all_minimum": 2,
+                "count_audio_minimum": 1,
+                "count_image_minimum": 0
+            }
+        }
+    ]
 
     """
     count requests all, audio, image:
@@ -59,14 +89,6 @@ class GetDocumentsTestCase(unittest.TestCase):
     transcriptionstatus = "transcriptionstatus=published,accession,readytocontribute"
     socken = "socken/?type=arkiv&categorytypes=tradark&publishstatus=published&has_media=true&add_aggregations=false"
     documents = "documents/?type=arkiv&categorytypes=tradark&publishstatus=published&has_media=true&add_aggregations=false&size=100&sort=archive.archive_id_row.keyword&order=asc"
-    count_all = "count/?type=arkiv&categorytypes=tradark&publishstatus=published&has_media=true&add_aggregations=false"
-    count_all_mininum = 4
-    # contentG5 = ljud
-    count_audio = "count/?type=arkiv&categorytypes=tradark&publishstatus=published&has_media=true&add_aggregations=false&category=contentG5"
-    count_audio_mininum = 1
-    # contentG2 = bild
-    count_image = "count/?type=arkiv&categorytypes=tradark&publishstatus=published&has_media=true&add_aggregations=false&category=contentG2"
-    count_image_mininum = 0
 
     # No setup needed yet
     # @classmethod
@@ -88,95 +110,111 @@ class GetDocumentsTestCase(unittest.TestCase):
     # def tearDownClass(cls):
 
     def test_01_documents_search_count(self):
-        logid = "test_01_documents_search_count"
-        url = f"{self.base_url}" + self.count_all + '&' + self.transcriptionstatus + '&' + self.search_text_with_hits_in_audio_and_text
-        print(logid + ' ' + str(url))
-        # print(logid + ' ' + str(files))
-        response = requests.get(url)
-        self.log_response(response, logid)
-        self.assertEqual(response.status_code, 200, f"Unexpected status code: {response.status_code}")
-        # self.assertIn("success", response.json(), f"Unexpected response: {response.json()}")
-        self.assertGreaterEqual(response.json().get("data", {}).get("value", 0), self.count_all_mininum, f"Unexpected value: {response.json()}")
-
-        url = f"{self.base_url}" + self.count_audio + '&' + self.transcriptionstatus + '&' + self.search_text_with_hits_in_audio_and_text
-        print(logid + ' ' + str(url))
-        # print(logid + ' ' + str(files))
-        response = requests.get(url)
-        self.log_response(response, logid)
-        self.assertEqual(response.status_code, 200, f"Unexpected status code: {response.status_code}")
-        # self.assertIn("success", response.json(), f"Unexpected response: {response.json()}")
-        self.assertGreaterEqual(response.json().get("data", {}).get("value", 0), self.count_audio_mininum, f"Unexpected value: {response.json()}")
-
-        url = f"{self.base_url}" + self.count_image + '&' + self.transcriptionstatus + '&' + self.search_text_with_hits_in_audio_and_text
-        print(logid + ' ' + str(url))
-        # print(logid + ' ' + str(files))
-        response = requests.get(url)
-        self.log_response(response, logid)
-        self.assertEqual(response.status_code, 200, f"Unexpected status code: {response.status_code}")
-        # self.assertIn("success", response.json(), f"Unexpected response: {response.json()}")
-        self.assertGreaterEqual(response.json().get("data", {}).get("value", 0), self.count_image_mininum, f"Unexpected value: {response.json()}")
-
-    def test_10_socken_search_text(self):
-        logid = "test_10_socken_search_text"
-        url = f"{self.base_url}" + self.socken + '&' + self.transcriptionstatus + '&' + self.search_text_with_hits_in_audio_and_text
-        print(logid + ' ' + str(url))
-        # print(logid + ' ' + str(files))
-        response = requests.get(url)
-        self.log_response(response, logid)
-        self.assertEqual(response.status_code, 200, f"Unexpected status code: {response.status_code}")
-        # self.assertIn("success", response.json(), f"Unexpected response: {response.json()}")
-
-    def test_20_documents_search_text(self):
-        logid = "test_20_documents_search_text"
-        url = f"{self.base_url}" + self.documents + '&' + self.transcriptionstatus + '&' + self.search_text_with_hits_in_audio_and_text
-        print(logid + ' ' + str(url))
-        # print(logid + ' ' + str(files))
-        response = requests.get(url)
-        self.log_response(response, logid)
-        self.assertEqual(response.status_code, 200, f"Unexpected status code: {response.status_code}")
-        # self.assertIn("success", response.json(), f"Unexpected response: {response.json()}")
-
-        data = response.json().get("data", [])
-
-        for index, item in enumerate(data):
-            condition_met = False
-
-            # Condition 1: Check inner_hits.media_with_description.media.description._source.text
-            inner_hits = item.get("inner_hits", {})
-            media_desc_hits = (
-                inner_hits.get("media_with_description", {})
-                .get("hits", {})
-                .get("hits", [])
-            )
-
-            for media_hit in media_desc_hits:
-                desc_hits = (
-                    media_hit.get("inner_hits", {})
-                    .get("media.description", {})
-                    .get("hits", {})
-                    .get("hits", [])
+        logid_test = "test_01_documents_search_count"
+        for case in self.test_cases:
+            with self.subTest(search_text=case["search_text"]):
+                logid = logid_test + " " + case["search_text"]
+                url = f"{self.base_url}" + self.count_all + '&' + self.transcriptionstatus + '&' + 'search=' + case["search_text"]
+                print(logid + ' ' + str(url))
+                response = requests.get(url)
+                self.log_response(response, logid)
+                self.assertEqual(response.status_code, 200, f"Unexpected status code: {response.status_code}")
+                self.assertGreaterEqual(
+                    response.json().get("data", {}).get("value", 0),
+                    case["expected_counts"]["count_all_minimum"],
+                    f"Unexpected value: {response.json()}"
                 )
 
-                for desc in desc_hits:
-                    desc_text = desc.get("_source", {}).get("text", "")
-                    if "rompedrag" in desc_text.lower():
-                        condition_met = True
-                        break
-                if condition_met:
-                    break
+                url = f"{self.base_url}" + self.count_audio + '&' + self.transcriptionstatus + '&' + 'search=' + case["search_text"]
+                print(logid + ' ' + str(url))
+                response = requests.get(url)
+                self.log_response(response, logid)
+                self.assertEqual(response.status_code, 200, f"Unexpected status code: {response.status_code}")
+                self.assertGreaterEqual(
+                    response.json().get("data", {}).get("value", 0),
+                    case["expected_counts"]["count_audio_minimum"],
+                    f"Unexpected value: {response.json()}"
+                )
 
-            # Condition 2: Check highlight.text contains "rompedrag"
-            if not condition_met:
-                highlights = item.get("highlight", {}).get("text", [])
-                # Remove newlines:
-                if any("rompedrag" in h.lower().replace('-\n','') for h in highlights):
-                    condition_met = True
+                url = f"{self.base_url}" + self.count_image + '&' + self.transcriptionstatus + '&' + 'search=' + case["search_text"]
+                print(logid + ' ' + str(url))
+                response = requests.get(url)
+                self.log_response(response, logid)
+                self.assertEqual(response.status_code, 200, f"Unexpected status code: {response.status_code}")
+                self.assertGreaterEqual(
+                    response.json().get("data", {}).get("value", 0),
+                    case["expected_counts"]["count_image_minimum"],
+                    f"Unexpected value: {response.json()}"
+                )
 
-            # Assert that the current item meets at least one condition
-            self.assertTrue(
-                condition_met,
-                f"Item at index {index} with ID {item.get('_id')} does not meet any condition."
-            )
+
+    def test_10_socken_search_text(self):
+        logid_test = "test_10_socken_search_text"
+        for case in self.test_cases:
+            with self.subTest(search_text=case["search_text"]):
+                logid = logid_test + " " + case["search_text"]
+                url = f"{self.base_url}" + self.socken + '&' + self.transcriptionstatus + '&' + 'search=' + case["search_text"]
+                print(logid + ' ' + str(url))
+                # print(logid + ' ' + str(files))
+                response = requests.get(url)
+                self.log_response(response, logid)
+                self.assertEqual(response.status_code, 200, f"Unexpected status code: {response.status_code}")
+
+    def test_20_documents_search_text(self):
+        logid_test = "test_20_documents_search_text"
+
+        for case in self.test_cases:
+            with self.subTest(search_text=case["search_text"]):
+                logid = logid_test + " " + case["search_text"]
+                url = f"{self.base_url}" + self.documents + '&' + self.transcriptionstatus + '&' + 'search=' + case["search_text"]
+                print(logid + ' ' + str(url))
+                # print(logid + ' ' + str(files))
+                response = requests.get(url)
+                self.log_response(response, logid)
+                self.assertEqual(response.status_code, 200, f"Unexpected status code: {response.status_code}")
+                # self.assertIn("success", response.json(), f"Unexpected response: {response.json()}")
+
+                data = response.json().get("data", [])
+
+                for index, item in enumerate(data):
+                    condition_met = False
+
+                    # Condition 1: Check inner_hits.media_with_description.media.description._source.text
+                    inner_hits = item.get("inner_hits", {})
+                    media_desc_hits = (
+                        inner_hits.get("media_with_description", {})
+                        .get("hits", {})
+                        .get("hits", [])
+                    )
+
+                    for media_hit in media_desc_hits:
+                        desc_hits = (
+                            media_hit.get("inner_hits", {})
+                            .get("media.description", {})
+                            .get("hits", {})
+                            .get("hits", [])
+                        )
+
+                        for desc in desc_hits:
+                            desc_text = desc.get("_source", {}).get("text", "")
+                            if case["search_text"] in desc_text.lower():
+                                condition_met = True
+                                break
+                        if condition_met:
+                            break
+
+                    # Condition 2: Check highlight.text contains case["search_text"]
+                    if not condition_met:
+                        highlights = item.get("highlight", {}).get("text", [])
+                        # Remove newlines:
+                        if any(case["search_text"] in h.lower().replace('-\n','') for h in highlights):
+                            condition_met = True
+
+                    # Assert that the current item meets at least one condition
+                    self.assertTrue(
+                        condition_met,
+                        f"Item at index {index} with ID {item.get('_id')} does not meet any condition."
+                    )
 
 if __name__ == "__main__":
     unittest.main()
