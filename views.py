@@ -311,7 +311,7 @@ def createQuery(request, data_restriction=None):
 									"pre_tags": ["<span class=\"highlight\">"],
 									"post_tags": ["</span>"]
 								},
-								"_source": false
+								"_source": False # Don't return the full source again, only the highlighted fields
 							}
 						}
 					}
