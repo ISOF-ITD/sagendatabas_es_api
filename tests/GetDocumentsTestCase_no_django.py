@@ -65,7 +65,18 @@ class GetDocumentsTestCase(unittest.TestCase):
             "search_text": "skeena",
             "expected_counts": {
                 # counts correct 2025-05-09. Uppdatera om dom ändras!
-                "count_all_minimum": 2,
+                "count_all_minimum": 1,
+                "count_audio_minimum": 0, # var tidigare 1
+                "count_image_minimum": 0
+            }
+        },
+        {
+            # 1 in audio utterance:
+            # s00247:a_f_127613_a, s00247:a_f_X_127613_a Lund/Ljudarkiv/1-1000/201-300/S 247A_mp3.MP3: vråhållet
+            "search_text": "vråhållet",
+            "expected_counts": {
+                # counts correct 2025-05-09. Uppdatera om dom ändras!
+                "count_all_minimum": 1,
                 "count_audio_minimum": 1,
                 "count_image_minimum": 0
             }

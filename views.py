@@ -206,7 +206,11 @@ def createQuery(request, data_restriction=None):
 							'query': term,
 							'type': matchType,
 							'fields': fields,
-							'minimum_should_match': '100%'
+							# minimum_should_match: "100%" is not recommended for single-word queries
+							# — it often prevents matches unless that exact word is the only token in the field.
+							# Since "vråhållet" is likely tokenized (perhaps into "vrå", "hållet" etc.), 100% matching can block retrieval.
+							# Remove or reduce minimum_should_match, or set it to "1" (or even "75%" if the query had multiple terms). For single-term searches, it’s unnecessary.
+							'minimum_should_match': '75%'
 						}
 					},
 					{

@@ -1,321 +1,328 @@
 # New mapping with the nested media.utterances field as media.utterances.utterances
 # Test queries for inner_hits in both media.description and media.utterances.utterances
+# Full api/es get socken query
 GET isof-publik_20250509-metadata/_search
 {
-  "size": 10,
-  "query": {
-    "bool": {
-      "should": [
-        {
-          "multi_match": {
-            "query": "rompedrag",
-            "type": "best_fields",
-            "fields": [
-              "text",
-              "title",
-              "headwords",
-              "comments",
-              "contents"
-            ],
-            "minimum_should_match": "100%"
-          }
-        },
-        {
-          "nested": {
-            "path": "media",
-            "query": {
-              "multi_match": {
-                "fields": ["media.text"],
-                "minimum_should_match": "100%",
-                "query": "rompedrag",
-                "type": "best_fields"
+  "aggs": {
+    "data": {
+      "aggs": {
+        "data": {
+          "aggs": {
+            "data": {
+              "terms": {
+                "field": "places.name",
+                "order": {
+                  "_key": "asc"
+                },
+                "size": 1
               }
             },
-            "inner_hits": {
-              "highlight": {
-                "fields": {
-                  "text": {
-                    "number_of_fragments": 0
-                  }
+            "harad": {
+              "terms": {
+                "field": "places.harad",
+                "order": {
+                  "_key": "asc"
                 },
-                "pre_tags": ["<span class=\"highlight\">"],
-                "post_tags": ["</span>"]
+                "size": 1
               }
-            }
-          }
-        },
-        {
-          "nested": {
-            "path": "media",
-            "query": {
-              "nested": {
-                "path": "media.description",
-                "query": {
-                  "match": {
-                    "media.description.text": {
-                      "operator": "and",
-                      "query": "rompedrag"
-                    }
-                  }
+            },
+            "lan": {
+              "terms": {
+                "field": "places.county",
+                "order": {
+                  "_key": "asc"
                 },
-                "inner_hits": {
-                  "highlight": {
-                    "fields": {
-                      "text": {
-                        "number_of_fragments": 0
-                      }
-                    },
-                    "pre_tags": ["<span class=\"highlight\">"],
-                    "post_tags": ["</span>"]
+                "size": 1
+              }
+            },
+            "landskap": {
+              "terms": {
+                "field": "places.landskap",
+                "order": {
+                  "_key": "asc"
+                },
+                "size": 1
+              }
+            },
+            "lm_id": {
+              "terms": {
+                "field": "places.lm_id",
+                "order": {
+                  "_key": "asc"
+                },
+                "size": 1
+              }
+            },
+            "location": {
+              "geohash_grid": {
+                "field": "places.location",
+                "precision": 12
+              }
+            },
+            "page_count": {
+              "aggs": {
+                "pages": {
+                  "sum": {
+                    "field": "archive.total_pages"
                   }
                 }
-              }
-            },
-            "inner_hits": {
-              "name": "media_with_description",
-              "highlight": {
-                "fields": {
-                  "description.text": {
-                    "number_of_fragments": 0
-                  }
-                },
-                "pre_tags": ["<span class=\"highlight\">"],
-                "post_tags": ["</span>"]
               },
-              "_source": false
-            }
-          }
-        },
-        {
-          "nested": {
-            "path": "media",
-            "query": {
-              "nested": {
-                "path": "media.utterances.utterances",
-                "query": {
-                  "match": {
-                    "media.utterances.utterances.text": {
-                      "operator": "and",
-                      "query": "rompedrag"
-                    }
-                  }
-                },
-                "inner_hits": {
-                  "highlight": {
-                    "fields": {
-                      "text": {
-                        "number_of_fragments": 0
-                      }
-                    },
-                    "pre_tags": ["<span class=\"highlight\">"],
-                    "post_tags": ["</span>"]
-                  }
-                }
-              }
+              "reverse_nested": {}
             },
-            "inner_hits": {
-              "name": "media_with_utterances",
-              "highlight": {
-                "fields": {
-                  "utterances.utterances.text": {
-                    "number_of_fragments": 0
-                  }
-                },
-                "pre_tags": ["<span class=\"highlight\">"],
-                "post_tags": ["</span>"]
-              },
-              "_source": false
-            }
-          }
-        }
-      ],
-      "minimum_should_match": 1
-    }
-  },
-  "highlight": {
-    "fields": {
-      "text": {
-        "number_of_fragments": 0
-      }
-    },
-    "pre_tags": ["<span class=\"highlight\">"],
-    "post_tags": ["</span>"]
-  }
-}
-
-
-GET isof-publik_20250509-metadata/_search
-{
-  "size": 10,
-  "query": {
-    "bool": {
-      "should": [
-        {
-          "multi_match": {
-            "query": "vråhållet",
-            "type": "best_fields",
-            "fields": [
-              "text",
-              "title",
-              "headwords",
-              "comments",
-              "contents"
-            ],
-            "minimum_should_match": "100%"
-          }
-        },
-        {
-          "nested": {
-            "path": "media",
-            "query": {
-              "multi_match": {
-                "fields": ["media.text"],
-                "minimum_should_match": "100%",
-                "query": "vråhållet",
-                "type": "best_fields"
-              }
+            "parent_doc_count": {
+              "reverse_nested": {}
             },
-            "inner_hits": {
-              "highlight": {
-                "fields": {
-                  "text": {
-                    "number_of_fragments": 0
-                  }
+            "relation_type": {
+              "terms": {
+                "field": "places.type",
+                "order": {
+                  "_key": "asc"
                 },
-                "pre_tags": ["<span class=\"highlight\">"],
-                "post_tags": ["</span>"]
+                "size": 100
               }
-            }
-          }
-        },
-        {
-          "nested": {
-            "path": "media",
-            "query": {
-              "nested": {
-                "path": "media.description",
-                "query": {
-                  "match": {
-                    "media.description.text": {
-                      "operator": "and",
-                      "query": "vråhållet"
-                    }
-                  }
-                },
-                "inner_hits": {
-                  "highlight": {
-                    "fields": {
-                      "text": {
-                        "number_of_fragments": 0
-                      }
-                    },
-                    "pre_tags": ["<span class=\"highlight\">"],
-                    "post_tags": ["</span>"]
-                  }
-                }
-              }
-            },
-            "inner_hits": {
-              "name": "media_with_description",
-              "highlight": {
-                "fields": {
-                  "description.text": {
-                    "number_of_fragments": 0
-                  }
-                },
-                "pre_tags": ["<span class=\"highlight\">"],
-                "post_tags": ["</span>"]
-              },
-              "_source": false
-            }
-          }
-        },
-        {
-          "nested": {
-            "path": "media",
-            "query": {
-              "nested": {
-                "path": "media.utterances.utterances",
-                "query": {
-                  "match": {
-                    "media.utterances.utterances.text": {
-                      "operator": "and",
-                      "query": "vråhållet"
-                    }
-                  }
-                },
-                "inner_hits": {
-                  "highlight": {
-                    "fields": {
-                      "text": {
-                        "number_of_fragments": 0
-                      }
-                    },
-                    "pre_tags": ["<span class=\"highlight\">"],
-                    "post_tags": ["</span>"]
-                  }
-                }
-              }
-            },
-            "inner_hits": {
-              "name": "media_with_utterances",
-              "highlight": {
-                "fields": {
-                  "utterances.utterances.text": {
-                    "number_of_fragments": 0
-                  }
-                },
-                "pre_tags": ["<span class=\"highlight\">"],
-                "post_tags": ["</span>"]
-              },
-              "_source": false
-            }
-          }
-        }
-      ],
-      "minimum_should_match": 1
-    }
-  },
-  "highlight": {
-    "fields": {
-      "text": {
-        "number_of_fragments": 0
-      }
-    },
-    "pre_tags": ["<span class=\"highlight\">"],
-    "post_tags": ["</span>"]
-  }
-}
-
-
-# This test checks if the search for a specific term in the media description field returns the expected results with highlighting.
-{
-  "query": {
-    "nested": {
-      "path": "media",
-      "query": {
-        "nested": {
-          "path": "media.description",
-          "query": {
-            "match": {
-              "media.description.text": "rompedrag"
             }
           },
-          "inner_hits": {
-            "highlight": {
-              "type": "plain",
-              "fields": {
-                "text": {
-                  "number_of_fragments": 0
-                }
-              },
-              "pre_tags": ["<mark>"],
-              "post_tags": ["</mark>"]
-            }
+          "terms": {
+            "field": "places.id",
+            "size": 10000
           }
         }
+      },
+      "nested": {
+        "path": "places"
       }
     }
   },
-  "size": 1
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "bool": {
+            "should": [
+              {
+                "match": {
+                  "transcriptionstatus": "published"
+                }
+              },
+              {
+                "match": {
+                  "transcriptionstatus": "accession"
+                }
+              },
+              {
+                "match": {
+                  "transcriptionstatus": "readytocontribute"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "bool": {
+            "should": [
+              {
+                "match": {
+                  "publishstatus": "published"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "bool": {
+            "should": [
+              {
+                "multi_match": {
+                  "fields": [
+                    "text^2",
+                    "search_other",
+                    "metadata.value",
+                    "title",
+                    "contents",
+                    "archive.archive",
+                    "archive.archive_id",
+                    "archive.archive_id_row",
+                    "places.name",
+                    "places.landskap",
+                    "places.county",
+                    "places.harad",
+                    "persons.name",
+                    "id",
+                    "headwords",
+                    "title"
+                  ],
+                  "minimum_should_match": "100%",
+                  "query": "rompedrag",
+                  "type": "best_fields"
+                }
+              },
+              {
+                "nested": {
+                  "inner_hits": {
+                    "highlight": {
+                      "fields": {
+                        "text": {
+                          "number_of_fragments": 0
+                        }
+                      },
+                      "post_tags": [
+                        "</span>"
+                      ],
+                      "pre_tags": [
+                        "<span class=\"highlight\">"
+                      ]
+                    }
+                  },
+                  "path": "media",
+                  "query": {
+                    "multi_match": {
+                      "fields": [
+                        "media.text"
+                      ],
+                      "minimum_should_match": "100%",
+                      "query": "rompedrag",
+                      "type": "best_fields"
+                    }
+                  }
+                }
+              },
+              {
+                "nested": {
+                  "inner_hits": {
+                    "_source": false,
+                    "highlight": {
+                      "fields": {
+                        "description.text": {
+                          "number_of_fragments": 0
+                        }
+                      },
+                      "post_tags": [
+                        "</span>"
+                      ],
+                      "pre_tags": [
+                        "<span class=\"highlight\">"
+                      ]
+                    },
+                    "name": "media_with_description"
+                  },
+                  "path": "media",
+                  "query": {
+                    "nested": {
+                      "inner_hits": {
+                        "highlight": {
+                          "fields": {
+                            "text": {
+                              "number_of_fragments": 0
+                            }
+                          },
+                          "post_tags": [
+                            "</span>"
+                          ],
+                          "pre_tags": [
+                            "<span class=\"highlight\">"
+                          ]
+                        }
+                      },
+                      "path": "media.description",
+                      "query": {
+                        "match": {
+                          "media.description.text": {
+                            "operator": "and",
+                            "query": "rompedrag"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "nested": {
+                  "inner_hits": {
+                    "_source": false,
+                    "highlight": {
+                      "fields": {
+                        "utterances.utterances.text": {
+                          "number_of_fragments": 0
+                        }
+                      },
+                      "post_tags": [
+                        "</span>"
+                      ],
+                      "pre_tags": [
+                        "<span class=\"highlight\">"
+                      ]
+                    },
+                    "name": "media_with_utterances"
+                  },
+                  "path": "media",
+                  "query": {
+                    "nested": {
+                      "inner_hits": {
+                        "highlight": {
+                          "fields": {
+                            "text": {
+                              "number_of_fragments": 0
+                            }
+                          },
+                          "post_tags": [
+                            "</span>"
+                          ],
+                          "pre_tags": [
+                            "<span class=\"highlight\">"
+                          ]
+                        }
+                      },
+                      "path": "media.utterances.utterances",
+                      "query": {
+                        "match": {
+                          "media.utterances.utterances.text": {
+                            "operator": "and",
+                            "query": "rompedrag"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "bool": {
+            "should": [
+              {
+                "match": {
+                  "materialtype": "arkiv"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "nested": {
+            "path": "media",
+            "query": {
+              "exists": {
+                "field": "media.source"
+              }
+            }
+          }
+        },
+        {
+          "bool": {
+            "should": [
+              {
+                "match": {
+                  "taxonomy.type": "tradark"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "size": 0
 }
