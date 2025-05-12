@@ -278,10 +278,10 @@ def createQuery(request, data_restriction=None):
 							"path": "media",
 							"query": {
 								"nested": {
-									"path": "media.utterances",
+									"path": "media.utterances.utterances",
 									"query": {
 										"match": {
-											"media.utterances.text": {
+											"media.utterances.utterances.text": {
 												"operator": "and",
 												"query": term
 											}
@@ -299,6 +299,19 @@ def createQuery(request, data_restriction=None):
 										}
 									}
 								}
+							},
+							"inner_hits": {
+								"name": "media_with_utterances",
+								"highlight": {
+									"fields": {
+										"utterances.utterances.text": {
+											"number_of_fragments": 0
+										}
+									},
+									"pre_tags": ["<span class=\"highlight\">"],
+									"post_tags": ["</span>"]
+								},
+								"_source": false
 							}
 						}
 					}
