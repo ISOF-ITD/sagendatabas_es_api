@@ -211,3 +211,54 @@ GET test-highlight-nested/_search
     }
   }
 }
+
+# Try this minimal test query to isolate the problem:
+GET isof-publik_20250509-metadata/_search
+{
+  "query": {
+    "nested": {
+      "path": "media",
+      "query": {
+        "nested": {
+          "path": "media.utterances.utterances",
+          "query": {
+            "match_phrase": {
+              "media.utterances.utterances.text": "vråhållet"
+            }
+          }
+        }
+      }
+    }
+  },
+  "_source": ["id", "media.utterances.utterances.text"]
+}
+
+# Minimal test query 2 to isolate the problem:
+# Test highlighting of nested fields
+# Works 2025-05-09 with highligh
+GET isof-publik_20250509-metadata/_search
+{
+  "query": {
+    "nested": {
+      "path": "media.utterances.utterances",
+      "query": {
+        "match_phrase": {
+          "media.utterances.utterances.text": "vråhållet"
+        }
+      },
+      "inner_hits": {
+        "name": "matched_utterance",
+        "highlight": {
+          "fields": {
+            "media.utterances.utterances.text": {
+              "number_of_fragments": 0
+            }
+          },
+          "pre_tags": ["<em>"],
+          "post_tags": ["</em>"]
+        }
+      }
+    }
+  },
+  "_source": ["id"]
+}
