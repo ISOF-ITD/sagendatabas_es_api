@@ -268,8 +268,9 @@ def createQuery(request, data_restriction=None):
 								"name": "media_with_description",
 								"highlight": {
 									"fields": {
-										"description.text": {"number_of_fragments": 0}
+									"description.text": { "number_of_fragments": 0}
 									},
+									"require_field_match": False,
 									"pre_tags": ["<span class=\"highlight\">"],
 									"post_tags": ["</span>"]
 								} ,
