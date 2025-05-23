@@ -239,45 +239,29 @@ def createQuery(request, data_restriction=None):
 					},
 					{
 						"nested": {
-							"path": "media",
+							"path": "media.description",
 							"query": {
-								"nested": {
-									"path": "media.description",
-									"query": {
-										"match": {
-											"media.description.text": {
-												"operator": "and",
-												"query": term
-											}
-										}
-									},
-									"inner_hits": {
-										"highlight": {
-											"fields": {
-												"text": {
-													"number_of_fragments": 0
-												}
-											},
-											"pre_tags": ["<span class=\"highlight\">"],
-											"post_tags": ["</span>"]
-										}
-									}
+								"match": {
+									"media.description.text": {
+										"query": term,
+										"operator": "and"
+									} 
 								}
 							},
 							"inner_hits": {
 								"name": "media_with_description",
 								"highlight": {
 									"fields": {
-									"description.text": { "number_of_fragments": 0}
+										"media.description.text": {
+											"number_of_fragments": 0
+										}
 									},
-									"require_field_match": False,
 									"pre_tags": ["<span class=\"highlight\">"],
 									"post_tags": ["</span>"]
-								} ,
-								"_source": False # Don't return the full source again, only the highlighted fields
+								}
 							}
 						}
-					},
+						},
 					{
 						"nested": {
 							"path": "media",
