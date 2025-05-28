@@ -182,18 +182,18 @@ def createQuery(request, data_restriction=None):
 			# 1) Vanliga texten
 			{
 				"path": "media",
-				"fieldNames": ["media.text^2"],
-				"includeSource": [
-					"media.text",
-				]        # absolut path
+				"fieldNames": ["media.text^2"]#,
+				# "includeSource": [
+				# 	"media.text",
+				# ]        # absolut path
 			},
 			# 2) Beskrivnings-texten + start-tid som inner_hit
 			{
 				"path": "media.description",              # ← rätt nested-path
 				"fieldNames": ["media.description.text"],
 				"includeSource": [
-					"media.description.start",
-					"media.description.text"
+					"media.description.start"#,
+					# "media.description.text"
 				]        # absolut path
 			}
 		]
