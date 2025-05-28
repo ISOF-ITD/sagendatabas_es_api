@@ -186,7 +186,7 @@ def createQuery(request, data_restriction=None):
 				# vad ska inkluderas i source i en hit?
 				"includeSource": []
 					# "media.text",
-				]        # absolut path
+				# ]        # absolut path
 			},
 			# 2) Beskrivnings-texten + start-tid som inner_hit
 			{
