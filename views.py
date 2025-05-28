@@ -188,7 +188,10 @@ def createQuery(request, data_restriction=None):
 			{
 				"path": "media.description",              # ← rätt nested-path
 				"fieldNames": ["media.description.text"],
-				"includeSource": ["start", "text"]        # relativa fält räcker
+				"includeSource": [
+					"media.description.start",
+					"media.description.text"
+				]        # absolut path, inte relativt
 			}
 		]
 		# TODO: add nestedContentRawFields?
