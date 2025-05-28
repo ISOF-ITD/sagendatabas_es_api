@@ -182,7 +182,7 @@ def createQuery(request, data_restriction=None):
 			# 1) Vanliga texten
 			{
 				"path": "media",
-				"fieldNames": ["media.text^2"]#,
+				"fieldNames": ["media.text^2"],#,
 				# vad ska inkluderas i source i en hit?
 				"includeSource": []
 					# "media.text",
