@@ -214,7 +214,7 @@ def createQuery(request, data_restriction=None):
 
 		nested_should = []
 		for nested_field in nestedContentFields:
-			field_name = nested_field["fieldNames"][0].split("^")[0]   # ex: media.description.text
+			field_name = nested_field["fieldNames"][0].split("^")[0]   # remove the ^2 or other boost value
 
 			inner_highlights = {
 				"highlight": {
