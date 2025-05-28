@@ -182,20 +182,20 @@ def createQuery(request, data_restriction=None):
 			# 1) Vanliga texten
 			{
 				"path": "media",
-				"fieldNames": ["media.text^2"],#,
+				"fieldNames": ["media.text^2"],
 				# vad ska inkluderas i source i en hit?
 				"includeSource": []
-					# "media.text",
-				# ]        # absolut path
 			},
 			# 2) Beskrivnings-texten + start-tid som inner_hit
 			{
-				"path": "media.description",              # ← rätt nested-path
+				"path": "media.description",
 				"fieldNames": ["media.description.text"],
+				# vad ska inkluderas i source i en hit?
 				"includeSource": [
-					"media.description.start"#,
-					# "media.description.text"
-				]        # absolut path
+					# vi vill ha med start-tid för att kunna visa
+					# i gränssnittet
+					"media.description.start",
+				]
 			}
 		]
 		# TODO: add nestedContentRawFields?
@@ -225,7 +225,11 @@ def createQuery(request, data_restriction=None):
 				}
 			}
 			if nested_field.get("includeSource"):
+			# if nested_field["includeSource"] is not empty, we include the specified fields in the source
 				inner_highlights["_source"] = {"includes": nested_field["includeSource"]}
+			# if nested_field["includeSource"] is an empty list, we don't include any source:
+			else:
+				inner_highlights["_source"] = False
 
 			nested_should.append({
 				"nested": {
