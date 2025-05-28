@@ -215,7 +215,6 @@ def createQuery(request, data_restriction=None):
 		nested_should = []
 		for nested_field in nestedContentFields:
 			field_name = nested_field["fieldNames"][0].split("^")[0]   # ex: media.description.text
-			# relative   = full.split(".", 2)[-1]        # -> text  (relativt path)
 
 			inner_highlights = {
 				"highlight": {
