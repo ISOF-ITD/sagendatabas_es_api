@@ -182,6 +182,11 @@ def createQuery(request, data_restriction=None):
 			{
 				'path': 'media',
 				'fieldNames': ['media.text^2']
+			},
+			{
+				'path': 'media',
+				'fieldNames': ['media.description.text'],
+				"includeSource": ["media.description.start"]
 			}
 		]
 		# TODO: add nestedContentRawFields?
@@ -198,6 +203,39 @@ def createQuery(request, data_restriction=None):
 			if raw:
 				fields = contentRawFields
 
+		nested_should = []
+		for nf in nestedContentFields:
+			field_no_boost = nf['fieldNames'][0].split('^')[0]  # plocka bort ^2 om det finns
+
+			inner_hits_obj = {
+				"highlight": {
+					"pre_tags": ["<span class=\"highlight\">"],
+					"post_tags": ["</span>"],
+					"fields": {
+						field_no_boost: {"number_of_fragments": 0}
+					}
+				}
+			}
+
+			# Om vi har specificerat fält att ta med – lägg till dem här
+			if nf.get("includeSource"):
+				inner_hits_obj["_source"] = {"includes": nf["includeSource"]}
+
+			nested_should.append({
+				'nested': {
+					'path': nf['path'],
+					'query': {
+						'multi_match': {
+							'query': term,
+							'type': matchType,
+							'fields': nf['fieldNames'],
+							'minimum_should_match': '100%'
+						}
+					},
+					'inner_hits': inner_hits_obj
+				}
+			})
+
 		matchObj = {
 			'bool': {
 				'should': [
@@ -209,35 +247,9 @@ def createQuery(request, data_restriction=None):
 							'minimum_should_match': '100%'
 						}
 					},
-					{
-						# TODO: allow for multiple paths?
-						'nested': {
-							'path': nestedContentFields[0]['path'],
-							"query": {
-								"multi_match": {
-									"query": term,
-									"type": matchType,
-									"fields": nestedContentFields[0]['fieldNames'],
-									"minimum_should_match": "100%"
-									}
-								},
-							"inner_hits": {
-								"highlight": {
-									"pre_tags": [
-										"<span class=\"highlight\">"
-									],
-									"post_tags": [
-										"</span>"
-									],
-									"fields": {
-										"media.text": {
-											"number_of_fragments": 0
-										}
-									}
-								}
-							}
-						}
-					}
+					# the splat operator * will unpack the nested_should list and
+					# add each nested query as a separate item in the should list
+					*nested_should
 				]
 			}
 		}
