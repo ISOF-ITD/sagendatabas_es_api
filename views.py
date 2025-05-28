@@ -179,14 +179,21 @@ def createQuery(request, data_restriction=None):
 		]
 		# at the moment, only support for one path (nestendContentFields[0])
 		nestedContentFields = [
+			# 1) Vanliga texten
 			{
-				'path': 'media',
-				'fieldNames': ['media.text^2']
+				"path": "media",
+				"fieldNames": ["media.text^2"]
 			},
+			# 2) Beskrivnings-texten (för boost / fritext)
 			{
-				'path': 'media',
-				'fieldNames': ['media.description.text'],
-				"includeSource": ["media.description.start"]
+				"path": "media",
+				"fieldNames": ["media.description.text"]
+			},
+			# 3) Beskrivnings-texten + start-tid som inner_hit
+			{
+				"path": "media.description",              # ← rätt nested-path
+				"fieldNames": ["media.description.text"],
+				"includeSource": ["start", "text"]        # relativa fält räcker
 			}
 		]
 		# TODO: add nestedContentRawFields?
@@ -205,34 +212,33 @@ def createQuery(request, data_restriction=None):
 
 		nested_should = []
 		for nf in nestedContentFields:
-			field_no_boost = nf['fieldNames'][0].split('^')[0]  # plocka bort ^2 om det finns
+			full_field = nf["fieldNames"][0].split("^")[0]   # ex: media.description.text
+			relative   = full_field.split(".", 2)[-1]        # -> text  (relativt path)
 
-			inner_hits_obj = {
+			inner = {
 				"highlight": {
 					"pre_tags": ["<span class=\"highlight\">"],
 					"post_tags": ["</span>"],
 					"fields": {
-						field_no_boost: {"number_of_fragments": 0}
+						relative: {"number_of_fragments": 0}
 					}
 				}
 			}
-
-			# Om vi har specificerat fält att ta med – lägg till dem här
 			if nf.get("includeSource"):
-				inner_hits_obj["_source"] = {"includes": nf["includeSource"]}
+				inner["_source"] = {"includes": nf["includeSource"]}
 
 			nested_should.append({
-				'nested': {
-					'path': nf['path'],
-					'query': {
-						'multi_match': {
-							'query': term,
-							'type': matchType,
-							'fields': nf['fieldNames'],
-							'minimum_should_match': '100%'
+				"nested": {
+					"path": nf["path"],
+					"query": {
+						"multi_match": {
+							"query": term,
+							"type": matchType,
+							"fields": nf["fieldNames"],
+							"minimum_should_match": "100%"
 						}
 					},
-					'inner_hits': inner_hits_obj
+					"inner_hits": inner
 				}
 			})
 
