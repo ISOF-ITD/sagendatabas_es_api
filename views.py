@@ -182,7 +182,10 @@ def createQuery(request, data_restriction=None):
 			# 1) Vanliga texten
 			{
 				"path": "media",
-				"fieldNames": ["media.text^2"]
+				"fieldNames": ["media.text^2"],
+				"includeSource": [
+					"media.text",
+				]        # absolut path
 			},
 			# 2) Beskrivnings-texten + start-tid som inner_hit
 			{
@@ -191,7 +194,7 @@ def createQuery(request, data_restriction=None):
 				"includeSource": [
 					"media.description.start",
 					"media.description.text"
-				]        # absolut path, inte relativt
+				]        # absolut path
 			}
 		]
 		# TODO: add nestedContentRawFields?
