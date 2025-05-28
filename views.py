@@ -184,12 +184,7 @@ def createQuery(request, data_restriction=None):
 				"path": "media",
 				"fieldNames": ["media.text^2"]
 			},
-			# 2) Beskrivnings-texten (för boost / fritext)
-			{
-				"path": "media",
-				"fieldNames": ["media.description.text"]
-			},
-			# 3) Beskrivnings-texten + start-tid som inner_hit
+			# 2) Beskrivnings-texten + start-tid som inner_hit
 			{
 				"path": "media.description",              # ← rätt nested-path
 				"fieldNames": ["media.description.text"],
@@ -211,34 +206,32 @@ def createQuery(request, data_restriction=None):
 				fields = contentRawFields
 
 		nested_should = []
-		for nf in nestedContentFields:
-			full_field = nf["fieldNames"][0].split("^")[0]   # ex: media.description.text
-			relative   = full_field.split(".", 2)[-1]        # -> text  (relativt path)
+		for nested_field in nestedContentFields:
+			full = nested_field["fieldNames"][0].split("^")[0]   # ex: media.description.text
+			relative   = full.split(".", 2)[-1]        # -> text  (relativt path)
 
-			inner = {
+			inner_highlights = {
 				"highlight": {
 					"pre_tags": ["<span class=\"highlight\">"],
 					"post_tags": ["</span>"],
-					"fields": {
-						relative: {"number_of_fragments": 0}
-					}
+					"fields": { relative: {"number_of_fragments": 0} }
 				}
 			}
-			if nf.get("includeSource"):
-				inner["_source"] = {"includes": nf["includeSource"]}
+			if nested_field.get("includeSource"):
+				inner_highlights["_source"] = {"includes": nested_field["includeSource"]}
 
 			nested_should.append({
 				"nested": {
-					"path": nf["path"],
+					"path": nested_field["path"],
 					"query": {
 						"multi_match": {
 							"query": term,
 							"type": matchType,
-							"fields": nf["fieldNames"],
+							"fields": nested_field["fieldNames"],
 							"minimum_should_match": "100%"
 						}
 					},
-					"inner_hits": inner
+					"inner_hits": inner_highlights
 				}
 			})
 
