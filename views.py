@@ -183,9 +183,10 @@ def createQuery(request, data_restriction=None):
 			{
 				"path": "media",
 				"fieldNames": ["media.text^2"]#,
-				# "includeSource": [
-				# 	"media.text",
-				# ]        # absolut path
+				# vad ska inkluderas i source i en hit?
+				"includeSource": []
+					# "media.text",
+				]        # absolut path
 			},
 			# 2) Beskrivnings-texten + start-tid som inner_hit
 			{
