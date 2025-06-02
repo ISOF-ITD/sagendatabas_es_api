@@ -196,6 +196,17 @@ def createQuery(request, data_restriction=None):
 					# i gränssnittet
 					"media.description.start",
 				]
+			},
+			# 3) yttrande-texten + start-tid som inner_hit
+			{
+				"path": "media.utterances.utterances",
+				"fieldNames": ["media.utterances.utterances.text"],
+				# vad ska inkluderas i source i en hit?
+				"includeSource": [
+					# vi vill ha med start-tid för att kunna visa
+					# i gränssnittet
+					"media.utterances.utterances.start",
+				]
 			}
 		]
 		# TODO: add nestedContentRawFields?
