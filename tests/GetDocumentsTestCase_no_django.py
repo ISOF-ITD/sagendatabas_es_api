@@ -218,6 +218,88 @@ class GetDocumentsTestCase(unittest.TestCase):
                 for index, item in enumerate(data):
                     condition_met = False
 
+                    # I. Latest Elasticsearch double nested query response structure:
+                    # Condition 1a: Check inner_hits."media.description"
+                    results = []
+                    media_description_hits = (
+                        item.get("inner_hits", {})
+                        .get("media.description", {})
+                        .get("hits", {})
+                        .get("hits", [])
+                    )
+
+                    for hit in media_description_hits:
+                        # Extract highlight text(s)
+                        highlights = hit.get("highlight", {}).get("media.description.text", [])
+
+                        # Extract start value from _source
+                        start_value = hit.get("_source", {}).get("start")
+
+                        # Extract nested offsets
+                        nested_info = hit.get("_nested", {})
+                        media_offset = nested_info.get("offset")
+                        description_offset = nested_info.get("_nested", {}).get("offset")
+
+                        # Collect each highlight and its context
+                        for highlight_text in highlights:
+                            results.append({
+                                "highlight_text": highlight_text,
+                                "start_value": start_value,
+                                "media_offset": media_offset,
+                                "next_offset": description_offset,
+                            })
+
+                    # Example: print all collected results
+                    for item in results:
+                        if case["search_text"] in item["highlight_text"].lower():
+                            condition_met = True
+                            message = logid + ' description hit: '  + 'start_value: ' + str(item["start_value"]) + ' ' + str(item["highlight_text"]) + ' media_offset: ' + str(item["media_offset"])  + ' offset: ' + str(item["next_offset"])
+                            print(message)
+                            break
+                    if condition_met:
+                        break
+
+                    # Condition 1b: Check inner_hits.media_with_utterances.media.utterances.utterances._source.text
+                    results = []
+                    media_description_hits = (
+                        item.get("inner_hits", {})
+                        .get("media.utterances.utterances", {})
+                        .get("hits", {})
+                        .get("hits", [])
+                    )
+
+                    for hit in media_description_hits:
+                        # Extract highlight text(s)
+                        highlights = hit.get("highlight", {}).get("media.utterances.utterances.text", [])
+
+                        # Extract start value from _source
+                        start_value = hit.get("_source", {}).get("start")
+
+                        # Extract nested offsets
+                        nested_info = hit.get("_nested", {})
+                        media_offset = nested_info.get("offset")
+                        utterances_offset = nested_info.get("_nested", {}).get("offset")
+
+                        # Collect each highlight and its context
+                        for highlight_text in highlights:
+                            results.append({
+                                "highlight_text": highlight_text,
+                                "start_value": start_value,
+                                "media_offset": media_offset,
+                                "next_offset": utterances_offset,
+                            })
+
+                    # Example: print all collected results
+                    for item in results:
+                        if case["search_text"] in item["highlight_text"].lower():
+                            condition_met = True
+                            message = logid + ' utterances.utterances hit: ' + 'start_value: ' + str(item["start_value"]) + ' ' + str(item["highlight_text"]) + ' media_offset: ' + str(item["media_offset"])  + ' offset: ' + str(item["next_offset"])
+                            print(message)
+                            break
+                    if condition_met:
+                        break
+
+                    # II. Old Elasticsearch double nested query response structure:
                     # Condition 1a: Check inner_hits.media_with_description.media.description._source.text
                     inner_hits = item.get("inner_hits", {})
                     media_desc_hits = (

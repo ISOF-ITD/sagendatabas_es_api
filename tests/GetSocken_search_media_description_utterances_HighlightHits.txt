@@ -1,0 +1,443 @@
+# New mapping with the nested media.utterances field as media.utterances.utterances
+# Test queries for inner_hits in both media.description and media.utterances.utterances
+GET isof-publik/_search
+{
+  "from": 0,
+  "highlight": {
+    "fields": {
+      "contents": {
+        "fragment_size": 300,
+        "number_of_fragments": 1
+      },
+      "headwords": {
+        "number_of_fragments": 0
+      },
+      "text": {
+        "number_of_fragments": 0
+      },
+      "title": {
+        "number_of_fragments": 0
+      }
+    },
+    "post_tags": [
+      "</span>"
+    ],
+    "pre_tags": [
+      "<span class=\"highlight\">"
+    ]
+  },
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "bool": {
+            "should": [
+              {
+                "match": {
+                  "transcriptionstatus": "published"
+                }
+              },
+              {
+                "match": {
+                  "transcriptionstatus": "accession"
+                }
+              },
+              {
+                "match": {
+                  "transcriptionstatus": "readytocontribute"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "bool": {
+            "should": [
+              {
+                "match": {
+                  "publishstatus": "published"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "bool": {
+            "should": [
+              {
+                "multi_match": {
+                  "fields": [
+                    "text^2",
+                    "search_other",
+                    "metadata.value",
+                    "title",
+                    "contents",
+                    "archive.archive",
+                    "archive.archive_id",
+                    "archive.archive_id_row",
+                    "places.name",
+                    "places.landskap",
+                    "places.county",
+                    "places.harad",
+                    "persons.name",
+                    "id",
+                    "headwords",
+                    "title"
+                  ],
+                  "minimum_should_match": "100%",
+                  "query": "vr\u00e5h\u00e5llet",
+                  "type": "best_fields"
+                }
+              },
+              {
+                "nested": {
+                  "inner_hits": {
+                    "_source": false,
+                    "highlight": {
+                      "fields": {
+                        "media.text": {
+                          "number_of_fragments": 0
+                        }
+                      },
+                      "post_tags": [
+                        "</span>"
+                      ],
+                      "pre_tags": [
+                        "<span class=\"highlight\">"
+                      ]
+                    }
+                  },
+                  "path": "media",
+                  "query": {
+                    "multi_match": {
+                      "fields": [
+                        "media.text^2"
+                      ],
+                      "minimum_should_match": "100%",
+                      "query": "vr\u00e5h\u00e5llet",
+                      "type": "best_fields"
+                    }
+                  }
+                }
+              },
+              {
+                "nested": {
+                  "inner_hits": {
+                    "_source": {
+                      "includes": [
+                        "media.description.start"
+                      ]
+                    },
+                    "highlight": {
+                      "fields": {
+                        "media.description.text": {
+                          "number_of_fragments": 0
+                        }
+                      },
+                      "post_tags": [
+                        "</span>"
+                      ],
+                      "pre_tags": [
+                        "<span class=\"highlight\">"
+                      ]
+                    }
+                  },
+                  "path": "media.description",
+                  "query": {
+                    "multi_match": {
+                      "fields": [
+                        "media.description.text"
+                      ],
+                      "minimum_should_match": "100%",
+                      "query": "vr\u00e5h\u00e5llet",
+                      "type": "best_fields"
+                    }
+                  }
+                }
+              },
+              {
+                "nested": {
+                  "inner_hits": {
+                    "_source": {
+                      "includes": [
+                        "media.utterances.utterances.start"
+                      ]
+                    },
+                    "highlight": {
+                      "fields": {
+                        "media.utterances.utterances.text": {
+                          "number_of_fragments": 0
+                        }
+                      },
+                      "post_tags": [
+                        "</span>"
+                      ],
+                      "pre_tags": [
+                        "<span class=\"highlight\">"
+                      ]
+                    }
+                  },
+                  "path": "media.utterances.utterances",
+                  "query": {
+                    "multi_match": {
+                      "fields": [
+                        "media.utterances.utterances.text"
+                      ],
+                      "minimum_should_match": "100%",
+                      "query": "vr\u00e5h\u00e5llet",
+                      "type": "best_fields"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "bool": {
+            "should": [
+              {
+                "match": {
+                  "materialtype": "arkiv"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "nested": {
+            "path": "media",
+            "query": {
+              "exists": {
+                "field": "media.source"
+              }
+            }
+          }
+        },
+        {
+          "bool": {
+            "should": [
+              {
+                "match": {
+                  "taxonomy.type": "tradark"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "size": "100",
+  "sort": [
+    {
+      "archive.archive_id_row.keyword": "asc",
+      "archive.page.long": "asc"
+    }
+  ],
+  "track_total_hits": true
+}
+
+GET isof-publik_20250509-metadata/_search
+{
+  "query": {
+    "nested": {
+      "path": "media.utterances.utterances",
+      "query": {
+        "match_phrase": {
+          "media.utterances.utterances.text": "brönnäng"
+        }
+      },
+      "inner_hits": {
+        "name": "matched_utterance",
+        "highlight": {
+          "fields": {
+            "media.utterances.utterances.text": {
+              "number_of_fragments": 0
+            }
+          },
+          "pre_tags": ["<em>"],
+          "post_tags": ["</em>"]
+        }
+      }
+    }
+  },
+  "_source": ["id"]
+}
+
+
+GET isof-publik_20250509-metadata/_search
+{
+  "size": 10,
+  "query": {
+    "bool": {
+      "should": [
+        {
+          "multi_match": {
+            "query": "vråhållet",
+            "type": "best_fields",
+            "fields": [
+              "text",
+              "title",
+              "headwords",
+              "comments",
+              "contents"
+            ],
+            "minimum_should_match": "100%"
+          }
+        },
+        {
+          "nested": {
+            "path": "media",
+            "query": {
+              "multi_match": {
+                "fields": ["media.text"],
+                "minimum_should_match": "100%",
+                "query": "vråhållet",
+                "type": "best_fields"
+              }
+            },
+            "inner_hits": {
+              "highlight": {
+                "fields": {
+                  "text": {
+                    "number_of_fragments": 0
+                  }
+                },
+                "pre_tags": ["<span class=\"highlight\">"],
+                "post_tags": ["</span>"]
+              }
+            }
+          }
+        },
+        {
+          "nested": {
+            "path": "media",
+            "query": {
+              "nested": {
+                "path": "media.description",
+                "query": {
+                  "match": {
+                    "media.description.text": {
+                      "operator": "and",
+                      "query": "vråhållet"
+                    }
+                  }
+                },
+                "inner_hits": {
+                  "highlight": {
+                    "fields": {
+                      "text": {
+                        "number_of_fragments": 0
+                      }
+                    },
+                    "pre_tags": ["<span class=\"highlight\">"],
+                    "post_tags": ["</span>"]
+                  }
+                }
+              }
+            },
+            "inner_hits": {
+              "name": "media_with_description",
+              "highlight": {
+                "fields": {
+                  "description.text": {
+                    "number_of_fragments": 0
+                  }
+                },
+                "pre_tags": ["<span class=\"highlight\">"],
+                "post_tags": ["</span>"]
+              },
+              "_source": false
+            }
+          }
+        },
+        {
+          "nested": {
+            "path": "media",
+            "query": {
+              "nested": {
+                "path": "media.utterances.utterances",
+                "query": {
+                  "match": {
+                    "media.utterances.utterances.text": {
+                      "operator": "and",
+                      "query": "vråhållet"
+                    }
+                  }
+                },
+                "inner_hits": {
+                  "highlight": {
+                    "fields": {
+                      "text": {
+                        "number_of_fragments": 0
+                      }
+                    },
+                    "pre_tags": ["<span class=\"highlight\">"],
+                    "post_tags": ["</span>"]
+                  }
+                }
+              }
+            },
+            "inner_hits": {
+              "name": "media_with_utterances",
+              "highlight": {
+                "fields": {
+                  "utterances.utterances.text": {
+                    "number_of_fragments": 0
+                  }
+                },
+                "pre_tags": ["<span class=\"highlight\">"],
+                "post_tags": ["</span>"]
+              },
+              "_source": false
+            }
+          }
+        }
+      ],
+      "minimum_should_match": 1
+    }
+  },
+  "highlight": {
+    "fields": {
+      "text": {
+        "number_of_fragments": 0
+      }
+    },
+    "pre_tags": ["<span class=\"highlight\">"],
+    "post_tags": ["</span>"]
+  }
+}
+
+
+# This test checks if the search for a specific term in the media description field returns the expected results with highlighting.
+{
+  "query": {
+    "nested": {
+      "path": "media",
+      "query": {
+        "nested": {
+          "path": "media.description",
+          "query": {
+            "match": {
+              "media.description.text": "rompedrag"
+            }
+          },
+          "inner_hits": {
+            "highlight": {
+              "type": "plain",
+              "fields": {
+                "text": {
+                  "number_of_fragments": 0
+                }
+              },
+              "pre_tags": ["<mark>"],
+              "post_tags": ["</mark>"]
+            }
+          }
+        }
+      }
+    }
+  },
+  "size": 1
+}
