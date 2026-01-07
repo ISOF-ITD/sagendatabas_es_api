@@ -4785,8 +4785,9 @@ def getMediaCountSum(request):
 	           &media_transcriptionstatus=published
 	https://garm-test.isof.se/folkeservice/api/es/media_count/?type=arkiv&categorytypes=tradark&publishstatus=published&recordtype=one_accession_row&has_media=true&media_transcriptionstatus=published
 
-	Time range current month
-	https://garm-test.isof.se/folkeservice/api/es/media_count/?type=arkiv&categorytypes=tradark&publishstatus=published&recordtype=one_accession_row&has_media=true&media_transcriptionstatus=published&range=transcriptiondate%2Cnow%2FM%2Cnow%2B2h&aggregation=sum%2Carchive.total_pages
+	Time range current month:
+	http://127.0.0.1:8000/api/es/media_count/?type=arkiv&categorytypes=tradark&publishstatus=published&recordtype=one_accession_row&has_media=true&media_transcriptionstatus=published&mediarange=transcriptiondate%2Cnow%2FM%2Cnow%2B2h
+	https://garm-test.isof.se/folkeservice/api/es/media_count/?type=arkiv&categorytypes=tradark&publishstatus=published&recordtype=one_accession_row&has_media=true&media_transcriptionstatus=published&mediarange=transcriptiondate%2Cnow%2FM%2Cnow%2B2h
 
 	Return:
 		{"data": {"value": <int>}, "metadata": {...}, "aggregations": .../None}
@@ -4810,6 +4811,18 @@ def getMediaCountSum(request):
 	]
 	if statuses:
 		media_must.append({"terms": {"media.transcriptionstatus": statuses}})
+
+	# Handle range on nested media values (not on document level)
+	if ('mediarange' in request.GET):
+		range = request.GET['mediarange'].replace('PLUS','+').split(',')
+		media_must.append({
+			'range': {
+				'media.' + range[0]: {
+					'from': range[1],
+					'to': range[2]
+				}
+			}
+		})
 
 	query = {
 		"size": 0,
