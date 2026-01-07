@@ -4730,8 +4730,19 @@ def getCount(requests):
 	Summerar antal dokument json-objekt för i träffen med aktuella filter-värden
 
 	Exempel:
-	http://127.0.0.1:8000/api/es/count?type=arkiv&categorytypes=tradark&publishstatus=published&recordtype=one_record
-		&has_media=true&media_transcriptionstatus=published&aggregation=sum
+	Totalt antal:
+	http://127.0.0.1:8000/api/es/count?type=arkiv&categorytypes=tradark&publishstatus=published&recordtype=one_record&has_media=true&aggregation=sum,archive.total_pages
+	https://garm-test.isof.se/folkeservice/api/es/count?type=arkiv&categorytypes=tradark&publishstatus=published&recordtype=one_record&has_media=true&&aggregation=sum,archive.total_pages
+
+	Antal aktuell månad:
+	http://127.0.0.1:8000/api/es/count/?type=arkiv&categorytypes=tradark&publishstatus=published&has_media=true&add_aggregations=false&recordtype=one_accession_row&transcriptionstatus=published&range=transcriptiondate%2Cnow%2FM%2Cnow%2B2h&aggregation=sum%2Carchive.total_pages
+	https://garm-test.isof.se/folkeservice/api/es/count/?type=arkiv&categorytypes=tradark&publishstatus=published&has_media=true&add_aggregations=false&recordtype=one_accession_row&transcriptionstatus=published&range=transcriptiondate%2Cnow%2FM%2Cnow%2B2h&aggregation=sum%2Carchive.total_pages
+
+	(funkar inte):
+	https://garm-test.isof.se/folkeservice/api/es/count/?type=arkiv&categorytypes=tradark&publishstatus=published&has_media=true&add_aggregations=false&recordtype=one_accession_row&transcriptionstatus=published&range=transcriptiondate,now/M,now+2h&aggregation=sum,archive.total_pages
+
+	Antal transkriberare aktuell månad (funkar inte):
+	https://garm-test.isof.se/folkeservice/api/es/count?type=arkiv&categorytypes=tradark&publishstatus=published&recordtype=one_record&has_media=true&range=transcriptiondate,now/M,now+2h&aggregation=cardinality,transcribedby.keyword
 
 	"""
 	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
@@ -4772,6 +4783,10 @@ def getMediaCountSum(request):
 	Exempel:
 	http://127.0.0.1:8000/api/es/mediacount?type=arkiv&categorytypes=tradark&publishstatus=published&recordtype=one_accession_row&has_media=true
 	           &media_transcriptionstatus=published
+	https://garm-test.isof.se/folkeservice/api/es/media_count/?type=arkiv&categorytypes=tradark&publishstatus=published&recordtype=one_accession_row&has_media=true&media_transcriptionstatus=published
+
+	Time range current month
+	https://garm-test.isof.se/folkeservice/api/es/media_count/?type=arkiv&categorytypes=tradark&publishstatus=published&recordtype=one_accession_row&has_media=true&media_transcriptionstatus=published&range=transcriptiondate%2Cnow%2FM%2Cnow%2B2h&aggregation=sum%2Carchive.total_pages
 
 	Return:
 		{"data": {"value": <int>}, "metadata": {...}, "aggregations": .../None}
@@ -4791,7 +4806,7 @@ def getMediaCountSum(request):
 
 	# Bygg nested-filter för media
 	media_must = [
-		{"term": {"media.type.keyword": "image"}}
+		{"term": {"media.type": "image"}}
 	]
 	if statuses:
 		media_must.append({"terms": {"media.transcriptionstatus": statuses}})
