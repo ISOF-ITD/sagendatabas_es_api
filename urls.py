@@ -1,5 +1,5 @@
 from django.urls import path, re_path, include
-from rest_framework.authtoken import views as authviews
+#from rest_framework.authtoken import views as authviews
 from . import views
 
 # App name must be specified, otherwise Django will complain about the URLs.
@@ -16,10 +16,10 @@ app_name = 'api-es'
 
 urlpatterns = [
     # Authentication
-    path('api-token-auth/', authviews.obtain_auth_token),
+    # path('api-token-auth/', authviews.obtain_auth_token),
 
     # Check Authentication
-    path('check_authentication/', views.CheckAuthenticationViewSet.as_view(), name='check_authentication'),
+    # path('check_authentication/', views.CheckAuthenticationViewSet.as_view(), name='check_authentication'),
 
     # Documents
     path('documents/', views.getDocuments, name='getDocuments'),
@@ -75,6 +75,7 @@ urlpatterns = [
 
     # Statistics
     path('count/', views.getCount, name='getCount'),
+    path('media_count/', views.getMediaCountSum, name='getMediaCount'),
     path('statistics/get_top_transcribers_by_pages/', views.getTopTranscribersByPagesStatistics, name="getTopTranscribersByPageStatistics"),
 
     # Miscellaneous

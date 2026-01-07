@@ -4726,6 +4726,14 @@ def createIndex(request):
 
 # räkna antal träffar för en sökning
 def getCount(requests):
+	"""
+	Summerar antal dokument json-objekt för i träffen med aktuella filter-värden
+
+	Exempel:
+	http://127.0.0.1:8000/api/es/count?type=arkiv&categorytypes=tradark&publishstatus=published&recordtype=one_record
+		&has_media=true&media_transcriptionstatus=published&aggregation=sum
+
+	"""
 	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
 	def jsonFormat(json):
 		if('aggregation' in requests.GET):
@@ -4753,6 +4761,62 @@ def getCount(requests):
 	esQueryResponse = esQuery(requests, query, jsonFormat)
 
 	return esQueryResponse
+
+def getMediaCountSum(request):
+	"""
+	Summerar antal media-objekt i träffen (över alla dokument),
+	filtrerat på:
+	  - media.type == 'image'
+	  - media.transcriptionstatus == media_transcriptionstatus (en eller flera)
+
+	Exempel:
+	http://127.0.0.1:8000/api/es/mediacount?type=arkiv&categorytypes=tradark&publishstatus=published&recordtype=one_accession_row&has_media=true
+	           &media_transcriptionstatus=published
+
+	Return:
+		{"data": {"value": <int>}, "metadata": {...}, "aggregations": .../None}
+	"""
+
+	def jsonFormat(es_json):
+		agg = es_json["aggregations"]["media_count"]
+		return {"value": agg["filtered_media"]["doc_count"]}
+
+	# Root query = samma filterlogik som era andra endpoints (/count, /documents, ...)
+	root_query = createQuery(request)
+
+	# media_transcriptionstatus kan vara "published" eller "published,autopublished"
+	statuses = None
+	if "media_transcriptionstatus" in request.GET and request.GET["media_transcriptionstatus"].strip():
+		statuses = [s.strip() for s in request.GET["media_transcriptionstatus"].split(",") if s.strip()]
+
+	# Bygg nested-filter för media
+	media_must = [
+		{"term": {"media.type.keyword": "image"}}
+	]
+	if statuses:
+		media_must.append({"terms": {"media.transcriptionstatus": statuses}})
+
+	query = {
+		"size": 0,
+		"query": root_query if root_query else {"match_all": {}},
+		"aggs": {
+			"media_count": {
+				"nested": {"path": "media"},
+				"aggs": {
+					"filtered_media": {
+						"filter": {
+							"bool": {
+								"must": media_must
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return esQuery(request, query, jsonFormat)
+
 
 def getTopTranscribersByPagesStatistics(requests):
 	"""
