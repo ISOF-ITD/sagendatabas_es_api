@@ -4779,23 +4779,70 @@ def getMediaCountSum(request):
 	filtrerat på:
 	  - media.type == 'image'
 	  - media.transcriptionstatus == media_transcriptionstatus (en eller flera)
+	  - ev. tidsperiod på media-fält via mediarange
 
-	Exempel:
-	http://127.0.0.1:8000/api/es/mediacount?type=arkiv&categorytypes=tradark&publishstatus=published&recordtype=one_accession_row&has_media=true
-	           &media_transcriptionstatus=published
-	https://garm-test.isof.se/folkeservice/api/es/media_count/?type=arkiv&categorytypes=tradark&publishstatus=published&recordtype=one_accession_row&has_media=true&media_transcriptionstatus=published
+	Om 'aggregation' anges (likt getCount):
+	  aggregation=cardinality,transcribedby.keyword
+	  aggregation=terms,transcribedby.keyword,50
 
-	Time range current month:
-	http://127.0.0.1:8000/api/es/media_count/?type=arkiv&categorytypes=tradark&publishstatus=published&recordtype=one_accession_row&has_media=true&media_transcriptionstatus=published&mediarange=transcriptiondate%2Cnow%2FM%2Cnow%2B2h
-	https://garm-test.isof.se/folkeservice/api/es/media_count/?type=arkiv&categorytypes=tradark&publishstatus=published&recordtype=one_accession_row&has_media=true&media_transcriptionstatus=published&mediarange=transcriptiondate%2Cnow%2FM%2Cnow%2B2h
+	Exempel (unika transkriberare i media för alla träffar):
+	/mediacount?type=arkiv&categorytypes=tradark&publishstatus=published&has_media=true&add_aggregations=false
+	&recordtype=one_record&transcriptionstatus=published&media_transcriptionstatus=published
+	&aggregation=cardinality,transcribedby.keyword
+
+	Exempel (unika transkriberare aktuell månad för media-objekt):
+	/.../media_count/?type=arkiv&categorytypes=tradark&publishstatus=published&has_media=true&add_aggregations=false
+	&recordtype=one_accession_row&transcriptionstatus=published&media_transcriptionstatus=published
+	&mediarange=transcriptiondate,now/M,now+2h
+	&aggregation=cardinality,transcribedby.keyword
 
 	Return:
-		{"data": {"value": <int>}, "metadata": {...}, "aggregations": .../None}
+	  {"data": {"value": <int>, "aggresult": <optional ES-agg-result>}, "metadata": {...}, "aggregations": .../None}
 	"""
 
+	def _build_agg(aggregation_param: str):
+		"""
+		Bygger ES-agg enligt formatet: "<agg_type>,<field>[,<size>]"
+		Ex:
+		  "cardinality,transcribedby.keyword"
+		  "terms,transcribedby.keyword,50"
+		"""
+		parts = [p.strip() for p in aggregation_param.split(",") if p.strip()]
+		if len(parts) < 2:
+			return None  # ogiltigt format
+
+		agg_type = parts[0]
+		field = parts[1]
+
+		# Eftersom vi aggregerar inuti nested-path "media" förväntar vi oss media.<fält>
+		# men för kompatibilitet med /count-exemplet tillåter vi "transcribedby.keyword"
+		if not field.startswith("media."):
+			field = "media." + field
+
+		agg_body = {agg_type: {"field": field}}
+
+		# stöd för terms size som tredje parameter
+		if agg_type == "terms":
+			size = 50
+			if len(parts) >= 3:
+				try:
+					size = int(parts[2])
+				except ValueError:
+					size = 50
+			agg_body[agg_type]["size"] = size
+
+		return agg_body
+
 	def jsonFormat(es_json):
-		agg = es_json["aggregations"]["media_count"]
-		return {"value": agg["filtered_media"]["doc_count"]}
+		# nested "media_count" -> filter "filtered_media"
+		filtered = es_json["aggregations"]["media_count"]["filtered_media"]
+		out = {"value": filtered.get("doc_count", 0)}
+
+		# om vi skickat med en agg läggs den här
+		if "aggresult" in filtered:
+			out["aggresult"] = filtered["aggresult"]
+
+		return out
 
 	# Root query = samma filterlogik som era andra endpoints (/count, /documents, ...)
 	root_query = createQuery(request)
@@ -4807,22 +4854,31 @@ def getMediaCountSum(request):
 
 	# Bygg nested-filter för media
 	media_must = [
+		# Verkar inte fungera nu: använd keyword-varianten för att vara i linje med övrig kod (mediatype använder media.type.keyword)
 		{"term": {"media.type": "image"}}
 	]
+
 	if statuses:
 		media_must.append({"terms": {"media.transcriptionstatus": statuses}})
 
-	# Handle range on nested media values (not on document level)
-	if ('mediarange' in request.GET):
-		range = request.GET['mediarange'].replace('PLUS','+').split(',')
-		media_must.append({
-			'range': {
-				'media.' + range[0]: {
-					'from': range[1],
-					'to': range[2]
+	# Handle range on nested media values (inte dokumentnivå)
+	# mediarange=transcriptiondate,now/M,now+2h  => range på media.transcriptiondate
+	if "mediarange" in request.GET and request.GET["mediarange"].strip():
+		r = request.GET["mediarange"].replace("PLUS", "+").split(",")
+		if len(r) >= 3 and r[0].strip():
+			media_must.append({
+				"range": {
+					"media." + r[0].strip(): {
+						"from": r[1],
+						"to": r[2]
+					}
 				}
-			}
-		})
+			})
+
+	# Optional aggregation (likt getCount)
+	aggresult = None
+	if "aggregation" in request.GET and request.GET["aggregation"].strip():
+		aggresult = _build_agg(request.GET["aggregation"])
 
 	query = {
 		"size": 0,
@@ -4842,6 +4898,12 @@ def getMediaCountSum(request):
 			}
 		}
 	}
+
+	# häng på aggresult under filtered_media-scope så att den bara räknar matchande media-objekt
+	if aggresult is not None:
+		query["aggs"]["media_count"]["aggs"]["filtered_media"]["aggs"] = {
+			"aggresult": aggresult
+		}
 
 	return esQuery(request, query, jsonFormat)
 
