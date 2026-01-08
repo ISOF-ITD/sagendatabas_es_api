@@ -1,0 +1,248 @@
+https://garm-test.isof.se/folkeservice/api/es/statistics/get_top_transcribers_by_mediapages?type=arkiv&categorytypes=tradark&publishstatus=published&has_media=true&recordtype=one_accession_row&transcriptionstatus=published&media_transcriptionstatus=published
+http://127.0.0.1:8000/api/es/statistics/get_top_transcribers_by_mediapages?type=arkiv&categorytypes=tradark&publishstatus=published&has_media=true&recordtype=one_accession_row&transcriptionstatus=published&media_transcriptionstatus=published
+
+GET isof-publik/_search
+{
+  "aggs": {
+    "media_count": {
+      "aggs": {
+        "filtered_media": {
+          "aggs": {
+            "top_transcribers": {
+              "terms": {
+                "field": "media.transcribedby.keyword",
+                "order": {
+                  "_count": "desc"
+                },
+                "size": 10
+              }
+            }
+          },
+          "filter": {
+            "bool": {
+              "must": [
+                {
+                  "term": {
+                    "media.type": "image"
+                  }
+                },
+                {
+                  "terms": {
+                    "media.transcriptionstatus": [
+                      "published"
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "nested": {
+        "path": "media"
+      }
+    }
+  },
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "bool": {
+            "should": [
+              {
+                "match": {
+                  "transcriptionstatus": "published"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "bool": {
+            "should": [
+              {
+                "match": {
+                  "publishstatus": "published"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "bool": {
+            "should": [
+              {
+                "match": {
+                  "materialtype": "arkiv"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "bool": {
+            "should": [
+              {
+                "match": {
+                  "recordtype": "one_accession_row"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "nested": {
+            "path": "media",
+            "query": {
+              "exists": {
+                "field": "media.source"
+              }
+            }
+          }
+        },
+        {
+          "bool": {
+            "should": [
+              {
+                "match": {
+                  "taxonomy.type": "tradark"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "size": 0
+}
+
+
+https://garm-test.isof.se/folkeservice/api/es/statistics/get_top_transcribers_by_mediapages?type=arkiv&categorytypes=tradark&publishstatus=published&has_media=true&recordtype=one_accession_row&transcriptionstatus=published&media_transcriptionstatus=published&mediarange=transcriptiondate,now/M,now+2h
+http://127.0.0.1:8000/api/es/statistics/get_top_transcribers_by_mediapages?type=arkiv&categorytypes=tradark&publishstatus=published&has_media=true&recordtype=one_accession_row&transcriptionstatus=published&media_transcriptionstatus=published&mediarange=transcriptiondate,now/M,now+2h
+Funkar inte än för range:
+"type": "parse_exception",
+"reason": "operator not supported for date math [ 2h]"
+GET isof-publik/_search
+{
+  "aggs": {
+    "media_count": {
+      "aggs": {
+        "filtered_media": {
+          "aggs": {
+            "top_transcribers": {
+              "terms": {
+                "field": "media.transcribedby.keyword",
+                "order": {
+                  "_count": "desc"
+                },
+                "size": 10
+              }
+            }
+          },
+          "filter": {
+            "bool": {
+              "must": [
+                {
+                  "term": {
+                    "media.type": "image"
+                  }
+                },
+                {
+                  "terms": {
+                    "media.transcriptionstatus": [
+                      "published"
+                    ]
+                  }
+                },
+                {
+                  "range": {
+                    "media.transcriptiondate": {
+                      "from": "now/M",
+                      "to": "now 2h"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "nested": {
+        "path": "media"
+      }
+    }
+  },
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "bool": {
+            "should": [
+              {
+                "match": {
+                  "transcriptionstatus": "published"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "bool": {
+            "should": [
+              {
+                "match": {
+                  "publishstatus": "published"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "bool": {
+            "should": [
+              {
+                "match": {
+                  "materialtype": "arkiv"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "bool": {
+            "should": [
+              {
+                "match": {
+                  "recordtype": "one_accession_row"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "nested": {
+            "path": "media",
+            "query": {
+              "exists": {
+                "field": "media.source"
+              }
+            }
+          }
+        },
+        {
+          "bool": {
+            "should": [
+              {
+                "match": {
+                  "taxonomy.type": "tradark"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "size": 0
+}

@@ -4958,6 +4958,97 @@ def getTopTranscribersByPagesStatistics(requests):
 
 	return esQueryResponse
 
+def getTopTranscribersByMediaPagesStatistics(requests):
+	"""
+	Returnerar topp 10 transkriberare baserat på ANTAL matchande media-objekt (sidor).
+
+	Filter på media-nivå:
+	  - media.type == 'image'
+	  - media.transcriptionstatus == media_transcriptionstatus (en eller flera)
+	  - ev. tidsperiod via mediarange=<fält>,<from>,<to> (på media.<fält>)
+
+	Exempel:
+	/get_top_transcribers_by_mediapages?type=arkiv&categorytypes=tradark&publishstatus=published&has_media=true&recordtype=one_accession_row&transcriptionstatus=published&media_transcriptionstatus=published
+	&range=transcriptiondate,now/M,now+2h
+
+	Aktuell månad för media:
+	...&media_transcriptionstatus=published&mediarange=transcriptiondate,now/M,now+2h
+	"""
+
+	def jsonFormatFunction(es_json):
+		try:
+			buckets = es_json["aggregations"]["media_count"]["filtered_media"]["top_transcribers"]["buckets"]
+		except KeyError:
+			logger.error("getTopTranscribersByMediaPagesStatistics: Invalid JSON format from ES.")
+			return []
+
+		# doc_count i bucket = antal matchande media-objekt (sidor) för transkriberaren
+		return [{"key": b["key"], "value": b["doc_count"]} for b in buckets]
+
+	# Root query = samma dokumentfilter som era andra endpoints (type, publishstatus, categorytypes, recordtype, osv)
+	root_query = createQuery(requests)
+
+	# media_transcriptionstatus kan vara "published" eller "published,autopublished" osv
+	statuses = None
+	if "media_transcriptionstatus" in requests.GET and requests.GET["media_transcriptionstatus"].strip():
+		statuses = [s.strip() for s in requests.GET["media_transcriptionstatus"].split(",") if s.strip()]
+
+	# Bygg media-filter (nested)
+	media_must = [
+		# Funkar inte nu: använd .keyword om det finns i mapping, annars funkar ofta även utan
+		{"term": {"media.type": "image"}}
+	]
+
+	if statuses:
+		media_must.append({"terms": {"media.transcriptionstatus": statuses}})
+
+	# Tidsperiod på media-nivå (inte dokumentnivå)
+	# mediarange=transcriptiondate,now/M,now+2h => range på media.transcriptiondate
+	if "mediarange" in requests.GET and requests.GET["mediarange"].strip():
+		r = requests.GET["mediarange"].replace("PLUS", "+").split(",")
+		if len(r) >= 3 and r[0].strip():
+			media_must.append({
+				"range": {
+					"media." + r[0].strip(): {
+						"from": r[1],
+						"to": r[2]
+					}
+				}
+			})
+
+	query = {
+		"size": 0,
+		"query": root_query if root_query else {"match_all": {}},
+		"aggs": {
+			"media_count": {
+				"nested": {"path": "media"},
+				"aggs": {
+					"filtered_media": {
+						"filter": {
+							"bool": {"must": media_must}
+						},
+						"aggs": {
+							"top_transcribers": {
+								"terms": {
+									"field": "media.transcribedby.keyword",
+									"size": 10,
+									"order": {"_count": "desc"}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	try:
+		return esQuery(requests, query, jsonFormatFunction)
+	except Exception as e:
+		logger.error(f"getTopTranscribersByMediaPagesStatistics Error in Elasticsearch query: {e}")
+		return []
+
+
 def getCurrentTime(request):
 	# returnerar ES-serverns nuvarande tid
 	# returnera bara nuvarande timestamp från result['hits']['hits'][0]['fields']['now'][0]

@@ -77,6 +77,8 @@ urlpatterns = [
     path('count/', views.getCount, name='getCount'),
     path('media_count/', views.getMediaCountSum, name='getMediaCount'),
     path('statistics/get_top_transcribers_by_pages/', views.getTopTranscribersByPagesStatistics, name="getTopTranscribersByPageStatistics"),
+    path('statistics/get_top_transcribers_by_mediapages/', views.getTopTranscribersByMediaPagesStatistics,
+         name="getTopTranscribersByMediaPageStatistics"),
 
     # Miscellaneous
     path('current_time/', views.getCurrentTime, name='getCurrentTime'),
