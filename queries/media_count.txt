@@ -101,7 +101,9 @@ GET isof-publik/_search?
   "size": 0
 }
 
-http://127.0.0.1:8000/api/es/mediacount?mark_metadata=transcriptionstatus&type=arkiv&categorytypes=tradark&publishstatus=published&has_media=true&add_aggregations=false&recordtype=one_accession_row&transcriptionstatus=published&media_transcriptionstatus=published&aggregation=cardinality,transcribedby.keyword
+https://garm-test.isof.se/folkeservice/api/es/media_count?mark_metadata=transcriptionstatus&type=arkiv&categorytypes=tradark&publishstatus=published&has_media=true&add_aggregations=false&recordtype=one_accession_row&transcriptionstatus=published&media_transcriptionstatus=published&aggregation=cardinality,transcribedby.keyword
+https://garm-test.isof.se/folkeservice/api/es/media_count?mark_metadata=transcriptionstatus&type=arkiv&categorytypes=tradark&publishstatus=published&has_media=true&add_aggregations=false&recordtype=one_accession_row&transcriptionstatus=published&media_transcriptionstatus=published&mediarange=transcriptiondate%2Cnow%2FM%2Cnow%2B2h&aggregation=cardinality,transcribedby.keyword
+http://127.0.0.1:8000/api/es/media_count?mark_metadata=transcriptionstatus&type=arkiv&categorytypes=tradark&publishstatus=published&has_media=true&add_aggregations=false&recordtype=one_accession_row&transcriptionstatus=published&media_transcriptionstatus=published&aggregation=cardinality,transcribedby.keyword
 GET isof-publik/_search
 {
   "aggs": {
