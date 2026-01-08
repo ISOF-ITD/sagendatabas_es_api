@@ -1,0 +1,102 @@
+http://127.0.0.1:8000/api/es/media_count/?type=arkiv&categorytypes=tradark&publishstatus=published&recordtype=one_accession_row&has_media=true&media_transcriptionstatus=published&mediarange=transcriptiondate%2Cnow%2FM%2Cnow%2B2h
+GET isof-publik/_search?
+{
+  "aggs": {
+    "media_count": {
+      "aggs": {
+        "filtered_media": {
+          "filter": {
+            "bool": {
+              "must": [
+                {
+                  "term": {
+                    "media.type": "image"
+                  }
+                },
+                {
+                  "terms": {
+                    "media.transcriptionstatus": [
+                      "published"
+                    ]
+                  }
+                },
+                {
+                  "range": {
+                    "media.transcriptiondate": {
+                      "from": "now/M",
+                      "to": "now+2h"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "nested": {
+        "path": "media"
+      }
+    }
+  },
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "bool": {
+            "should": [
+              {
+                "match": {
+                  "publishstatus": "published"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "bool": {
+            "should": [
+              {
+                "match": {
+                  "materialtype": "arkiv"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "bool": {
+            "should": [
+              {
+                "match": {
+                  "recordtype": "one_accession_row"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "nested": {
+            "path": "media",
+            "query": {
+              "exists": {
+                "field": "media.source"
+              }
+            }
+          }
+        },
+        {
+          "bool": {
+            "should": [
+              {
+                "match": {
+                  "taxonomy.type": "tradark"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "size": 0
+}

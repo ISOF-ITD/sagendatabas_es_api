@@ -1,0 +1,91 @@
+http://127.0.0.1:8000/api/es/count/?type=arkiv&categorytypes=tradark&publishstatus=published&has_media=true&add_aggregations=false&recordtype=one_accession_row&transcriptionstatus=published&range=transcriptiondate%2Cnow%2FM%2Cnow%2B2h&aggregation=sum%2Carchive.total_pages
+GET isof-publik/_search
+{
+  "aggs": {
+    "aggresult": {
+      "sum": {
+        "field": "archive.total_pages"
+      }
+    }
+  },
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "bool": {
+            "should": [
+              {
+                "match": {
+                  "transcriptionstatus": "published"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "bool": {
+            "should": [
+              {
+                "match": {
+                  "publishstatus": "published"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "bool": {
+            "should": [
+              {
+                "match": {
+                  "materialtype": "arkiv"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "bool": {
+            "should": [
+              {
+                "match": {
+                  "recordtype": "one_accession_row"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "nested": {
+            "path": "media",
+            "query": {
+              "exists": {
+                "field": "media.source"
+              }
+            }
+          }
+        },
+        {
+          "bool": {
+            "should": [
+              {
+                "match": {
+                  "taxonomy.type": "tradark"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "range": {
+            "transcriptiondate": {
+              "from": "now/M",
+              "to": "now+2h"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "size": 0
+}
