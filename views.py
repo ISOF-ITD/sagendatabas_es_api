@@ -83,6 +83,15 @@ def createQuery(request, data_restriction=None):
 			})
 		query['bool']['must'].append(transcriptionstatus_should_bool)
 
+	# Hämtar dokument som matchar angivet archive.archive_id
+	if('archive_id' in request.GET):
+		query['bool']['must'].append({
+			'term': {
+				'archive.archive_id.keyword': request.GET['archive_id']
+			}
+		})
+
+
 
 	# Hämtar document av angiven publishstatus (en eller flera). Exempel: `publishstatus=readytopublish,published`
 	if ('publishstatus' in request.GET or data_restriction == 'opendata'):
