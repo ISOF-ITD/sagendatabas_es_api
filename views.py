@@ -1,5 +1,5 @@
 from django.http import JsonResponse
-import requests, json, sys, os
+import re, requests, json, sys, os
 from requests.auth import HTTPBasicAuth
 from random import randint
 #from django.conf.urls import url, include
