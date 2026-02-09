@@ -3769,131 +3769,119 @@ def getPersonsAutocomplete(request):
 	def itemFormat(item):
 		retObj = {
 			'id': item['key'],
-			'name': item['data']['buckets'][0]['key'],
-			'doc_count': item['doc_count']
+			'name': item['person']['hits']['hits'][0]['_source']['name'],
+			'doc_count': item['doc_count'],
+			'birth_year': item['person']['hits']['hits'][0]['_source']['birth_year'] if 'birth_year' in item['person']['hits']['hits'][0]['_source'] else None,
 		}
 
-		if (len(item['birth_year']['buckets']) > 0):
-			retObj['birth_year'] = item['birth_year']['buckets'][0]['key_as_string'].split('-')[0]
-
-		if len(item['home']['buckets']) > 0:
-			retObj['home'] = {
-				'id': item['home']['buckets'][0]['key'],
-				'name': item['home']['buckets'][0]['data']['buckets'][0]['key']
-			}
+		# TODO: fixa home när home aggs fungerar
+		# if len(item['home']['buckets']) > 0:
+		# 	retObj['home'] = {
+		# 		'id': item['home']['buckets'][0]['key'],
+		# 		'name': item['home']['buckets'][0]['data']['buckets'][0]['key']
+		# 	}
 
 		return retObj
 
 	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
 	def jsonFormat(json):
-		return list(map(itemFormat, json['aggregations']['data']['data']['data']['buckets']))
+		return list(map(itemFormat, json['aggregations']['persons_nested']['filtered']['by_id']['buckets']))
 
-	# Skapar en ny string som är en regex som matchar alla bokstäver i söksträngen oavsett om de är stora eller små
-	# Detta behövs för att case_insensitive inte fungerar med åäö och andra icke-ASCII tecken
-	# --------------------
-	# create a new string, for every character in request.GET['search'], create a character class to match both the upper
-	# and lower case version of the character
-	# characters in request.get['search'] can be upper or lowercase
-	# e.g. search=abc will match Abc, aBc, abC, ABC, AbC, aBC, ABc, abc
-	# and search=AbC will match Abc, aBc, abC, ABC, AbC, aBC, ABc, abc
-	# escape the characters [ and ]
-	newRegExString = ''
-	for char in request.GET['search']:
-		if char == '[' or char == ']':
-			newRegExString += '\\' + char
-		else:
-			newRegExString += '[' + char.lower() + char.upper() + ']'
+	search = request.GET.get("search", "")
+	count = int(request.GET.get("count", 10000))
+
+	# Bygg idprefix-regex (valfritt)
+	if "idprefix" in request.GET and request.GET["idprefix"].strip():
+		prefixes = [p.strip() for p in request.GET["idprefix"].split(",") if p.strip()]
+		# escape varje prefix för säkerhets skull
+		prefix_regex = "(" + "|".join(re.escape(p) for p in prefixes) + ")(.*)"
+	else:
+		prefix_regex = "(.*)"
 
 	query = {
-		'size': 0,
-		'aggs': {
-			'data': {
-				'nested': {
-					'path': 'persons'
-				},
-				'aggs': {
-					'data': {
-						'filter': {
-							'bool': {
-								'must': [
+		"size": 0,
+		# bara records som har materialtype="arkiv"
+		# TODO: bör skickas med i requestet istället för att hårdkodas här
+		"query": {
+			"term": {
+				"materialtype": "arkiv"
+			}
+		},
+		"aggs": {
+			"persons_nested": {
+				"nested": {"path": "persons"},
+				"aggs": {
+					"filtered": {
+						"filter": {
+							"bool": {
+								"must": [
 									{
-										'regexp': {
-											# 'persons.name.raw': '(.+?)'+request.GET['search']+'(.+?)'
-											'persons.name_analysed.keyword': {
-												'value': '(.+?)'+newRegExString+'(.+?)',
-												'case_insensitive': True,
+										"regexp": {
+											"persons.name.keyword": {
+												"value": "(.+)?"+search+"(.+)?",
+												"case_insensitive": True
 											}
 										}
 									},
 									{
-										# e.g. idprefix=acc,crwd
-										'regexp': {
-											'persons.id': {
-												'value': ('(' + ('|'.join(request.GET['idprefix'].split(',')) + ')') if 'idprefix' in request.GET else '') + '(.+?)',
-												'case_insensitive': True,
+										"regexp": {
+											"persons.id": {
+												"value": prefix_regex,
+												"case_insensitive": True
 											}
 										}
 									}
 								]
 							}
 						},
-						'aggs': {
-							'data': {
-
-								'terms': {
-									'field': 'persons.id',
-									'size': request.GET['count'] if 'count' in request.GET else 10000
+						"aggs": {
+							"by_id": {
+								"terms": {
+									"field": "persons.id",
+									"size": count
 								},
-								'aggs': {
-									'data': {
-										'terms': {
-											'field': 'persons.name_analysed.keyword',
-											'size': 1,
-											'order': {
-												'_key': 'asc'
+								"aggs": {
+									# Hämta hela nested-personen som matchade (inkl. "name")
+									"person": {
+										"top_hits": {
+											"size": 1,
+											"_source": {
+												"includes": [
+													"persons.id",
+													"persons.name",
+													"persons.birth_year",
+													"persons.relation",
+													"persons.gender",
+													"persons.home.id",
+													"persons.home.name"
+												]
 											}
 										}
 									},
-									'birth_year': {
-										'terms': {
-											'field': 'persons.birth_year',
-											'size': 1,
-											'order': {
-												'_key': 'asc'
-											}
-										}
-									},
-									'relation': {
-										'terms': {
-											'field': 'persons.relation',
-											'size': 1,
-											'order': {
-												'_key': 'asc'
-											}
-										}
-									},
-									'home': {
-										'terms': {
-											'field': 'persons.home.id',
-											'size': 10,
-											'order': {
-												'_key': 'asc'
-											}
-										},
-										'aggs': {
-											'data': {
-												'terms': {
-													'field': 'persons.home.name',
-													'size': 10,
-													'order': {
-														'_key': 'asc'
+
+									# home-agg:
+									"home": {
+										"nested": {"path": "persons.home"},
+										"aggs": {
+											"home_ids": {
+												"terms": {
+													"field": "persons.home.id",
+													"size": 10,
+													"order": {"_key": "asc"}
+												},
+												"aggs": {
+													"home_names": {
+														"terms": {
+															"field": "persons.home.name",
+															"size": 10,
+															"order": {"_key": "asc"}
+														}
 													}
 												}
 											}
 										}
 									}
 								}
-
 							}
 						}
 					}
