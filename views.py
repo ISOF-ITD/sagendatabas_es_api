@@ -87,7 +87,7 @@ def createQuery(request, data_restriction=None):
 	if('archive_id' in request.GET):
 		query['bool']['must'].append({
 			'term': {
-				'archive.archive_id.keyword': request.GET['archive_id']
+				'archive.archive_id_display_search': request.GET['archive_id']
 			}
 		})
 
@@ -137,7 +137,8 @@ def createQuery(request, data_restriction=None):
 			}
 		})
 
-	# Hämtar documenter var ett eller flera eller alla ord förekommer i titel eller text. Exempel: (ett eller flera ord) `search=svart hund`, (alla ord) `search=svart,hund`, (fras sökning, endast i `text` fältet `search="svart hund"`
+	# Hämtar dokument där ett eller flera eller alla ord förekommer i titel eller text.
+	# Exempel: (ett eller flera ord) `search=svart hund`, (alla ord) `search=svart,hund`, (fras sökning, endast i `text` fältet `search="svart hund"`
 	if ('search' in request.GET):
 		term = request.GET['search'].replace('"', '')
 		raw = True if 'search_raw' in request.GET and request.GET['search_raw'] != 'false' else False
@@ -152,6 +153,7 @@ def createQuery(request, data_restriction=None):
 			'contents',
 			'archive.archive',
 			'archive.archive_id',
+			'archive.archive_id_display_search',
 			'archive.archive_id_row',
 			'places.name',
 			'places.landskap',
@@ -3489,7 +3491,7 @@ def getArchiveIdsAutocomplete(request):
 						"filter": [
 							{
 								"regexp": {
-									"archive.archive_id.keyword": {
+									"archive.archive_id_display_search": {
 										"value": '(.+?)'+newRegExString+'(.+?)',
 										"case_insensitive": True
 									}
@@ -3501,7 +3503,7 @@ def getArchiveIdsAutocomplete(request):
 				"aggs": {
 					"distinct_ids": {
 						"terms": {
-							"field": "archive.archive_id.keyword",
+							"field": "archive.archive_id_display_search",
 							"size": 30,
 							"order": {"_key": "asc"},
 						}
