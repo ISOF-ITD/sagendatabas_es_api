@@ -3315,22 +3315,33 @@ def getLandskapAutocomplete(request):
 
 def getSockenAutocomplete(request):
 	# itemFormat som säger till hur varje object i esQuery resultatet skulle formateras
-	def itemFormat(item):
-		return {
-			'id': item['key'],
-			'name': item['data']['buckets'][0]['key'],
-			'harad': item['harad']['buckets'][0]['key'] if len(item['harad']['buckets']) > 0 else '',
-			'landskap': item['landskap']['buckets'][0]['key'] if len(item['landskap']['buckets']) > 0 else '',
-			'lan': item['lan']['buckets'][0]['key'] if len(item['lan']['buckets']) > 0 else '',
-			'lm_id': item['lm_id']['buckets'][0]['key'] if len(item['lm_id']['buckets']) > 0 else '',
-			'location': geohash.decode(item['location']['buckets'][0]['key']),
-			'comment': item['comment']['buckets'][0]['key'] if ('comment' in item and len(item['comment']['buckets']) > 0) else '',
-			'doc_count': item['data']['buckets'][0]['doc_count'],
-		}
+	def itemFormat(bucket):
+		src = bucket['doc']['hits']['hits'][0]['_source']
 
-	# jsonFormat, säger till hur esQuery resultatet skulle formateras och vilkan del skulle användas (hits eller aggregation buckets)
+		loc = src.get('location')
+		location = [loc.get('lat'), loc.get('lon')] if isinstance(loc, dict) else None
+
+		return {
+			'id': src.get('lm_id', bucket.get('key', '')),
+			'name': src.get('name', '') or '',
+			'harad': src.get('harad', '') or '',
+			'landskap': src.get('landskap', '') or '',
+			'lan': src.get('county', '') or '',
+			'lm_id': src.get('lm_id', '') or '',
+			'location': location,
+			'comment': src.get('comment', '') or '',
+			'doc_count': bucket.get('doc_count', 0),
+    	}
+
 	def jsonFormat(json):
-		return list(map(itemFormat, json['aggregations']['data']['data']['data']['buckets']))
+		buckets = json['aggregations']['data']['data']['data']['buckets']
+		return list(map(itemFormat, buckets))
+
+	def jsonFormat(json):
+		buckets = json['aggregations']['data']['data']['data']['buckets']
+		items = list(map(itemFormat, buckets))
+		items.sort(key=lambda x: x.get('name', ''))
+		return items
 	
 	# Skapar en ny string som är en regex som matchar alla bokstäver i söksträngen oavsett om de är stora eller små
 	# Detta behövs för att case_insensitive inte fungerar med åäö och andra icke-ASCII tecken
@@ -3345,107 +3356,42 @@ def getSockenAutocomplete(request):
 		'size': 0,
 		'aggs': {
 			'data': {
-				'nested': {
-					'path': 'places'
-				},
+				'nested': {'path': 'places'},
 				'aggs': {
 					'data': {
 						'filter': {
 							'bool': {
-								'must': [
-									{
-										'bool': 
-										{
-											'should': [
-												{
-													'regexp': {
-														'places.name': { 
-															'value': '(.+?)'+newRegExString+'(.+?)',
-															'case_insensitive': True,
-														}
-													}
-												},
-												{
-													'regexp': {
-														'places.comment.keyword': {
-															'value': '(.+?)'+newRegExString+'(.+?)',
-															'case_insensitive': True,
-														}
-													}
-												}
-											]
-										}
-									}
+							'must': [{
+								'bool': {
+								'should': [
+									{'regexp': {'places.name': {'value': '(.+?)'+newRegExString+'(.+?)', 'case_insensitive': True}}},
+									{'regexp': {'places.comment.keyword': {'value': '(.+?)'+newRegExString+'(.+?)', 'case_insensitive': True}}},
 								]
+								}
+							}]
 							}
 						},
 						'aggs': {
 							'data': {
 								'terms': {
-									'field': 'places.name',
+									'field': 'places.lm_id',
 									'size': 10000,
-									'order': {
-										'_key': 'asc',
-									}
+									'order': {'_key': 'asc'}
 								},
 								'aggs': {
-									'data': {
-										'terms': {
-											'field': 'places.name',
+									'doc': {
+										'top_hits': {
 											'size': 1,
-											'order': {
-												'_key': 'asc'
-											}
-										}
-									},
-									'harad': {
-										'terms': {
-											'field': 'places.harad',
-											'size': 1,
-											'order': {
-												'_key': 'asc'
-											}
-										}
-									},
-									'landskap': {
-										'terms': {
-											'field': 'places.landskap',
-											'size': 1,
-											'order': {
-												'_key': 'asc'
-											}
-										}
-									},
-									'lan': {
-										'terms': {
-											'field': 'places.county',
-											'size': 1,
-											'order': {
-												'_key': 'asc'
-											}
-										}
-									},
-									'location': {
-										'geohash_grid': {
-											'field': 'places.location',
-											'precision': 12
-										}
-									},
-									'comment': {
-										'terms': {
-											'field': 'places.comment.keyword',
-											'size': 1,
-											'order': {
-												'_key': 'asc'
-											}
-										}
-									},
-									'lm_id': {
-										'terms': {
-											'field': 'places.lm_id',
-											'size': 1,
-											'order': {
-												'_key': 'asc'
+											'_source': {
+												'includes': [
+													'places.name',
+													'places.harad',
+													'places.landskap',
+													'places.county',
+													'places.location',
+													'places.comment',
+													'places.lm_id',
+												]
 											}
 										}
 									}
@@ -3457,6 +3403,7 @@ def getSockenAutocomplete(request):
 			}
 		}
 	}
+
 
 	# Anropar esQuery, skickar query objekt och eventuellt jsonFormat funktion som formaterar resultat datat
 	esQueryResponse = esQuery(request, query, jsonFormat)
