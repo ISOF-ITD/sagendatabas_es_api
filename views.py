@@ -1853,6 +1853,7 @@ def getTermsAutocomplete(request):
 		count = 100
 
 	query = {
+		'query': createQuery(request),
 		'size': 0,
 		'aggs': {
 			'data': {
@@ -2007,6 +2008,7 @@ def getTitleTermsAutocomplete(request):
 		count = 100
 
 	query = {
+		'query': createQuery(request),
 		'size': 0,
 		'aggs': {
 			'data': {
@@ -3268,6 +3270,7 @@ def getLandskapAutocomplete(request):
 	
 	# query objekt som skickas till esQuery
 	query = {
+		'query': createQuery(request),
 		'size': 0,
 		'aggs': {
 			'data': {
@@ -3353,6 +3356,7 @@ def getSockenAutocomplete(request):
 			newRegExString += '[' + char.lower() + char.upper() + ']'
 
 	query = {
+		'query': createQuery(request),
 		'size': 0,
 		'aggs': {
 			'data': {
@@ -3430,6 +3434,7 @@ def getArchiveIdsAutocomplete(request):
 		return list(map(itemFormat, json['aggregations']['data']['distinct_ids']['buckets']))
 
 	query = {
+		"query": createQuery(request),
 		"size": 10,
 		"aggs": {
 			"data": {
@@ -3801,12 +3806,7 @@ def getPersonsAutocomplete(request):
 	query = {
 		"size": 0,
 		# bara records som har materialtype="arkiv"
-		# TODO: bör skickas med i requestet istället för att hårdkodas här
-		"query": {
-			"term": {
-				"materialtype": "arkiv"
-			}
-		},
+		"query": createQuery(request),
 		"aggs": {
 			"persons_nested": {
 				"nested": {"path": "persons"},
