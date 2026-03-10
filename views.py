@@ -1,3 +1,4 @@
+from copy import copy
 from django.http import JsonResponse
 import re, requests, json, sys, os
 from requests.auth import HTTPBasicAuth
@@ -1566,6 +1567,17 @@ def createQuery(request, data_restriction=None):
 	
 	return query
 
+
+def excludeParamsFromRequest(request, excluded_params=None):
+	"""Return a shallow request copy with selected GET params removed."""
+	request_copy = copy(request)
+	filtered_params = request.GET.copy()
+	for param in excluded_params or []:
+		filtered_params.pop(param, None)
+
+	request_copy.GET = filtered_params
+	return request_copy
+
 def esQuery(request, query, formatFunc = None, apiUrl = None, returnRaw = False):
 	# Function som formulerar query och anropar ES
 
@@ -1853,7 +1865,7 @@ def getTermsAutocomplete(request):
 		count = 100
 
 	query = {
-		'query': createQuery(request),
+		'query': createQuery(excludeParamsFromRequest(request, excluded_params=['search'])),
 		'size': 0,
 		'aggs': {
 			'data': {
@@ -2008,7 +2020,7 @@ def getTitleTermsAutocomplete(request):
 		count = 100
 
 	query = {
-		'query': createQuery(request),
+		'query': createQuery(excludeParamsFromRequest(request, excluded_params=['search'])),
 		'size': 0,
 		'aggs': {
 			'data': {
@@ -3270,7 +3282,7 @@ def getLandskapAutocomplete(request):
 	
 	# query objekt som skickas till esQuery
 	query = {
-		'query': createQuery(request),
+		'query': createQuery(excludeParamsFromRequest(request, excluded_params=['search'])),
 		'size': 0,
 		'aggs': {
 			'data': {
@@ -3356,7 +3368,7 @@ def getSockenAutocomplete(request):
 			newRegExString += '[' + char.lower() + char.upper() + ']'
 
 	query = {
-		'query': createQuery(request),
+		'query': createQuery(excludeParamsFromRequest(request, excluded_params=['search'])),
 		'size': 0,
 		'aggs': {
 			'data': {
@@ -3434,7 +3446,7 @@ def getArchiveIdsAutocomplete(request):
 		return list(map(itemFormat, json['aggregations']['data']['distinct_ids']['buckets']))
 
 	query = {
-		"query": createQuery(request),
+		"query": createQuery(excludeParamsFromRequest(request, excluded_params=['search'])),
 		"size": 10,
 		"aggs": {
 			"data": {
@@ -3806,7 +3818,7 @@ def getPersonsAutocomplete(request):
 	query = {
 		"size": 0,
 		# bara records som har materialtype="arkiv"
-		"query": createQuery(request),
+		"query": createQuery(excludeParamsFromRequest(request, excluded_params=['search'])),
 		"aggs": {
 			"persons_nested": {
 				"nested": {"path": "persons"},
@@ -5008,5 +5020,3 @@ def getCurrentTime(request):
 	}, 
 		lambda json: json['hits']['hits'][0]['fields']['now'][0]
 	)
-
-
