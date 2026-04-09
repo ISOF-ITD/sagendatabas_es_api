@@ -4405,7 +4405,7 @@ def getDocuments(request, data_restriction=None):
 					'number_of_fragments': 0
 				},
 				contentsField: {
-					'number_of_fragments': 0,
+					'number_of_fragments': 1,
 					'fragment_size': 300
 				},
 				headwordsField: {
