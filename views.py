@@ -178,7 +178,7 @@ def createQuery(request, data_restriction=None):
 			'title',
 			'contents',
 		]
-		contentFields = [
+		textFields = [
 			'text',
 			'media.text',
 		]
@@ -186,11 +186,11 @@ def createQuery(request, data_restriction=None):
 			'title.raw',
 			'contents.raw',
 		]
-		contentRawFields = [
+		textRawFields = [
 			'text.raw',
 		]
 		# at the moment, only support for one path (nestendContentFields[0])
-		nestedContentFields = [
+		nestedTextFields = [
 			# 1) Vanliga texten
 			{
 				"path": "media",
@@ -221,7 +221,7 @@ def createQuery(request, data_restriction=None):
 				]
 			}
 		]
-		# TODO: add nestedContentRawFields?
+		# TODO: add nestedTextRawFields?
 		
 		fields = standardFields
 		if raw:
@@ -230,13 +230,13 @@ def createQuery(request, data_restriction=None):
 			fields = titleFields
 			if raw:
 				fields = titleRawFields
-		elif 'search_content' in request.GET and request.GET['search_content'] != 'false':
-			fields = contentFields
+		elif 'search_text' in request.GET and request.GET['search_text'] != 'false':
+			fields = textFields
 			if raw:
-				fields = contentRawFields
+				fields = textRawFields
 
 		nested_should = []
-		for nested_field in nestedContentFields:
+		for nested_field in nestedTextFields:
 			field_name = nested_field["fieldNames"][0].split("^")[0]   # remove the ^2 or other boost value
 
 			inner_highlights = {
