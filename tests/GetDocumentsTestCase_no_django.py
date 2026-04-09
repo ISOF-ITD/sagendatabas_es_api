@@ -20,7 +20,7 @@ class GetDocumentsTestCase(unittest.TestCase):
     1. Kör API-server
         cd /home/per/dev/server/folkeservice/sagendatabas_es_api/
         source ../current_venv/bin/activate
-        folkeservice runserver
+        python3 manage.py runserver
     2. Start test
     python3 tests/GetDocumentsTestCase_no_django.py 2> GetDocumentsTestCase_no_django1.html
     python3 tests/GetDocumentsTestCase_no_django.py > GetDocumentsTestCase_no_django_$(date +"%Y-%m-%d:%H%M")-log.txt 2> GetDocumentsTestCase_no_django_$(date +"%Y-%m-%d:%H%M")-results.txt
