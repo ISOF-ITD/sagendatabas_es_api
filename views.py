@@ -4296,20 +4296,124 @@ def getGender(request):
 
 
 def getSimilar(request, documentId):
+	# Hämtar källdokumentet direkt från ES för att själv kunna bygga upp
+	# "like"-texter. Det behövs eftersom nested-fält som media.text inte
+	# fungerar tillförlitligt som källa när more_like_this bara får ett _id.
+	def fetchDocumentSource():
+		host = es_config.host
+		protocol = es_config.protocol
+		index_name = es_config.index_name
+		user = None
+		password = None
+
+		if hasattr(es_config, 'user'):
+			user = es_config.user
+			password = es_config.password
+
+		host, index_name, password, protocol, user = getExtraIndexConfiguration(
+			host, index_name, password, protocol, request, user
+		)
+
+		authentication_type_ES8 = False
+		if hasattr(es_config, 'es_version'):
+			if (es_config.es_version == '8'):
+				authentication_type_ES8 = True
+
+		esUrl = protocol + host + '/' + index_name + '/_doc/' + documentId
+		try:
+			if authentication_type_ES8 == True and user is not None:
+				esResponse = requests.get(
+					esUrl,
+					auth=HTTPBasicAuth(user, password),
+					verify=False,
+					timeout=60
+				)
+			else:
+				esResponse = requests.get(
+					protocol + (user + ':' + password + '@' if (user is not None) else '') + host + '/' + index_name + '/_doc/' + documentId,
+					verify=False,
+					timeout=60
+				)
+		except Exception as e:
+			logger.error("getSimilar fetchDocumentSource requests.get Exception: %s", e)
+			return None
+
+		if esResponse.status_code != 200:
+			logger.error("getSimilar fetchDocumentSource status_code, text: %s %s", esResponse.status_code, esResponse.text)
+			return None
+
+		responseData = esResponse.json()
+		return responseData.get('_source')
+
+	def appendTextParts(textParts, value):
+		if value is None:
+			return
+		if isinstance(value, list):
+			for item in value:
+				appendTextParts(textParts, item)
+		elif isinstance(value, dict):
+			# För getSimilar är vi bara ute efter textinnehåll. När vi går
+			# igenom media-listan plockar vi därför endast ut eventuellt textfält.
+			textValue = value.get('text')
+			if textValue:
+				textParts.append(textValue)
+		elif isinstance(value, str):
+			if value.strip():
+				textParts.append(value.strip())
+
+	source = fetchDocumentSource()
+	rootTextParts = []
+	mediaTextParts = []
+
+	if source is not None:
+		# Bygg separat like-text för root-fält. Vi håller isär root och nested
+		# för att det ska vara tydligt vilket innehåll som används i respektive
+		# more_like_this-del, och för att undvika att root-innehåll påverkar
+		# likhetsbedömningen för media.text.
+		for fieldName in ['title', 'text', 'contents', 'headwords']:
+			appendTextParts(rootTextParts, source.get(fieldName))
+		# Bygg separat like-text för nested media.text. Den måste samlas ihop
+		# manuellt och skickas in som ren text till more_like_this, annars
+		# riskerar ES att inte använda nested-innehållet alls.
+		appendTextParts(mediaTextParts, source.get('media', []))
+
+	rootLikeText = '\n'.join(rootTextParts)
+	mediaLikeText = '\n'.join(mediaTextParts)
+
 	query = {
 		'query': {
 			'bool': {
 				'must': [
 					{
-						'more_like_this': {
-							'fields': ['text', 'title', 'media.text'],
-							'like': [
+						'bool': {
+							'should': [
 								{
-									'_id': documentId
+									# Likhet mot vanliga root-fält.
+									'more_like_this': {
+										'fields': ['text', 'title', 'contents', 'headwords'],
+										'like': rootLikeText if rootLikeText else [{'_id': documentId}],
+										'min_term_freq': 1,
+										'max_query_terms': 12
+									}
+								},
+								{
+									# Separat nested-del för att kunna matcha andra dokuments media.text.
+									# Här använder vi bara text från media.text som underlag, så att
+									# likheten i media-delen baseras på just media-innehållet.
+									'nested': {
+										'path': 'media',
+										'query': {
+											'more_like_this': {
+												'fields': ['media.text'],
+												'like': mediaLikeText if mediaLikeText else [{'_id': documentId}],
+												'min_term_freq': 1,
+												'max_query_terms': 12
+											}
+										}
+									}
 								}
 							],
-							'min_term_freq': 1,
-							'max_query_terms': 12
+							'minimum_should_match': 1
 						}
 					},
 					# anpassad för uppteckningar i folke sök.
@@ -4331,7 +4435,7 @@ def getSimilar(request, documentId):
 					},
 					{
 						'term': {
-							'recordtype': 'one_record'
+							'recordtype': 'one_accession_row'
 						}
 					},
 					{
