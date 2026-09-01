@@ -11,6 +11,53 @@ from . import geohash
 import logging
 logger = logging.getLogger(__name__)
 
+LIST_RESPONSE_PROFILE = 'list'
+LIST_HIGHLIGHT_FRAGMENT_SIZE = 300
+LIST_SOURCE_INCLUDES = [
+	'id',
+	'title',
+	'contents',
+	'text',
+	'year',
+	'materialtype',
+	'recordtype',
+	'numberofonerecord',
+	'numberoftranscribedonerecord',
+	'numberofpages',
+	'numberoftranscribedpages',
+	'transcriptiontype',
+	'transcriptionstatus',
+	'transcribedby',
+	'update_status',
+	'archive.archive_id_display_search',
+	'archive.archive_id_row',
+	'archive.page',
+	'archive.total_pages',
+	'persons.id',
+	'persons.name',
+	'persons.relation',
+	'places.id',
+	'places.name',
+	'places.landskap',
+	'places.fylke',
+	'places.specification',
+	'metadata.type',
+	'media.id',
+	'media.type',
+	'media.source',
+	'media.title',
+	'media.pagenumber',
+	'media.transcriptionstatus',
+	'media.utterances.metadata',
+	'segments.id',
+	'segments.start_media_id',
+	'segments.person_ids',
+]
+
+
+def usesListResponseProfile(request):
+	return request.GET.get('response_profile') == LIST_RESPONSE_PROFILE
+
 from rest_framework.response import Response
 from rest_framework import viewsets, permissions, mixins, status
 from rest_framework.views import APIView
@@ -238,12 +285,18 @@ def createQuery(request, data_restriction=None):
 		nested_should = []
 		for nested_field in nestedTextFields:
 			field_name = nested_field["fieldNames"][0].split("^")[0]   # remove the ^2 or other boost value
+			highlight_options = {"number_of_fragments": 0}
+			if usesListResponseProfile(request):
+				highlight_options = {
+					"number_of_fragments": 1,
+					"fragment_size": LIST_HIGHLIGHT_FRAGMENT_SIZE,
+				}
 
 			inner_highlights = {
 				"highlight": {
 					"pre_tags": ["<span class=\"highlight\">"],
 					"post_tags": ["</span>"],
-					"fields": { field_name: {"number_of_fragments": 0} }
+					"fields": { field_name: highlight_options }
 				}
 			}
 			if nested_field.get("includeSource"):
@@ -4473,6 +4526,11 @@ def getDocuments(request, data_restriction=None):
 					#item['_source'].pop(key)
 					returnItem['_source'][key] = item['_source'][key]
 
+			if usesListResponseProfile(request):
+				for mediaItem in returnItem['_source'].get('media', []):
+					utterances = mediaItem.pop('utterances', None)
+					mediaItem['has_transcription'] = bool(utterances)
+
 			return returnItem
 		else:
 			return item
@@ -4529,6 +4587,16 @@ def getDocuments(request, data_restriction=None):
 			# ]
 		}
 	}
+
+	if usesListResponseProfile(request):
+		query['_source'] = {
+			'includes': LIST_SOURCE_INCLUDES
+		}
+		for fieldName in [textField, contentsField, headwordsField]:
+			query['highlight']['fields'][fieldName] = {
+				'number_of_fragments': 1,
+				'fragment_size': LIST_HIGHLIGHT_FRAGMENT_SIZE
+			}
 
 	if('aggregation' in request.GET):
 		query['size'] = 0

@@ -56,6 +56,12 @@ Hämtar documenter var `year` är mellan från och till. Exempel: `collection_ye
 - **search=[söksträng]**
 Hämtar documenter var ett eller flera eller alla ord förekommer i titel eller text. Exempel: (ett eller flera ord) `search=svart hund`, (alla ord) `search=svart,hund`, (fras sökning, endast i `text` fältet `search="svart hund"`
 
+- **response_profile=list**
+Returnerar en kompakt dokumentprofil för resultatlistor. Fullständiga media-
+transkriptioner utelämnas, `media.has_transcription` anger om en transkription
+finns och sökmarkeringar begränsas till korta fragment. Om parametern saknas,
+eller har ett annat värde, returneras det fullständiga dokumentsvaret.
+
 - **phrase=[söksträng]**
 Hämtar documenter var fras förekommer i text. Exempel: `phrase=svart hund`
 
