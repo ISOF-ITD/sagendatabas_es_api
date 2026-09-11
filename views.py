@@ -2888,6 +2888,7 @@ def getSockenTotal(request):
 def getSocken(request, sockenId = None):
 	# itemFormat som säger till hur varje object i esQuery resultatet skulle formateras
 	def itemFormat(item):
+		location_buckets = item['location']['buckets']
 		return {
 			'id': item['key'],
 			'name': item['data']['buckets'][0]['key'],
@@ -2895,7 +2896,7 @@ def getSocken(request, sockenId = None):
 			'landskap': item['landskap']['buckets'][0]['key'] if len(item['landskap']['buckets']) > 0 else None,
 			'lan': item['lan']['buckets'][0]['key'] if len(item['lan']['buckets']) > 0 else None,
 			'lm_id': item['lm_id']['buckets'][0]['key'] if len(item['lm_id']['buckets']) > 0 else '',
-			'location': geohash.decode(item['location']['buckets'][0]['key']),
+			'location': geohash.decode(location_buckets[0]['key']) if location_buckets else None,
 			'doc_count': item['parent_doc_count']['doc_count'],
 			'page_count': item['page_count']['pages']['value'],
 			'relation_type': [relation_type['key'] for relation_type in item['relation_type']['buckets'] if len(item['relation_type']['buckets']) > 0]
