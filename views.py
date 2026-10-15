@@ -4649,7 +4649,7 @@ def getDocuments(request, data_restriction=None):
 		sortObj = {}
 		# if sorting by archive_id_row.keyword, sort first by archive_id, then by page number as integer
 		if request.GET['sort'] == 'latest_transcription':
-			# Root dates also exist on untranscribed imports. Only completed image pages count.
+			# Root dates also exist on untranscribed imports. Only published image pages count.
 			sortObj['media.transcriptiondate'] = {
 				'order': request.GET.get('order', 'desc'),
 				'mode': 'max',
@@ -4661,7 +4661,7 @@ def getDocuments(request, data_restriction=None):
 							'filter': [
 								{'term': {'media.type': 'image'}},
 								{'terms': {'media.transcriptionstatus': [
-									'transcribed', 'published', 'autopublished'
+									'published', 'autopublished'
 								]}},
 								{'exists': {'field': 'media.text'}}
 							]
