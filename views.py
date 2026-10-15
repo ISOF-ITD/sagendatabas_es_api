@@ -4648,7 +4648,28 @@ def getDocuments(request, data_restriction=None):
 		sort = []
 		sortObj = {}
 		# if sorting by archive_id_row.keyword, sort first by archive_id, then by page number as integer
-		if request.GET['sort'] == 'archive.archive_id_row.keyword':
+		if request.GET['sort'] == 'latest_transcription':
+			# Root dates also exist on untranscribed imports. Only completed image pages count.
+			sortObj['media.transcriptiondate'] = {
+				'order': request.GET.get('order', 'desc'),
+				'mode': 'max',
+				'missing': '_last',
+				'nested': {
+					'path': 'media',
+					'filter': {
+						'bool': {
+							'filter': [
+								{'term': {'media.type': 'image'}},
+								{'terms': {'media.transcriptionstatus': [
+									'transcribed', 'published', 'autopublished'
+								]}},
+								{'exists': {'field': 'media.text'}}
+							]
+						}
+					}
+				}
+			}
+		elif request.GET['sort'] == 'archive.archive_id_row.keyword':
 			# sort.append({'archive.archive_id_row.keyword': request.GET['order'] if 'order' in request.GET else 'asc'})
 			# sort.append({'archive.page': request.GET['order'] if 'order' in request.GET else 'asc'})
 			sortObj[request.GET['sort']] = request.GET['order'] if 'order' in request.GET else 'asc'
@@ -4659,6 +4680,9 @@ def getDocuments(request, data_restriction=None):
 			sortObj[request.GET['sort']] = request.GET['order'] if 'order' in request.GET else 'asc'
 
 		sort.append(sortObj)
+		if request.GET['sort'] == 'latest_transcription':
+			# Keep pagination stable when dates are equal or missing.
+			sort.append({'id.keyword': 'asc'})
 		query['sort'] = sort
 
 	# An
