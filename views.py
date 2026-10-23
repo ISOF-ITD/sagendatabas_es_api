@@ -48,7 +48,9 @@ LIST_SOURCE_INCLUDES = [
 	'media.title',
 	'media.pagenumber',
 	'media.transcriptionstatus',
-	'media.utterances.metadata',
+	'media.utterances.metadata.process',
+	'media.utterances.utterances.text',
+	'media.utterances.text',
 	'segments.id',
 	'segments.start_media_id',
 	'segments.person_ids',
@@ -4528,9 +4530,21 @@ def getDocuments(request, data_restriction=None):
 					returnItem['_source'][key] = item['_source'][key]
 
 			if usesListResponseProfile(request):
+				# Inspect text server-side, but return only presence and process metadata.
+				returnItem['_source']['media'] = [
+					dict(mediaItem) for mediaItem in returnItem['_source'].get('media', [])
+				]
 				for mediaItem in returnItem['_source'].get('media', []):
 					utterances = mediaItem.pop('utterances', None)
-					mediaItem['has_transcription'] = bool(utterances)
+					segments = utterances.get('utterances') if isinstance(utterances, dict) else utterances
+					mediaItem['has_transcription'] = isinstance(segments, list) and any(
+						isinstance(segment, dict)
+						and isinstance(segment.get('text'), str)
+						and bool(segment['text'].strip())
+						for segment in segments
+					)
+					if isinstance(utterances, dict) and isinstance(utterances.get('metadata'), dict):
+						mediaItem['utterances'] = {'metadata': utterances['metadata']}
 
 			return returnItem
 		else:

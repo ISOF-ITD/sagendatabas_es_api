@@ -58,8 +58,12 @@ Hämtar documenter var ett eller flera eller alla ord förekommer i titel eller 
 
 - **response_profile=list**
 Returnerar en kompakt dokumentprofil för resultatlistor. Fullständiga media-
-transkriptioner utelämnas, `media.has_transcription` anger om en transkription
-finns och sökmarkeringar begränsas till korta fragment. Om parametern saknas,
+transkriptioner utelämnas, `media.has_transcription` anger om minst ett textsegment
+innehåller läsbar text och `media.utterances.metadata.process` behålls för att
+skilja exempelvis manuella avskrifter från ASR. Enbart processmetadata ger inte
+`has_transcription=true`. Sökmarkeringar begränsas till korta fragment. Texten
+hämtas från Elasticsearch för kontrollen men skickas inte vidare till klienten.
+Om parametern saknas,
 eller har ett annat värde, returneras det fullständiga dokumentsvaret.
 
 - **phrase=[söksträng]**
